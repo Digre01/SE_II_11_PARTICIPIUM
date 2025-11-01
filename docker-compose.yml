@@ -1,0 +1,69 @@
+version: "3.9"
+
+services:
+  db:
+    build:
+      context: ./docker/db
+      dockerfile: Dockerfile
+    container_name: se_ii_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-se_ii_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-se_ii_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend/Dockerfile
+    container_name: frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+
+  
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: ../docker/backend/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      PG_HOST: db
+      PG_PORT: 5432
+      PG_USER: ${POSTGRES_USER:-postgres}
+      PG_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      PG_DB: ${POSTGRES_DB:-se_ii_db}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: npx nodemon index.mjs 
+  #for watch the db  
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 9090:8080
+    environment:
+      - ADMINER_DESIGN=galkaev
+
+volumes:
+  db_data:

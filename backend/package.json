@@ -1,0 +1,20 @@
+{
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --watch",
+    "test:unit": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "sqlite3": "^5.1.7",
+    "typeorm": "^0.3.27"
+  },
+    "devDependencies": {
+      "nodemon": "^3.1.10",
+      "jest": "^30.2.0",
+      "supertest": "^7.0.0"
+  }
+}
