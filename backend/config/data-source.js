@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { Queue } from "../entities/Example.js";
-import { Service } from "../entities/Service.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -13,7 +12,7 @@ export const AppDataSourcePostgres = new DataSource({
   username: process.env.PG_USER || "postgres",
   password: process.env.PG_PASSWORD || "postgres",
   database: process.env.PG_DB || "se_ii_db",
-  entities: [Queue, Service],
+  entities: [Queue],
   synchronize: true,
   logging: false,
 });

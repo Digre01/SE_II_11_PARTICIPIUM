@@ -1,8 +1,11 @@
 // imports
 import express from 'express';
 import cors from 'cors';
-import queueRoutes from './routes/queueRoutes.mjs';
-import serviceRoutes from './routes/serviceRoutes.mjs';
+import passport from 'passport';
+import LocalStrategy from 'passport-local';
+import session from "express-session";
+import {userRepository} from "./repositories/userRepository.js";
+import userRoutes from "./routes/userRoutes.js";
 
 // init express
 const app = new express();
@@ -19,10 +22,32 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+/** PASSPORT CONFIGURATION */
+passport.use(new LocalStrategy(async function verify(username, password, cb) {
+    const user = await userRepository.getUserByUsernameAndPassword(username, password);
+    if (!user) {
+        return cb(null, false, 'Incorrect username or password');
+    }
+    return cb(null, user);
+}));
 
+passport.serializeUser(function (user, cb) {
+    cb(null, user);
+});
+
+passport.deserializeUser(function (user, cb) {
+    return cb(null, user);
+});
+
+app.use(session({
+    secret: "shhhhh... it's a secret!",
+    resave: false,
+    saveUninitialized: false,
+}));
+
+app.use(passport.authenticate('session'));
 
 // API routes
-app.use('/api/v1', queueRoutes);
-app.use('/api/v1', serviceRoutes);
+app.use('/api/users', userRoutes);  //gestisce gli utenti in generale
 
 export default app;

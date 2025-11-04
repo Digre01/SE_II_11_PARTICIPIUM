@@ -6,9 +6,6 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 
-import { Service } from "./entities/Service.js";
-import { Queue } from "./entities/Queue.js";
-
 AppDataSourcePostgres.initialize()
   .then(async () => {
     console.log("Database connected");
