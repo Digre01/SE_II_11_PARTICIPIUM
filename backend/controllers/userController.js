@@ -1,18 +1,16 @@
 import {userRepository} from "../repositories/userRepository.js";
+import crypto from "crypto";
+import userService from "../services/userService.js";
 
-export async function createUser({username, email, name, surname, password, userType}){
-    const salt = crypto.randomBytes(16);
-
-    const hashedPassword = await new Promise((resolve, reject) => {
-        crypto.pbkdf2(password, salt, 310000, 32, 'sha256', (err, derivedKey) => {
-            if (err) return reject(err);
-            resolve(derivedKey);
-        });
-    });
-
-    try {
-        return await userRepository.createUser(username, email, name, surname, hashedPassword, salt, userType);
-    } catch (error) {
-        return {error, msg: "User already exists"};
-    }
+async function getUserByUsernameAndPassword(username, password) {
+    return userRepository.getUserByUsernameAndPassword(username, password);
 }
+
+async function createUser({username, email, name, surname, password, userType}){
+    const salt = crypto.randomBytes(16).toString('hex');
+    const hashedPassword = await userService.hashPassword(password, salt);
+    return await userRepository.createUser(username, email, name, surname, hashedPassword, salt, userType);
+}
+
+const userController = { getUserByUsernameAndPassword, createUser };
+export default userController;

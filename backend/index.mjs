@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 AppDataSourcePostgres.initialize()
   .then(async () => {
     console.log("Database connected");
-
+    /*
     // Svuota la tabella queue all'avvio (da togliere quando ci sarà la configurazione)
     const queueRepo = AppDataSourcePostgres.getRepository(Queue);
     await queueRepo.clear();
@@ -25,7 +25,7 @@ AppDataSourcePostgres.initialize()
         { name: "Withdraw money", avgTime: 20 }
       ]);
       console.log("Added default services");
-    }
+    }*/
 
     app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
   })
