@@ -1,6 +1,7 @@
 import Router from "express";
 import userController from "../controllers/userController.js";
 import passport from "passport";
+import AuthenticationError from "passport/lib/errors/authenticationerror.js";
 
 const router = Router();
 
@@ -8,7 +9,7 @@ const router = Router();
 router.post('/login', passport.authenticate('local'), function(
     req,
     res) {
-    return res.status(201).json(req.user);
+        res.status(201).json(req.user);
 });
 
 //signup
@@ -20,6 +21,8 @@ router.post("/signup", async function(
     } catch (err) {
         if (err.message === "EXISTING EMAIL") {
             res.status(409).json({error: 'User already exists'});
+        } else {
+            res.status(500).json({error: 'Internal Server Error'});
         }
     }
 });

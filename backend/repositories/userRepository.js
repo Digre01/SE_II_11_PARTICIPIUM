@@ -2,6 +2,7 @@ import {AppDataSourcePostgres} from "../config/data-source.js";
 import {Users} from "../entities/Users.js";
 import crypto from "crypto";
 import userService from "../services/userService.js";
+import {EntityNotFoundError} from "typeorm";
 
 class UserRepository {
     get repo() {
@@ -10,18 +11,24 @@ class UserRepository {
 
     async getUserByUsernameAndPassword(username, password) {
         const user = await this.repo.findOneBy({ username });
-        if(!user) return null;
+        if (!user) {
+            return null
+        }
 
-        const hashedPassword = await userService.hashPassword(password, user.salt);  //calcolo hash sulla password inserita
+        const hashedPassword = await userService.hashPassword(password, user.salt);
         const bufferedHashPassword = Buffer.from(hashedPassword, 'hex');
-        const storedHash = Buffer.from(user.password, 'hex');   //hash salvato
+        const storedHash = Buffer.from(user.password, 'hex');
         const match = crypto.timingSafeEqual(storedHash, bufferedHashPassword);
-        if (!match) return null;
+
+        if (!match) {
+            return null
+        }
 
         return user;
     }
 
     async createUser(username, email, name, surname, password, salt, userType){
+
         const existing = await this.repo.findOneBy({ email } );
 
         if(existing) {
