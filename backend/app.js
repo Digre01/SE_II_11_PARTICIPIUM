@@ -2,7 +2,7 @@
 import express from 'express';
 import cors from 'cors';
 import passport from './config/passport.js';
-import session from "express-session";
+import session from 'express-session';
 import userRoutes from "./routes/userRoutes.js";
 
 // init express

@@ -14,10 +14,9 @@ router.post('/login', passport.authenticate('local'), function(
 });
 
 //signup
-router.post("/signup",
-    async function(
-    req,
-    res) {
+router.post("/signup", async function(req,res) {
+    //check if body is staff, if that, the caller needs to be an admin 
+    //needs a middleware?
     try {
         res.status(201).json(await userController.createUser(req.body));
     } catch (err) {
@@ -32,6 +31,7 @@ router.post("/signup",
         }
     }
 });
+
 
 //get current session
 router.get('/current', (
