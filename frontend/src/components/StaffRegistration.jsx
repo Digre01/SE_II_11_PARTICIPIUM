@@ -73,7 +73,8 @@ function StaffRegistration(){
     };
     return(
         <>
-            <Form onSubmit={onSubmit}>
+        <div className="container mt-5">
+            <Form onSubmit={onSubmit} className="mb-4">
                 <Row>
                     <Input
                         label="Name"
@@ -161,6 +162,7 @@ function StaffRegistration(){
                     </Col>
                 </Row>
             </Form>
+        </div>
 
             
         </>
