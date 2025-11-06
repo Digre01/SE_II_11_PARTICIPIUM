@@ -31,7 +31,7 @@ services:
       - "5173:5173"
     volumes:
       - ./frontend:/app
-      - /app/node_modules #this part need to be removed in production code
+      - /app/node_modules
     depends_on:
       db:
         condition: service_healthy
@@ -46,7 +46,6 @@ services:
       - "3000:3000"
     volumes:
       - ./backend:/app
-
     environment:
       PG_HOST: db
       PG_PORT: 5432
