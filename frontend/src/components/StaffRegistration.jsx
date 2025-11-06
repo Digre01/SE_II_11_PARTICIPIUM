@@ -63,7 +63,6 @@ function StaffRegistration(){
             }
         }
          catch (err) {
-            console.log(err);
             const text = err.error || 'Error during registration process';
             setMessage({ type: 'danger', text });
             reset();

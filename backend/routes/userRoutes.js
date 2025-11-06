@@ -1,8 +1,7 @@
 import Router from "express";
 import userController from "../controllers/userController.js";
 import passport from "passport";
-import AuthenticationError from "passport/lib/errors/authenticationerror.js";
-import {authorizeUserType} from "../middleware/userAuthorization.js";
+import { requireAdminIfCreatingStaff } from "../middleware/userAuthorization.js";
 
 const router = Router();
 
@@ -14,9 +13,7 @@ router.post('/login', passport.authenticate('local'), function(
 });
 
 //signup
-router.post("/signup", async function(req,res) {
-    //check if body is staff, if that, the caller needs to be an admin 
-    //needs a middleware?
+router.post("/signup", requireAdminIfCreatingStaff, async function(req,res) {
     try {
         res.status(201).json(await userController.createUser(req.body));
     } catch (err) {
