@@ -23,8 +23,13 @@ router.post('/', upload.array('photos', 3), async (req, res, next) => {
   };
 
   try {
-    const { title, description, categoryId, userId, latitude, longitude } = req.body;
+    let { title, description, categoryId, userId, latitude, longitude } = req.body;
     const photos = req.files ? req.files.map(file => `/public/${file.filename}`) : [];
+
+    // MOCK userId if not present
+    if (!userId) {
+      userId = 1; // valore mock
+    }
 
     // Validation
     if (!title || !description || !categoryId || !userId || !latitude || !longitude) {

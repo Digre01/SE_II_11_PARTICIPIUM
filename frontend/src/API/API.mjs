@@ -56,5 +56,21 @@ const callNextTicket = async(serviceIds) => {
   }
 }
 
-const API = { newTicket, fetchAllServices, callNextTicket };
+/* Reports */
+// POST /api/v1/reports
+const createReport = async (formData) => {
+  const response = await fetch(SERVER_URL + '/api/v1/reports', {
+    method: 'POST',
+    body: formData,
+    //credentials: 'include' // se serve autenticazione
+  });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    const errDetails = await response.text();
+    throw errDetails;
+  }
+};
+
+const API = { newTicket, fetchAllServices, callNextTicket, createReport };
 export default API;
