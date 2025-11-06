@@ -21,7 +21,16 @@ function StaffRegistration(){
 
     const reset = () => {
         setForm({ name: "", surname: "", username: "", email: "", password: "" });
-        setMessage(null);
+    };
+
+    const generatePassword = () => {
+        const length = 8;
+        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        let retVal = "";
+        for (let i = 0, n = charset.length; i < length; ++i) {
+            retVal += charset.charAt(Math.floor(Math.random() * n));
+        }
+        setForm((f) => ({ ...f, password: retVal }));
     };
 
     const onSubmit = async (e) => {
@@ -36,7 +45,7 @@ function StaffRegistration(){
 
         setSubmitting(true);
         try {
-            await signUp({
+            const result = await signUp({
                 username: form.username,
                 email: form.email,
                 name: form.name,
@@ -44,10 +53,20 @@ function StaffRegistration(){
                 password: form.password,
                 userType: 'STAFF',
             });
-            setMessage({ type: 'success', text: 'Registrazione completata.' });
+
+            if (result && !result.error) {
+                    setMessage({
+                        type: 'success',
+                        text: result.message || 'Registration completed successfully',
+                    });
+                reset();
+            }
+        }
+         catch (err) {
+            console.log(err);
+            const text = err.error || 'Error during registration process';
+            setMessage({ type: 'danger', text });
             reset();
-        } catch (err) {
-            setMessage({ type: 'danger', text: err.message || 'Errore durante la registrazione.' });
         } finally {
             setSubmitting(false);
         }
@@ -90,16 +109,29 @@ function StaffRegistration(){
                         value={form.email}
                         onChange={onChange("email")}
                     />
+                </Row>
+                <Row>
                     <Input
                         label="Password"
                         placeholder="Insert a password"
-                        type="password"
+                        type="text"
                         wrapperClassName="col col-md-4"
                         value={form.password}
                         onChange={onChange("password")}
                     />
+                    <Col sm="auto">
+                        <Button
+                            color="secondary"
+                            type="button"
+                            onClick={generatePassword}
+                        >
+                        Random Password
+                        </Button>
+                    </Col>
+                    
                 </Row>
 
+                {/* Alert for success or rejection */}
                 {message && (
                 <Alert color={message.type} role="alert">
                     {message.text}

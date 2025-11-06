@@ -11,7 +11,12 @@ export async function signUp(userData) {
         credentials: "include",
         body: JSON.stringify(userData),
     });
-    return await response.json();
+    if(response.ok) {
+        return await response.json();
+    } else {
+        const errDetails = await response.json(); //works but need to be changed lol
+        throw errDetails;
+    }
 }
 
 const API = { signUp };
