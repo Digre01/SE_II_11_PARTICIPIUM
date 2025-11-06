@@ -1,6 +1,9 @@
 // imports
 import express from 'express';
 import cors from 'cors';
+import reportRoutes from './routes/reportRoutes.mjs';
+import multerErrorHandler from './middlewares/multerErrorHandler.js';
+import errorHandler from './middlewares/errorHandler.js';
 
 // init express
 const app = new express();
@@ -17,9 +20,14 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-
-
 // API routes
-//app.use('/api/v1', queueRoutes);
+
+app.use('/public', express.static(new URL('./public', import.meta.url).pathname));
+
+app.use('/api/v1/reports', reportRoutes);
+
+
+app.use(multerErrorHandler);
+app.use(errorHandler);
 
 export default app;
