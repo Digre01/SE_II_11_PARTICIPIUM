@@ -2,7 +2,7 @@ import Router from "express";
 import userController from "../controllers/userController.js";
 import passport from "passport";
 import AuthenticationError from "passport/lib/errors/authenticationerror.js";
-import {authorizeUserType} from "../middleware/userAurthorization.js";
+import {authorizeUserType} from "../middleware/userAuthorization.js";
 
 const router = Router();
 
