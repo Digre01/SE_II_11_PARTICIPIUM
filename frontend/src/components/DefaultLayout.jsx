@@ -1,10 +1,13 @@
 import NavComponent from '../components/Header';
+import { Outlet } from 'react-router';
 
-function DefaultLayout({ children }) {
+function DefaultLayout() {
   return (
     <>
       <NavComponent />
-      <main className="container my-4">{children}</main>
+      <main className="container my-4">
+        <Outlet />
+      </main>
     </>
   );
 }

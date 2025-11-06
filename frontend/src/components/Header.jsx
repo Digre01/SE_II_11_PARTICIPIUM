@@ -19,9 +19,9 @@ function NavComponent() {
   <HeaderContent>
     <HeaderBrand
     >
-      <h2>
+      <h1>
         PARTICIPIUM
-      </h2>
+      </h1>
     </HeaderBrand>
       <HeaderSearch
         iconName="it-search"
