@@ -1,7 +1,5 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
-import { Queue } from "../entities/Example.js";
-import { Service } from "../entities/Service.js";
 import dotenv from "dotenv";
 import {Users} from "../entities/Users.js";
 import {Report} from "../entities/Reports.js";

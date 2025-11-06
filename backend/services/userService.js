@@ -10,5 +10,12 @@ async function hashPassword(password, salt) {
     })
 }
 
-const userService = { hashPassword };
+async function verifyPassword(password, storedPassword, salt) {
+    const hashedPassword = await hashPassword(password, salt);
+    const bufferedHashPassword = Buffer.from(hashedPassword, 'hex');
+    const hashedStoredPassword = Buffer.from(storedPassword, 'hex');
+    return crypto.timingSafeEqual(hashedStoredPassword, bufferedHashPassword);
+}
+
+const userService = { hashPassword, verifyPassword };
 export default userService;
