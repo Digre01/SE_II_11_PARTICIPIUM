@@ -1,6 +1,9 @@
 // imports
 import express from 'express';
 import cors from 'cors';
+import passport from './config/passport.js';
+import session from "express-session";
+import userRoutes from "./routes/userRoutes.js";
 
 // init express
 const app = new express();
@@ -17,9 +20,16 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+app.use(session({
+    secret: "shhhhh... it's a secret!",
+    resave: false,
+    saveUninitialized: false,
+}));
 
+app.use(passport.initialize());
+app.use(passport.authenticate('session'));
 
 // API routes
-//app.use('/api/v1', queueRoutes);
+app.use('/api/sessions', userRoutes);
 
 export default app;

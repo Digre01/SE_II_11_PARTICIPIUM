@@ -1,13 +1,13 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import dotenv from "dotenv";
-import { Categories } from "../entities/Categories.js";
-import { Office as Offices } from "../entities/Offices.js";
-import { Photos } from "../entities/Photos.js";
-import { Report as Reports } from "../entities/Reports.js";
-import { Roles } from "../entities/Roles.js";
-import { UserOffice } from "../entities/UserOffice.js";
-import { Users } from "../entities/Users.js";
+import {Users} from "../entities/Users.js";
+import {Report} from "../entities/Reports.js";
+import {UserOffice} from "../entities/UserOffice.js";
+import {Categories} from "../entities/Categories.js";
+import {Photos} from "../entities/Photos.js";
+import {Office} from "../entities/Offices.js";
+import {Roles} from "../entities/Roles.js";
 
 dotenv.config();
 
@@ -18,7 +18,7 @@ export const AppDataSourcePostgres = new DataSource({
   username: process.env.PG_USER || "postgres",
   password: process.env.PG_PASSWORD || "postgres",
   database: process.env.PG_DB || "se_ii_db",
-  entities: [Categories, Offices, Photos, Reports, Roles, UserOffice, Users],
+  entities: [Users, Report, UserOffice, Categories, Photos, Office, Roles],
   synchronize: true,
   logging: false,
 });
