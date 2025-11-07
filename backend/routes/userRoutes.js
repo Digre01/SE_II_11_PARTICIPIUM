@@ -1,7 +1,8 @@
 import Router from "express";
 import userController from "../controllers/userController.js";
 import passport from "passport";
-import { requireAdminIfCreatingStaff } from "../middleware/userAuthorization.js";
+import AuthenticationError from "passport/lib/errors/authenticationerror.js";
+import {authorizeUserType} from "../middlewares/userAuthorization.js";
 
 const router = Router();
 
@@ -13,22 +14,22 @@ router.post('/login', passport.authenticate('local'), function(
 });
 
 //signup
-router.post("/signup", requireAdminIfCreatingStaff, async function(req,res) {
+router.post("/signup", requireAdminIfCreatingStaff,
+    async function(
+    req,
+    res,
+    next) {
     try {
-        res.status(201).json(await userController.createUser(req.body));
+        const user = await userController.createUser(req.body);
+
+        req.login(user, (err) => {  //dopo la registrazione faccio il login
+            if (err) return next(err);
+            return res.status(201).json(req.user);
+        });
     } catch (err) {
-        if (err.message === "EXISTING EMAIL") {
-            res.status(409).json({error: 'User already exists'});
-        } else if(err.message === "FORBIDDEN") {
-            res.status(403).json({error: 'Forbidden'});
-        } else if(err.message === "UNAUTHORIZED") {
-            res.status(401).json({error: 'Unauthorized user'});
-        } else {
-            res.status(500).json({error: 'Internal Server Error'});
-        }
+        next(err)
     }
 });
-
 
 //get current session
 router.get('/current', (
