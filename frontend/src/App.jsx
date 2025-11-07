@@ -19,11 +19,8 @@ function App() {
 
     const handleLogin = async (credentials) => {
         const user = await API.logIn(credentials);
-        console.log("logged in");
-        console.log(user);
         setLoggedIn(true);
         setUser(user);
-        console.log(user)
         return user;
     };
 
@@ -35,10 +32,8 @@ function App() {
 
     const handleSignUp = async (data) => {
         const user = await API.signUp(data);
-        console.log("signed up");
         setLoggedIn(true);
         setUser(user);
-        console.log(user);
         return user;
     }
 

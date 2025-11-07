@@ -20,7 +20,12 @@ router.post("/signup",
     res,
     next) {
     try {
-        res.status(201).json(await userController.createUser(req.body));
+        const user = await userController.createUser(req.body);
+
+        req.login(user, (err) => {  //dopo la registrazione faccio il login
+            if (err) return next(err);
+            return res.status(201).json(req.user);
+        });
     } catch (err) {
         next(err)
     }
