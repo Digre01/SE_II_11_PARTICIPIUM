@@ -1,16 +1,22 @@
-import { Ticket } from "../models/models.mjs"
-
 const SERVER_URL = "http://localhost:3000";
 
-const signUp = async (userData) => {
-    const response = await fetch(SERVER_URL + "/api/users", {
+// Sign up a new user
+//{ username, email, name, surname, password, userType }
+export async function signUp(userData) {
+    const response = await fetch(`${SERVER_URL}/api/sessions/signup`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({userData})
+            "Content-Type": "application/json"
+             },
+        credentials: "include",
+        body: JSON.stringify(userData),
     });
-    return await response.json();
+    if(response.ok) {
+        return await response.json();
+    } else {
+        const errDetails = await response.json(); //works but need to be changed lol
+        throw errDetails;
+    }
 }
 
 /* Reports */
@@ -29,5 +35,5 @@ const createReport = async (formData) => {
   }
 };
 
-const API = { newTicket, fetchAllServices, callNextTicket, createReport };
+const API = { signUp };
 export default API;

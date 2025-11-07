@@ -17,8 +17,7 @@ router.post('/login', passport.authenticate('local'), function(
 router.post("/signup",
     async function(
     req,
-    res,
-    next) {
+    res) {
     try {
         res.status(201).json(await userController.createUser(req.body));
     } catch (err) {
