@@ -39,6 +39,8 @@ const ReportForm = () => {
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [errorOpen, setErrorOpen] = useState(true);
+  const [successOpen, setSuccessOpen] = useState(true);
 
   const handleChange = e => {
     if (!e.target || !e.target.name) return;
@@ -58,8 +60,11 @@ const ReportForm = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     setSuccess("");
+    setSuccessOpen(true);
+    setErrorOpen(true);
     if (!form.title || !form.description || !form.categoryId || form.photos.length < 1 || form.photos.length > 3) {
       setError("Please fill all required fields and upload 1 to 3 images.");
+      setErrorOpen(true);
       return;
     }
     setError("");
@@ -73,6 +78,7 @@ const ReportForm = () => {
     try {
       await API.createReport(data);
       setSuccess("Report submitted successfully!");
+      setSuccessOpen(true);
       setForm({
         title: "",
         description: "",
@@ -83,6 +89,7 @@ const ReportForm = () => {
       });
     } catch (err) {
       setError(typeof err === "string" ? err : "Network error. Please try again later.");
+      setErrorOpen(true);
     }
   };
 
@@ -91,8 +98,6 @@ const ReportForm = () => {
       <div className="card shadow-sm p-4">
         <h3 className="mb-4 text-primary text-center">Create a new report</h3>
         <Form onSubmit={handleSubmit}>
-          {error && <Alert color="danger">{error}</Alert>}
-          {success && <Alert color="success">{success}</Alert>}
           <FormGroup className="mb-3">
             <Input
               name="title"
@@ -121,7 +126,6 @@ const ReportForm = () => {
               required
               label="Category"
             >
-              <option value="">Select an option</option>
               {categories.map(cat => (
                 <option key={cat.id} value={cat.id} style={{ fontWeight: "normal" }}>{cat.name}</option>
               ))}
@@ -131,7 +135,7 @@ const ReportForm = () => {
             <div className="text-center mb-2">
               <Upload
                 id="upload_foto"
-                label="Upload images"
+                label="Upload 1 to 3 images"
                 multiple
                 accept="image/*"
                 onChange={handleFileChange}
@@ -155,7 +159,7 @@ const ReportForm = () => {
               </UploadList>
             </div>
           </FormGroup>
-          <div className="mb-4 row">
+          <div className="row">
             <div className="col-6">
               <Input
                 id="latitude"
@@ -173,7 +177,36 @@ const ReportForm = () => {
               />
             </div>
           </div>
-          <Button color="primary" type="submit" block>Submit</Button>
+
+          {error && (
+            <div className="mb-4">
+              <Alert color="danger" isOpen={errorOpen} toggle={() => setErrorOpen(false)}>
+                {error}
+              </Alert>
+            </div>
+          )}
+          {success && (
+            <div className="mb-4">
+              <Alert color="success" isOpen={successOpen} toggle={() => setSuccessOpen(false)}>
+                {success}
+              </Alert>
+            </div>
+          )}
+
+          <Button
+            color="primary"
+            type="submit"
+            block
+            disabled={
+              !form.title ||
+              !form.description ||
+              !form.categoryId ||
+              form.photos.length < 1 ||
+              form.photos.length > 3
+            }
+          >
+            Submit
+          </Button>
         </Form>
       </div>
     </div>
