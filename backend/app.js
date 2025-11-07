@@ -2,6 +2,7 @@
 import express from 'express';
 import cors from 'cors';
 import reportRoutes from './routes/reportRoutes.mjs';
+import categoryRoutes from './routes/categoryRoutes.mjs';
 import multerErrorHandler from './middlewares/multerErrorHandler.js';
 import errorHandler from './middlewares/errorHandler.js';
 
@@ -24,6 +25,7 @@ app.use(cors(corsOptions));
 
 app.use('/public', express.static(new URL('./public', import.meta.url).pathname));
 
+app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/reports', reportRoutes);
 
 

@@ -72,5 +72,16 @@ const createReport = async (formData) => {
   }
 };
 
-const API = { newTicket, fetchAllServices, callNextTicket, createReport };
+// GET /api/v1/categories
+const fetchCategories = async () => {
+  const response = await fetch(SERVER_URL + '/api/v1/categories');
+  if(response.ok) {
+    return await response.json();
+  } else {
+    const errDetails = await response.text();
+    throw errDetails;
+  }
+};
+
+const API = { newTicket, fetchAllServices, callNextTicket, createReport, fetchCategories };
 export default API;

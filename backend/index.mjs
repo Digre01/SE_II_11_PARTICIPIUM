@@ -11,6 +11,9 @@ AppDataSourcePostgres.initialize()
   .then(async () => {
     console.log("Database connected");
 
+    // Seeding
+    const { seedDatabase } = await import("./database/seeder.js");
+    await seedDatabase();
 
     app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
   })

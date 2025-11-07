@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Form,
   FormGroup,
@@ -14,15 +14,21 @@ import {
 import API from "../API/API.mjs";
 
 const ReportForm = () => {
-  const categories = [
-    { id: 1, name: "Streets" },
-    { id: 2, name: "Lighting" },
-    { id: 3, name: "Waste" },
-    { id: 4, name: "Public Green" }
-  ];
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const cats = await API.fetchCategories();
+        setCategories(cats);
+      } catch (err) {
+        setCategories([]);
+      }
+    }
+    loadCategories();
+  }, []);
   // Mock lat/lon
-  const mockLat = 45;
-  const mockLon = 45;
+  const mockLat = 45.53452363;
+  const mockLon = 45.53151353;
   const [form, setForm] = useState({
     title: "",
     description: "",

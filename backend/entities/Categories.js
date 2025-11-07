@@ -10,7 +10,7 @@ export const Categories = new EntitySchema({
       generated: 'increment'
     },
     name: {
-      type: Number,
+      type: String,
       nullable: false
     },
     officeId: {
