@@ -7,7 +7,7 @@ export async function signUp(userData) {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
-             },
+         },
         credentials: "include",
         body: JSON.stringify(userData),
     });
@@ -35,5 +35,31 @@ const createReport = async (formData) => {
   }
 };
 
-const API = { signUp };
+const logIn = async (credentials) => {
+    const response = await fetch(SERVER_URL + '/api/sessions/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(credentials),
+    });
+
+    if(response.ok) {
+        return await response.json();
+    } else {
+        throw await response.text();
+    }
+}
+
+const logOut = async() => {
+    const response = await fetch(SERVER_URL + '/api/sessions/current', {
+        method: 'DELETE',
+        credentials: 'include'
+    });
+    if (response.ok)
+        return null;
+}
+
+const API = { signUp, logIn, logOut };
 export default API;
