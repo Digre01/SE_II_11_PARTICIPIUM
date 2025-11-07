@@ -87,4 +87,16 @@ function LoginForm(props) {
     )
 }
 
-export default LoginForm;
+function LogoutButton(props) {
+    const navigate = useNavigate();
+
+    return(
+        <Button
+            onClick={() => {props.handleLogout(); navigate('/');}} className="btn-lg" variant="warning"
+        >
+            Logout
+        </Button>
+    )
+}
+
+export {LoginForm, LogoutButton};

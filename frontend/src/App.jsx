@@ -9,7 +9,7 @@ import StaffRegistration from './components/StaffRegistration';
 import ReportForm from './components/ReportForm';
 import API from "./API/API.mjs";
 import {useState} from "react";
-import LoginForm from "./components/authComponents/loginForm.jsx";
+import {LoginForm} from "./components/authComponents/loginForm.jsx";
 import SignUpForm from "./components/authComponents/signUpForm.jsx";
 
 
@@ -20,8 +20,10 @@ function App() {
     const handleLogin = async (credentials) => {
         const user = await API.logIn(credentials);
         console.log("logged in");
+        console.log(user);
         setLoggedIn(true);
         setUser(user);
+        console.log(user)
         return user;
     };
 

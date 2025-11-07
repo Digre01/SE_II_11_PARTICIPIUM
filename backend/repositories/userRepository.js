@@ -7,6 +7,10 @@ class UserRepository {
         return AppDataSourcePostgres.getRepository(Users);
     }
 
+    async getUserById(id) {
+        return await this.repo.findOneBy({ id } );
+    }
+
     async getUserByUsername(username) {
         return await this.repo.findOneBy({username});
     }
