@@ -7,6 +7,7 @@ import userRoutes from "./routes/userRoutes.js";
 import reportRoutes from './routes/reportRoutes.mjs';
 import multerErrorHandler from './middlewares/multerErrorHandler.js';
 import errorHandler from './middlewares/errorHandler.js';
+import corsOptions from "./config/cors.js";
 
 // init express
 const app = new express();
@@ -14,12 +15,6 @@ const port = 3000;
 
 // middleware
 app.use(express.json());
-
-const corsOptions = {
-  origin: 'http://localhost:5173',
-  optionsSuccessState: 200,
-  credentials: true
-};
 
 app.use(cors(corsOptions));
 
@@ -35,12 +30,10 @@ app.use(passport.authenticate('session'));
 // API routes
 
 app.use('/public', express.static(new URL('./public', import.meta.url).pathname));
-
+app.use('/api/sessions', userRoutes);
 app.use('/api/v1/reports', reportRoutes);
 
-
-app.use(multerErrorHandler);
 app.use(errorHandler);
-app.use('/api/sessions', userRoutes);
+app.use(multerErrorHandler);
 
 export default app;
