@@ -13,7 +13,7 @@ import {
 } from "design-react-kit";
 import API from "../API/API.mjs";
 
-const ReportForm = () => {
+const ReportForm = ({ user, loggedIn }) => {
   const [categories, setCategories] = useState([]);
   useEffect(() => {
     async function loadCategories() {

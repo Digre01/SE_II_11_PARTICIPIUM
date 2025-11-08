@@ -25,7 +25,7 @@ const createReport = async (formData) => {
   const response = await fetch(SERVER_URL + '/api/v1/reports', {
     method: 'POST',
     body: formData,
-    //credentials: 'include' // se serve autenticazione
+    credentials: 'include'
   });
   if (response.ok) {
     return await response.json();
@@ -37,7 +37,7 @@ const createReport = async (formData) => {
 
 // GET /api/v1/categories
 const fetchCategories = async () => {
-  const response = await fetch(SERVER_URL + '/api/v1/categories');
+  const response = await fetch(SERVER_URL + '/api/v1/categories', { credentials: 'include' });
   if(response.ok) {
     return await response.json();
   } else {

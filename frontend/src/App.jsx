@@ -7,7 +7,7 @@ import HomePage from './components/HomePage';
 import StaffRegistration from './components/StaffRegistration';
 import ReportForm from './components/ReportForm';
 import API from "./API/API.mjs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LoginForm } from "./components/authComponents/loginForm.jsx";
 import SignUpForm from "./components/authComponents/signUpForm.jsx";
 
@@ -19,11 +19,34 @@ function App() {
 
   const isAdmin = user?.userType === 'admin';
 
+  useEffect(() => {
+    // Recupera lo stato utente dalla sessione attiva
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/sessions/current', {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+          setLoggedIn(true);
+        } else {
+          setUser(undefined);
+          setLoggedIn(false);
+        }
+      } catch {
+        setUser(undefined);
+        setLoggedIn(false);
+      }
+    };
+    fetchCurrentUser();
+  }, []);
+
   const handleLogin = async (credentials) => {
     const user = await API.logIn(credentials); 
     setUser(user);
     setLoggedIn(true);
-    return { user: u, isAdmin: u?.userType === 'admin' }; 
+    return { user, isAdmin: user?.userType === 'admin' }; 
   };
 
   const handleLogout = async () => {
@@ -36,7 +59,6 @@ function App() {
     const user = await API.signUp(data);
     setUser(user);
     setLoggedIn(true);
-    setUser(user)
   };
 
   return (
@@ -54,7 +76,7 @@ function App() {
               ? <StaffRegistration/>
               : <Navigate to="/" replace />
         }/>
-        <Route path='/report' element={<ReportForm/>} />
+      <Route path='/report' element={<ReportForm user={user} loggedIn={loggedIn}/>} />
       </Route>
     </Routes>
   );

@@ -1,12 +1,16 @@
 import { Router } from "express";
 import { createReport } from "../controllers/reportController.mjs";
 import upload from '../middlewares/uploadMiddleware.js';
+import { authorizeUserType } from '../middlewares/userAuthorization.js';
 import fs from 'fs';
 
 const router = Router();
 
 // POST /api/v1/reports
-router.post('/', upload.array('photos', 3), async (req, res, next) => {
+router.post('/',
+  authorizeUserType(['citizen']),
+  upload.array('photos', 3),
+  async (req, res, next) => {
 
   // Function to delete uploaded files in case of error
   const deleteUploadedFiles = () => {
@@ -23,13 +27,9 @@ router.post('/', upload.array('photos', 3), async (req, res, next) => {
   };
 
   try {
-    let { title, description, categoryId, userId, latitude, longitude } = req.body;
+    const { title, description, categoryId, latitude, longitude } = req.body;
+    const userId = req.user?.id;
     const photos = req.files ? req.files.map(file => `/public/${file.filename}`) : [];
-
-    // MOCK userId if not present
-    if (!userId) {
-      userId = 1; // valore mock
-    }
 
     // Validation
     if (!title || !description || !categoryId || !userId || !latitude || !longitude) {
