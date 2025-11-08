@@ -1,8 +1,7 @@
 import Router from "express";
 import userController from "../controllers/userController.js";
 import passport from "passport";
-import AuthenticationError from "passport/lib/errors/authenticationerror.js";
-import {authorizeUserType} from "../middlewares/userAuthorization.js";
+import { requireAdminIfCreatingStaff } from "../middlewares/userAuthorization.js";
 
 const router = Router();
 
@@ -14,7 +13,7 @@ router.post('/login', passport.authenticate('local'), function(
 });
 
 //signup
-router.post("/signup",
+router.post("/signup", requireAdminIfCreatingStaff,
     async function(
     req,
     res,
@@ -22,10 +21,15 @@ router.post("/signup",
     try {
         const user = await userController.createUser(req.body);
 
-        req.login(user, (err) => {  //dopo la registrazione faccio il login
-            if (err) return next(err);
-            return res.status(201).json(req.user);
-        });
+        if (user.userType === 'citizen'){ // if a citizen signs up, log them in
+            req.login(user, (err) => {  // login after sign up
+                if (err) return next(err);
+                return res.status(201).json(req.user);
+            });
+        } else {
+            // if an admin creates a staff member, return the created user without logging in
+            return res.status(201).json(user);
+        }
     } catch (err) {
         next(err)
     }

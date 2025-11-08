@@ -14,7 +14,7 @@ export async function signUp(userData) {
     if(response.ok) {
         return await response.json();
     } else {
-        const errDetails = await response.json(); //works but need to be changed lol
+        const errDetails = await response; //works but need to be changed lol
         throw errDetails;
     }
 }

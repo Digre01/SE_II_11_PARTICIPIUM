@@ -13,3 +13,34 @@ export function authorizeUserType(allowedTypes) {
         next();
     };
 }
+
+//for STAFF account creation
+export function requireAdminIfCreatingStaff(req, res, next) {
+    try {
+        const requestedUserType = req.body?.userType;
+
+        //CITIZEN signup
+        if (!requestedUserType || String(requestedUserType).toUpperCase() !== 'STAFF') {
+            return next();
+        }
+
+        //STAFF signup
+        if (!req.isAuthenticated || !req.isAuthenticated()) {
+            const err = new Error('UNAUTHORIZED');
+            err.status = 401;
+            return next(err);
+        }
+
+        // And ADMIN role
+        const callerType = String(req.user?.userType || '').toUpperCase();
+        if (callerType !== 'ADMIN') {
+            const err = new Error('FORBIDDEN');
+            err.status = 403;
+            return next(err);
+        }
+
+        return next();
+    } catch (e) {
+        return next(e);
+    }
+}
