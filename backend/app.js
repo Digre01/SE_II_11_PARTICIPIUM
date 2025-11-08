@@ -5,6 +5,7 @@ import passport from './config/passport.js';
 import session from 'express-session';
 import userRoutes from "./routes/userRoutes.js";
 import reportRoutes from './routes/reportRoutes.mjs';
+import categoryRoutes from './routes/categoryRoutes.mjs';
 import multerErrorHandler from './middlewares/multerErrorHandler.js';
 import errorHandler from './middlewares/errorHandler.js';
 import corsOptions from "./config/cors.js";
@@ -31,6 +32,7 @@ app.use(passport.authenticate('session'));
 
 app.use('/public', express.static(new URL('./public', import.meta.url).pathname));
 app.use('/api/sessions', userRoutes);
+app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/reports', reportRoutes);
 
 app.use(errorHandler);

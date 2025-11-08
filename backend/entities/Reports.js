@@ -1,4 +1,4 @@
-import { EntitySchema } from "typeorm";
+import { Double, EntitySchema } from "typeorm";
 
 export const Report = new EntitySchema({
   name: 'Reports',
@@ -14,11 +14,11 @@ export const Report = new EntitySchema({
       nullable: false
     },
     latitude: {
-      type: Number,
+      type: 'double precision',
       nullable: false
     },
     longitude: {
-      type: Number,
+      type: 'double precision',
       nullable: false
     },
     status: {

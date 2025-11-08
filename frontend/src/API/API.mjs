@@ -35,6 +35,17 @@ const createReport = async (formData) => {
   }
 };
 
+// GET /api/v1/categories
+const fetchCategories = async () => {
+  const response = await fetch(SERVER_URL + '/api/v1/categories');
+  if(response.ok) {
+    return await response.json();
+  } else {
+    const errDetails = await response.text();
+    throw errDetails;
+  }
+};
+
 const logIn = async (credentials) => {
     const response = await fetch(SERVER_URL + '/api/sessions/login', {
         method: 'POST',
@@ -61,5 +72,5 @@ const logOut = async() => {
         return null;
 }
 
-const API = { signUp, logIn, logOut };
+const API = { signUp, logIn, logOut, createReport, fetchCategories };
 export default API;
