@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Header,
   HeaderContent,
@@ -19,10 +19,8 @@ function NavComponent({ user, loggedIn, isAdmin }) {
     <Header theme="dark" type="navbar" className="shadow-sm">
       <HeaderContent expand="lg">
         {/* Brand */}
-        <HeaderBrand>
-          <Link to="/" className="text-decoration-none text-dark fw-bold fs-4">
-            PARTICIPIUM
-          </Link>
+        <HeaderBrand tag={Link} to="/" className="text-decoration-none text-dark fw-bold fs-4">
+          PARTICIPIUM
         </HeaderBrand>
 
         {/* Toggler (mobile) */}
@@ -87,10 +85,6 @@ function NavComponent({ user, loggedIn, isAdmin }) {
                   </TabNavLink>
                 </NavItem>
               ): <></>}
-
-              {loggedIn && isAdmin ? (
-                <span> Sono admin</span>
-              ) : <span> Non sono admin</span>}
 
 
 
