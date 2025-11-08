@@ -10,6 +10,7 @@ function SignUpForm(props){
         username: "",
         email: "",
         password: "",
+        confirmPassword: ""
     });
     const [state, formAction, isPending] = useActionState(signUpFunction, form);
 
@@ -29,14 +30,18 @@ function SignUpForm(props){
             return {error: "The fields can't be empty."}
         }
 
-        try {
-            console.log(data)
-            const user = await props.handleSignUp(data);
-            navigate(`/users/${user.id}`);
-        } catch (error) {
-            return { error: 'Wrong username or password.' };
-        }
+        const user = await props.handleSignUp(data);
+        navigate(`/`);
     }
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setForm(prev => ({ ...prev, [name]: value }));
+    };
+
+    const passwordsMatch = form.password !== ''
+        && form.confirmPassword !== ''
+        && form.password === form.confirmPassword;
 
     return(
         <>
@@ -50,6 +55,7 @@ function SignUpForm(props){
                             type="text"
                             wrapperClassName="col col-md-5"
                             defaultValue={form.name}
+                            onChange={handleInputChange}
                         />
                         <Input
                             label="Surname"
@@ -58,6 +64,7 @@ function SignUpForm(props){
                             type="text"
                             wrapperClassName="col col-md-5"
                             defaultValue={form.surname}
+                            onChange={handleInputChange}
                         />
                     </Row>
                     <Row>
@@ -68,14 +75,16 @@ function SignUpForm(props){
                             type="text"
                             wrapperClassName="col col-md-4"
                             defaultValue={form.username}
+                            onChange={handleInputChange}
                         />
                         <Input
                             label="Email"
                             name="email"
-                            placeholder="Insert a mail"
+                            placeholder="Insert an email"
                             type="email"
                             wrapperClassName="col col-md-4"
                             defaultValue={form.email}
+                            onChange={handleInputChange}
                         />
                     </Row>
                     <Row>
@@ -86,11 +95,28 @@ function SignUpForm(props){
                             type="text"
                             wrapperClassName="col col-md-4"
                             defaultValue={form.password}
+                            onChange={handleInputChange}
                         />
+                        <Input
+                            label="Rewrite Password"
+                            name="confirmPassword"
+                            placeholder="Rewrite the password"
+                            type="password"
+                            wrapperClassName="col col-md-4"
+                            value={form.confirmPassword}
+                            onChange={handleInputChange}
+                        />
+                        {form.confirmPassword !== '' && !passwordsMatch && (
+                            <div className="col-10 text-danger small mt-1">Password are not matching</div>
+                        )}
                     </Row>
 
                     {/* Alert for success or rejection */}
-                    {state.error && <Alert className="text-danger">{state.error}</Alert>}
+                    {state.error && (
+                        <Alert color={"danger"}>
+                            {state.error}
+                        </Alert>
+                    )}
 
                     <Row>
                         <Col sm="auto">
@@ -107,7 +133,7 @@ function SignUpForm(props){
                             <Button
                                 color="primary"
                                 type="submit"
-                                disabled={isPending}
+                                disabled={isPending || !passwordsMatch}
                             >
                                 Confirm
                             </Button>
