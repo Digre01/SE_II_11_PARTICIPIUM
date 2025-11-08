@@ -87,10 +87,6 @@ function NavComponent({ user, loggedIn, isAdmin }) {
               ): <></>}
 
 
-
-              
-
-
             </Nav>
           </div>
         </Collapse>
