@@ -11,8 +11,9 @@ import {
   Icon
 } from 'design-react-kit';
 import { Link } from 'react-router-dom';
+import {LogoutButton} from "./authComponents/loginForm.jsx";
 
-function NavComponent({ user, loggedIn, isAdmin }) {
+function NavComponent({ user, loggedIn, isAdmin, handleLogout }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -86,6 +87,13 @@ function NavComponent({ user, loggedIn, isAdmin }) {
                 </NavItem>
               ): <></>}
 
+                {loggedIn && (
+                    <NavItem className="ms-3">
+                        <LogoutButton handleLogout={handleLogout} color="warning" tag={Link} to="/">
+                            Logout
+                        </LogoutButton>
+                    </NavItem>
+                )}
 
             </Nav>
           </div>
