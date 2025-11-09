@@ -1,13 +1,16 @@
+import { UnauthorizedError } from '../errors/UnauthorizedError.js';
+import { InsufficientRightsError } from '../errors/InsufficientRightsError.js';
+
 export function authorizeUserType(allowedTypes) {
     return async function (req, res, next) {
 
         if (!req.isAuthenticated()) {
-            const err = new Error('UNAUTHORIZED');
+            const err = new UnauthorizedError('Unauthorized');
             return next(err);
         }
 
         if (!allowedTypes.includes(req.user.userType)) {
-            const err = new Error('FORBIDDEN');
+            const err = new InsufficientRightsError('Forbidden');
             return next(err);
         }
         next();
