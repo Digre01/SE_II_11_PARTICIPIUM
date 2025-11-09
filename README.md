@@ -43,3 +43,12 @@ Db type: postgres
 username: postgres
 password: postgres
 db: se_ii_db
+
+## User credentials
+Citizen:
+    username: citizen
+    password: password
+
+Admin:
+    username: admin
+    password: admin

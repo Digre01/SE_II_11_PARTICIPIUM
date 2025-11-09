@@ -63,7 +63,7 @@ function App() {
 
   return (
     <Routes>
-      <Route element={<DefaultLayout user={user} loggedIn={loggedIn} isAdmin={isAdmin}/> }>
+      <Route element={<DefaultLayout user={user} loggedIn={loggedIn} isAdmin={isAdmin} handleLogout={handleLogout}/> }>
         <Route path='/' element={<HomePage/>}/>
         <Route path='/login' element={
           loggedIn ? <Navigate to='/' replace /> : <LoginForm handleLogin={handleLogin}/>
