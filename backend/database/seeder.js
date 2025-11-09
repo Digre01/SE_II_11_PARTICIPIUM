@@ -46,7 +46,8 @@ export async function seedDatabase() {
   const usersExisting = await userRepo.find();
   if (usersExisting.length === 0) {
     await userRepo.save([
-      { id: 1, username: 'admin', email: 'admin@polito.it', name: 'Admin', surname: 'User', password: 'hashedpassword', salt: 'salt', userType: 'admin' }
+      { id: 1, username: 'admin', email: 'admin@polito.it', name: 'Admin', surname: 'User', password: 'e902e3818acc6c6f842f95698f2d0fb99eb273a1fd4ce5c1f9f9a8cac04ba0cf', salt: '2f834c309f5faa13ec6d9a3b2a5b5ba7', userType: 'admin' },
+      { id: 2, username: 'citizen', email: 'citizen@polito.it', name: 'Citizen', surname: 'User', password: '0a185a559fefbb9b72d1798a724e993830d5391a3b94c21087713b87fa5575c0', salt: '6af228900e7a946c9378f1034ec477d1', userType: 'citizen' }
     ]);
     console.log("Added default Users");
   }
