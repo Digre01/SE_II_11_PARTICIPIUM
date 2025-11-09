@@ -23,7 +23,7 @@ function LoginForm(props) {
 
         try {
             const user = await props.handleLogin(credentials);
-            navigate(`/users/${user.id}`);
+            navigate(`/`);
         } catch (error) {
             return { error: 'Wrong username or password.' };
         }
@@ -48,7 +48,7 @@ function LoginForm(props) {
                             label="Password"
                             name="password"
                             placeholder="Insert a password"
-                            type="text"
+                            type="password"
                             wrapperClassName="col col-md-4"
                             defaultValue={form.password}
                             required
@@ -56,7 +56,11 @@ function LoginForm(props) {
                     </Row>
 
                     {/* Alert for success or rejection */}
-                    {state.error && <Alert className="text-danger">{state.error}</Alert>}
+                    {state.error && (
+                        <Alert color={"danger"}>
+                            {state.error}
+                        </Alert>
+                    )}
 
                     <Row>
                         <Col sm="auto">
