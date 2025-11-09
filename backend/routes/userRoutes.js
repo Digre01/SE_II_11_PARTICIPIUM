@@ -1,7 +1,7 @@
 import Router from "express";
 import userController from "../controllers/userController.js";
 import passport from "passport";
-import { requireAdminIfCreatingStaff } from "../middlewares/userAuthorization.js";
+import { requireAdminIfCreatingStaff, authorizeUserType } from "../middlewares/userAuthorization.js";
 
 const router = Router();
 
@@ -11,6 +11,25 @@ router.post('/login', passport.authenticate('local'), function(
     res) {
         res.status(201).json(req.user);
 });
+
+// Assign role to a user (ADMIN only)
+router.patch('/:id/role', authorizeUserType(['ADMIN']),
+    async function(req, res, next) {
+        try {
+            const roleId = req.body?.roleId;
+            if (roleId === undefined || roleId === null) {
+                const err = new Error('roleId is required');
+                err.status = 400;
+                return next(err);
+            }
+
+            const updatedUser = await userController.assignRole(req.params.id, roleId);
+            return res.status(200).json(updatedUser);
+        } catch (err) {
+            next(err);
+        }
+    }
+);
 
 //signup
 router.post("/signup", requireAdminIfCreatingStaff,

@@ -5,6 +5,7 @@ import { Route, Routes, Navigate } from 'react-router';
 import DefaultLayout from './components/DefaultLayout';
 import HomePage from './components/HomePage';
 import StaffRegistration from './components/StaffRegistration';
+import AssignRole from './components/AssignRole';
 import ReportForm from './components/ReportForm';
 import API from "./API/API.mjs";
 import { useState, useEffect } from "react";
@@ -74,6 +75,13 @@ function App() {
             ? <Navigate to="/login" replace />
             : (isAdmin)
               ? <StaffRegistration/>
+              : <Navigate to="/" replace />
+        }/>
+        <Route path='/assign_role' element={
+          (!loggedIn)
+            ? <Navigate to="/login" replace />
+            : (isAdmin)
+              ? <AssignRole/>
               : <Navigate to="/" replace />
         }/>
       <Route path='/report' element={<ReportForm user={user} loggedIn={loggedIn}/>} />

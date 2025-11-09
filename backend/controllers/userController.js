@@ -14,5 +14,10 @@ async function createUser({username, email, name, surname, password, userType}){
     return mapUserToDTO(user);
 }
 
-const userController = { getUserByUsername, createUser };
+async function assignRole(userId, roleId) {
+    const updatedUser = await userRepository.assignRoleToUser(userId, roleId);
+    return mapUserToDTO(updatedUser);
+}
+
+const userController = { getUserByUsername, createUser, assignRole };
 export default userController;
