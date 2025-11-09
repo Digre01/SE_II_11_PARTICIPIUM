@@ -87,6 +87,16 @@ function NavComponent({ user, loggedIn, isAdmin, handleLogout }) {
                 </NavItem>
               ): <></>}
 
+              {/* Assign Role (admin) */}
+              {loggedIn && user && isAdmin ? (
+                <NavItem>
+                  <TabNavLink tag={Link} to="/assign_role" className="nav-link">
+                    <Icon icon="it-settings" size="sm" className="me-1" />
+                    Assign Role
+                  </TabNavLink>
+                </NavItem>
+              ) : <></>}
+
                 {loggedIn && (
                     <NavItem className="ms-3">
                         <LogoutButton handleLogout={handleLogout} color="warning" tag={Link} to="/">

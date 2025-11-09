@@ -3,11 +3,15 @@ export function authorizeUserType(allowedTypes) {
 
         if (!req.isAuthenticated()) {
             const err = new Error('UNAUTHORIZED');
+            err.status = 401;
             return next(err);
         }
-
-        if (!allowedTypes.includes(req.user.userType)) {
+        // perform a case-insensitive check between allowedTypes and the caller's userType
+        const normalizedAllowed = (allowedTypes || []).map(a => String(a).toUpperCase());
+        const callerType = String(req.user?.userType || '').toUpperCase();
+        if (!normalizedAllowed.includes(callerType)) {
             const err = new Error('FORBIDDEN');
+            err.status = 403;
             return next(err);
         }
         next();

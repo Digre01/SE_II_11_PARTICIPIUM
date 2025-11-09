@@ -73,14 +73,14 @@ const logOut = async() => {
 }
 
 // PATCH /api/sessions/:id/role
-export async function assignRole(userId, roleId) {
+export async function assignRole(userId, roleId, officeId) {
   const response = await fetch(`${SERVER_URL}/api/sessions/${userId}/role`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json'
     },
     credentials: 'include',
-    body: JSON.stringify({ roleId })
+    body: JSON.stringify({ roleId, officeId })
   });
 
   if (response.ok) {
@@ -90,5 +90,35 @@ export async function assignRole(userId, roleId) {
   }
 }
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, assignRole };
+// GET available staff for role assignment
+export async function fetchAvailableStaff() {
+  const response = await fetch(`${SERVER_URL}/api/sessions/available_staff`, {
+    method: 'GET',
+    credentials: 'include'
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+}
+
+// GET all roles
+export async function fetchRoles() {
+  const response = await fetch(`${SERVER_URL}/api/sessions/roles`, {
+    method: 'GET',
+    credentials: 'include'
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+}
+
+// GET all offices
+export async function fetchOffices() {
+  const response = await fetch(`${SERVER_URL}/api/sessions/offices`, {
+    method: 'GET',
+    credentials: 'include'
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+}
+
+const API = { signUp, logIn, logOut, createReport, fetchCategories, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices };
 export default API;

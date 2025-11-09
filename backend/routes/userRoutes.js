@@ -16,20 +16,50 @@ router.post('/login', passport.authenticate('local'), function(
 router.patch('/:id/role', authorizeUserType(['ADMIN']),
     async function(req, res, next) {
         try {
-            const roleId = req.body?.roleId;
-            if (roleId === undefined || roleId === null) {
+            const body = req.body || {};
+            if (!Object.prototype.hasOwnProperty.call(body, 'roleId')) {
                 const err = new Error('roleId is required');
                 err.status = 400;
                 return next(err);
             }
+            if (!Object.prototype.hasOwnProperty.call(body, 'officeId')) {
+                const err = new Error('officeId is required');
+                err.status = 400;
+                return next(err);
+            }
 
-            const updatedUser = await userController.assignRole(req.params.id, roleId);
-            return res.status(200).json(updatedUser);
+            const updated = await userController.assignRole(req.params.id, body.roleId, body.officeId);
+            return res.status(200).json(updated);
         } catch (err) {
             next(err);
         }
     }
 );
+
+    // GET list of staff users available for role assignment (ADMIN only)
+    router.get('/available_staff', authorizeUserType(['ADMIN']), async function(req, res, next) {
+        try {
+            const users = await userController.getAvailableStaffForRoleAssignment();
+            const mapped = users.map(u => ({ id: u.id, username: u.username, name: u.name, surname: u.surname }));
+            res.status(200).json(mapped);
+        } catch (err) { next(err); }
+    });
+
+    // GET list of roles (ADMIN only)
+    router.get('/roles', authorizeUserType(['ADMIN']), async function(req, res, next) {
+        try {
+            const roles = await userController.getAllRoles();
+            res.status(200).json(roles);
+        } catch (err) { next(err); }
+    });
+
+    // GET list of offices (ADMIN only)
+    router.get('/offices', authorizeUserType(['ADMIN']), async function(req, res, next) {
+        try {
+            const offices = await userController.getAllOffices();
+            res.status(200).json(offices);
+        } catch (err) { next(err); }
+    });
 
 //signup
 router.post("/signup", requireAdminIfCreatingStaff,

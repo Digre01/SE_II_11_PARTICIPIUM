@@ -18,7 +18,7 @@ function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [user, setUser] = useState(undefined);
 
-  const isAdmin = user?.userType === 'admin';
+  const isAdmin = String(user?.userType || '').toLowerCase() === 'admin';
 
   useEffect(() => {
     // Recupera lo stato utente dalla sessione attiva
