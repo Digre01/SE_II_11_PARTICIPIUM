@@ -40,7 +40,7 @@ describe("Auth routes (integration, mocked DB)", () => {
             surname: "Rossi",
             password: "SuperSecret123",
             salt: "",
-            userType: "customer",
+            userType: "citizen",
         };
 
         // Nessun conflitto: username OK, email OK
@@ -64,7 +64,7 @@ describe("Auth routes (integration, mocked DB)", () => {
             surname: "User",
             password: "SuperSecret123",
             salt: "",
-            userType: "customer",
+            userType: "citizen",
         };
 
         // Simula la presenza dell'utente nel DB
@@ -89,7 +89,7 @@ describe("Auth routes (integration, mocked DB)", () => {
             surname: "Verdi",
             password: hashed,
             salt,
-            userType: "customer",
+            userType: "citizen",
         });
 
         const res = await request(app)
@@ -122,7 +122,7 @@ describe("Auth routes (integration, mocked DB)", () => {
             surname: "Verdi",
             password: hashed,
             salt,
-            userType: "customer",
+            userType: "citizen",
         });
         const res = await request(app)
             .post("/api/sessions/login")
@@ -144,7 +144,7 @@ describe("Auth routes (integration, mocked DB)", () => {
             surname: "Bianchi",
             password: "SuperSecret123",
             salt: "",
-            userType: "customer",
+            userType: "citizen",
         };
 
         // signup: no conflitti + save
@@ -171,7 +171,7 @@ describe("Auth routes (integration, mocked DB)", () => {
             surname: "Bianchi",
             password: "SuperSecret123",
             salt: "",
-            userType: "customer",
+            userType: "citizen",
         };
 
         // signup: no conflitti + save
@@ -203,7 +203,7 @@ describe("Auth routes (integration, mocked DB)", () => {
             surname: "Neri",
             password: "SuperSecret123",
             salt: "",
-            userType: "customer",
+            userType: "citizen",
         };
 
         // signup: no conflitti + save

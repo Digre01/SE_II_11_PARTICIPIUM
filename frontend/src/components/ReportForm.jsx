@@ -126,6 +126,7 @@ const ReportForm = ({ user, loggedIn }) => {
               required
               label="Category"
             >
+              <option value="" style={{ fontWeight: "normal" }}>Select an option</option>
               {categories.map(cat => (
                 <option key={cat.id} value={cat.id} style={{ fontWeight: "normal" }}>{cat.name}</option>
               ))}
@@ -201,6 +202,7 @@ const ReportForm = ({ user, loggedIn }) => {
               !form.title ||
               !form.description ||
               !form.categoryId ||
+              form.categoryId === "" ||
               form.photos.length < 1 ||
               form.photos.length > 3
             }
