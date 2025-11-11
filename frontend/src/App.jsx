@@ -19,6 +19,7 @@ function App() {
   const [user, setUser] = useState(undefined);
 
   const isAdmin = String(user?.userType || '').toLowerCase() === 'admin';
+  const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
 
   useEffect(() => {
     // Recupera lo stato utente dalla sessione attiva
@@ -65,7 +66,7 @@ function App() {
   return (
     <Routes>
       <Route element={<DefaultLayout user={user} loggedIn={loggedIn} isAdmin={isAdmin} handleLogout={handleLogout}/> }>
-        <Route path='/' element={<HomePage/>}/>
+        <Route path='/' element={<HomePage user={user} loggedIn={loggedIn} />}/>
         <Route path='/login' element={
           loggedIn ? <Navigate to='/' replace /> : <LoginForm handleLogin={handleLogin}/>
         }/>
@@ -84,7 +85,11 @@ function App() {
               ? <AssignRole/>
               : <Navigate to="/" replace />
         }/>
-      <Route path='/report' element={<ReportForm user={user} loggedIn={loggedIn}/>} />
+        <Route path='/report' element={
+          isCitizen
+            ? <ReportForm user={user} loggedIn={loggedIn}/>
+            : <Navigate to="/" replace />
+        } />
       </Route>
     </Routes>
   );
