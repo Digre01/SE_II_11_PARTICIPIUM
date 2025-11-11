@@ -46,21 +46,6 @@ router.get('/available_staff', authorizeUserType(['ADMIN']), async function(req,
     } catch (err) { next(err); }
 });
 
-// GET list of roles (ADMIN only)
-router.get('/roles', authorizeUserType(['ADMIN']), async function(req, res, next) {
-    try {
-        const roles = await userController.getAllRoles();
-        res.status(200).json(roles);
-    } catch (err) { next(err); }
-});
-
-// GET list of offices (ADMIN only)
-router.get('/offices', authorizeUserType(['ADMIN']), async function(req, res, next) {
-    try {
-        const offices = await userController.getAllOffices();
-        res.status(200).json(offices);
-    } catch (err) { next(err); }
-});
 
 //signup
 router.post("/signup", requireAdminIfCreatingStaff,

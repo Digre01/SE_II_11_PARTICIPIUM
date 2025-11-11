@@ -102,7 +102,7 @@ export async function fetchAvailableStaff() {
 
 // GET all roles
 export async function fetchRoles() {
-  const response = await fetch(`${SERVER_URL}/api/sessions/roles`, {
+  const response = await fetch(`${SERVER_URL}/api/v1/roles`, {
     method: 'GET',
     credentials: 'include'
   });
@@ -112,7 +112,7 @@ export async function fetchRoles() {
 
 // GET all offices
 export async function fetchOffices() {
-  const response = await fetch(`${SERVER_URL}/api/sessions/offices`, {
+  const response = await fetch(`${SERVER_URL}/api/v1/offices`, {
     method: 'GET',
     credentials: 'include'
   });
