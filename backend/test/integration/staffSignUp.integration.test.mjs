@@ -36,14 +36,14 @@ await jest.unstable_mockModule('../../middlewares/userAuthorization.js', () => (
 
 const { default: app } = await import('../../app.js');
 
-describe('POST /api/sessions/signup (integration)', () => {
+describe('POST /api/v1/sessions/signup (integration)', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 	});
 
 	it('registers staff when called by admin', async () => {
 		const res = await request(app)
-			.post('/api/sessions/signup')
+			.post('/api/v1/sessions/signup')
 			.set('X-Role', 'admin')
 			.send({ username: 'staff1', email: 'staff@email.com', name: 'Nome', surname: 'Cognome', password: 'pw', userType: 'STAFF' });
 		expect(res.status).toBe(201);
@@ -52,7 +52,7 @@ describe('POST /api/sessions/signup (integration)', () => {
 
 	it('forbids staff registration by non-admin', async () => {
 			const res = await request(app)
-				.post('/api/sessions/signup')
+				.post('/api/v1/sessions/signup')
 				.set('X-Role', 'citizen')
 				.send({ username: 'staff2', email: 'staff2@email.com', name: 'Nome', surname: 'Cognome', password: 'pw', userType: 'STAFF' });
 			expect(res.status).toBe(403);
@@ -60,7 +60,7 @@ describe('POST /api/sessions/signup (integration)', () => {
 
 	it('registers citizen without admin', async () => {
 		const res = await request(app)
-			.post('/api/sessions/signup')
+			.post('/api/v1/sessions/signup')
 			.set('X-Role', 'citizen')
 			.send({ username: 'citizen1', email: 'cit@email.com', name: 'Nome', surname: 'Cognome', password: 'pw', userType: 'citizen' });
 		expect(res.status).toBe(201);
@@ -69,7 +69,7 @@ describe('POST /api/sessions/signup (integration)', () => {
 
 	it('fails if username already exists', async () => {
 		const res = await request(app)
-			.post('/api/sessions/signup')
+			.post('/api/v1/sessions/signup')
 			.set('X-Role', 'admin')
 			.send({ username: 'dupuser', email: 'staff@email.com', name: 'Nome', surname: 'Cognome', password: 'pw', userType: 'STAFF' });
 	expect(res.status).toBe(409);
@@ -77,7 +77,7 @@ describe('POST /api/sessions/signup (integration)', () => {
 
 	it('fails if email already exists', async () => {
 		const res = await request(app)
-			.post('/api/sessions/signup')
+			.post('/api/v1/sessions/signup')
 			.set('X-Role', 'admin')
 			.send({ username: 'staff6', email: 'dup@email.com', name: 'Nome', surname: 'Cognome', password: 'pw', userType: 'STAFF' });
 	expect(res.status).toBe(409);

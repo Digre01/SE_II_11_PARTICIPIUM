@@ -32,7 +32,7 @@ describe("Auth routes (integration, mocked DB)", () => {
         jest.clearAllMocks();
     });
 
-    it("POST /api/sessions/signup -> 201 + cookie (username/email liberi)", async () => {
+    it("POST /api/v1/sessions/signup -> 201 + cookie (username/email liberi)", async () => {
         const dto = {
             username: "mario",
             email: "mario@example.com",
@@ -50,13 +50,13 @@ describe("Auth routes (integration, mocked DB)", () => {
         // Salvataggio di un nuovo utente (id assegnato)
         repoStub.save.mockResolvedValue({ id: 1, ...dto });
 
-        const res = await request(app).post("/api/sessions/signup").send(dto);
+        const res = await request(app).post("/api/v1/sessions/signup").send(dto);
         expect(res.status).toBe(201);
         expect(res.body).toMatchObject({ id: 1, username: dto.username, email: dto.email });
         expect(extractSessionCookie(res)).toBeTruthy();
     });
 
-    it("POST /api/sessions/signup -> 409 con username esistente", async () => {
+    it("POST /api/v1/sessions/signup -> 409 con username esistente", async () => {
         const dto = {
             username: "existinguser",
             email: "existinguser@example.com",
@@ -70,11 +70,11 @@ describe("Auth routes (integration, mocked DB)", () => {
         // Simula la presenza dell'utente nel DB
         repoStub.findOneBy.mockResolvedValueOnce(dto);
 
-        const res = await request(app).post("/api/sessions/signup").send(dto);
+        const res = await request(app).post("/api/v1/sessions/signup").send(dto);
         expect(res.status).toBe(409);
     });
 
-    it("POST /api/sessions/login -> 201 + cookie (credenziali corrette)", async () => {
+    it("POST /api/v1/sessions/login -> 201 + cookie (credenziali corrette)", async () => {
         const username = "lucia";
         const plain = "Pa$$w0rd!";
         const salt = "testsalt"; // valore di comodo per il test
@@ -93,7 +93,7 @@ describe("Auth routes (integration, mocked DB)", () => {
         });
 
         const res = await request(app)
-            .post("/api/sessions/login")
+            .post("/api/v1/sessions/login")
             .send({ username, password: plain });
 
         expect(res.status).toBe(201);
@@ -101,14 +101,14 @@ describe("Auth routes (integration, mocked DB)", () => {
         expect(extractSessionCookie(res)).toBeTruthy();
     });
 
-    it("POST /api/sessions/login -> 401 con username inesistente", async () => {
+    it("POST /api/v1/sessions/login -> 401 con username inesistente", async () => {
         const res = await request(app)
             .post("/api/sessions/login")
             .send({ username: "nonexist", password: "irrelevant" });
         expect(res.status).toBe(401);
     });
 
-    it("POST /api/sessions/login -> 401 con password errata", async () => {
+    it("POST /api/v1/sessions/login -> 401 con password errata", async () => {
         const username = "francesco";
         const correctPlain = "CorrectPassword!";
         const salt = "testsalt2";
@@ -125,18 +125,18 @@ describe("Auth routes (integration, mocked DB)", () => {
             userType: "citizen",
         });
         const res = await request(app)
-            .post("/api/sessions/login")
+            .post("/api/v1/sessions/login")
             .send({ username, password: "WrongPassword!" });
         expect(res.status).toBe(401);
     });
 
-    it("GET /api/sessions/current -> 401 senza cookie", async () => {
-        const res = await request(app).get("/api/sessions/current");
+    it("GET /api/v1/sessions/current -> 401 senza cookie", async () => {
+        const res = await request(app).get("/api/v1/sessions/current");
         expect(res.status).toBe(401);
         expect(res.body).toMatchObject({ error: "Not authenticated" });
     });
 
-    it("GET /api/sessions/current -> 200 con session valida", async () => {
+    it("GET /api/v1/sessions/current -> 200 con session valida", async () => {
         const dto = {
             username: "anna",
             email: "anna@example.com",
@@ -152,18 +152,18 @@ describe("Auth routes (integration, mocked DB)", () => {
             .mockResolvedValueOnce(null)
             .mockResolvedValueOnce(null);
         repoStub.save.mockResolvedValue({ id: 22, ...dto });
-        const signup = await request(app).post("/api/sessions/signup").send(dto);
+        const signup = await request(app).post("/api/v1/sessions/signup").send(dto);
         const cookie = extractSessionCookie(signup);
         expect(cookie).toBeTruthy();
 
         // La middleware di sessione deserializza l'utente via id
         repoStub.findOneBy.mockResolvedValueOnce({ id: 22, ...dto });
-        const res = await request(app).get("/api/sessions/current").set("Cookie", cookie);
+        const res = await request(app).get("/api/v1/sessions/current").set("Cookie", cookie);
         expect(res.status).toBe(200);
         expect(res.body).toMatchObject({ id: 22, username: dto.username, email: dto.email });
     });
 
-    it("GET /api/sessions/current -> 200 con session valida e due GET consecutivi", async () => {
+    it("GET /api/v1/sessions/current -> 200 con session valida e due GET consecutivi", async () => {
         const dto = {
             username: "anna",
             email: "anna@example.com",
@@ -179,23 +179,23 @@ describe("Auth routes (integration, mocked DB)", () => {
             .mockResolvedValueOnce(null)
             .mockResolvedValueOnce(null);
         repoStub.save.mockResolvedValue({ id: 22, ...dto });
-        const signup = await request(app).post("/api/sessions/signup").send(dto);
+        const signup = await request(app).post("/api/v1/sessions/signup").send(dto);
         const cookie = extractSessionCookie(signup);
         expect(cookie).toBeTruthy();
 
         // La middleware di sessione deserializza l'utente via id
         repoStub.findOneBy.mockResolvedValueOnce({ id: 22, ...dto });
-        const res1 = await request(app).get("/api/sessions/current").set("Cookie", cookie);
+        const res1 = await request(app).get("/api/v1/sessions/current").set("Cookie", cookie);
         expect(res1.status).toBe(200);
         expect(res1.body).toMatchObject({ id: 22, username: dto.username, email: dto.email });
         // Ogni richiesta fa una nuova deserializeUser -> serve un'altra risposta mock
         repoStub.findOneBy.mockResolvedValueOnce({ id: 22, ...dto });
-        const res2 = await request(app).get("/api/sessions/current").set("Cookie", cookie);
+        const res2 = await request(app).get("/api/v1/sessions/current").set("Cookie", cookie);
         expect(res2.status).toBe(200);
         expect(res2.body).toMatchObject({ id: 22, username: dto.username, email: dto.email });
     });
 
-    it("DELETE /api/sessions/current -> logout; poi current è 401", async () => {
+    it("DELETE /api/v1/sessions/current -> logout; poi current è 401", async () => {
         const dto = {
             username: "giulia",
             email: "giulia@example.com",
@@ -211,16 +211,16 @@ describe("Auth routes (integration, mocked DB)", () => {
             .mockResolvedValueOnce(null)
             .mockResolvedValueOnce(null);
         repoStub.save.mockResolvedValue({ id: 33, ...dto });
-        const signup = await request(app).post("/api/sessions/signup").send(dto);
+        const signup = await request(app).post("/api/v1/sessions/signup").send(dto);
         const cookie = extractSessionCookie(signup);
         expect(cookie).toBeTruthy();
 
         // logout
-        const del = await request(app).delete("/api/sessions/current").set("Cookie", cookie);
+        const del = await request(app).delete("/api/v1/sessions/current").set("Cookie", cookie);
         expect([200, 204]).toContain(del.status);
 
         // old cookie non più valido
-        const after = await request(app).get("/api/sessions/current").set("Cookie", cookie);
+        const after = await request(app).get("/api/v1/sessions/current").set("Cookie", cookie);
         expect(after.status).toBe(401);
 
         

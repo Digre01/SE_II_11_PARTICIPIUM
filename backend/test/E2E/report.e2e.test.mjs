@@ -11,7 +11,7 @@ let cookie = '';
 
 async function loginAndGetCookie() {
   const res = await request(app)
-    .post('/api/sessions/login')
+    .post('/api/v1/sessions/login')
     .send({ username: 'citizen', password: 'password' });
   expect(res.status).toBe(201);
   const setCookie = res.headers['set-cookie'];
