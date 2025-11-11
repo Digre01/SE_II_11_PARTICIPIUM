@@ -3,7 +3,7 @@ const SERVER_URL = "http://localhost:3000";
 // Sign up a new user
 //{ username, email, name, surname, password, userType }
 export async function signUp(userData) {
-    const response = await fetch(`${SERVER_URL}/api/sessions/signup`, {
+    const response = await fetch(`${SERVER_URL}/api/v1/sessions/signup`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -17,6 +17,32 @@ export async function signUp(userData) {
         const errDetails = await response; //works but need to be changed lol
         throw errDetails;
     }
+}
+
+const logIn = async (credentials) => {
+    const response = await fetch(SERVER_URL + '/api/v1/sessions/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(credentials),
+    });
+
+    if(response.ok) {
+        return await response.json();
+    } else {
+        throw await response.text();
+    }
+}
+
+const logOut = async() => {
+    const response = await fetch(SERVER_URL + '/api/v1/sessions/current', {
+        method: 'DELETE',
+        credentials: 'include'
+    });
+    if (response.ok)
+        return null;
 }
 
 /* Reports */
@@ -46,32 +72,6 @@ const fetchCategories = async () => {
   }
 };
 
-const logIn = async (credentials) => {
-    const response = await fetch(SERVER_URL + '/api/sessions/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(credentials),
-    });
-
-    if(response.ok) {
-        return await response.json();
-    } else {
-        throw await response.text();
-    }
-}
-
-const logOut = async() => {
-    const response = await fetch(SERVER_URL + '/api/sessions/current', {
-        method: 'DELETE',
-        credentials: 'include'
-    });
-    if (response.ok)
-        return null;
-}
-
 // PATCH /api/sessions/:id/role
 export async function assignRole(userId, roleId, officeId) {
   const response = await fetch(`${SERVER_URL}/api/sessions/${userId}/role`, {
@@ -92,7 +92,7 @@ export async function assignRole(userId, roleId, officeId) {
 
 // GET available staff for role assignment
 export async function fetchAvailableStaff() {
-  const response = await fetch(`${SERVER_URL}/api/sessions/available_staff`, {
+  const response = await fetch(`${SERVER_URL}/api/v1/sessions/available_staff`, {
     method: 'GET',
     credentials: 'include'
   });

@@ -33,7 +33,7 @@ app.use(passport.authenticate('session'));
 // API routes
 
 app.use('/public', express.static(new URL('./public', import.meta.url).pathname));
-app.use('/api/sessions', userRoutes);
+app.use('/api/v1/sessions', userRoutes);
 app.use('/api/v1/roles', rolesRoutes);
 app.use('/api/v1/offices', officeRoutes);
 app.use('/api/v1/categories', categoryRoutes);
