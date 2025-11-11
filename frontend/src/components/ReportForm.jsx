@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from 'react-router-dom';
 import {
   Form,
   FormGroup,
@@ -26,16 +27,20 @@ const ReportForm = ({ user, loggedIn }) => {
     }
     loadCategories();
   }, []);
-  // Mock lat/lon
-  const mockLat = 45.53452363;
-  const mockLon = 45.53151353;
+  // Recupera coordinate passate tramite Link (location.state)
+  const location = useLocation();
+  const passedLat = (location?.state && typeof location.state.lat === 'number') ? location.state.lat : null;
+  const passedLon = (location?.state && typeof location.state.lng === 'number') ? location.state.lng : null;
+  // Fallback se si arriva direttamente alla pagina senza selezionare punto sulla mappa
+  const defaultLat = 45.0703; // Torino centro (esempio)
+  const defaultLon = 7.6869;
   const [form, setForm] = useState({
     title: "",
     description: "",
     categoryId: "",
     photos: [],
-    latitude: mockLat,
-    longitude: mockLon
+    latitude: passedLat ?? defaultLat,
+    longitude: passedLon ?? defaultLon
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -84,8 +89,8 @@ const ReportForm = ({ user, loggedIn }) => {
         description: "",
         categoryId: "",
         photos: [],
-        latitude: mockLat,
-        longitude: mockLon
+        latitude: passedLat ?? defaultLat,
+        longitude: passedLon ?? defaultLon
       });
     } catch (err) {
       setError(typeof err === "string" ? err : "Network error. Please try again later.");
