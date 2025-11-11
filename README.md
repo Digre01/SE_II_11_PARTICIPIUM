@@ -47,8 +47,18 @@ db: se_ii_db
 ## User credentials
 Citizen:
     username: citizen
-    password: password
+    password: citizen
 
 Admin:
     username: admin
     password: admin
+
+Staff:
+    username: staff1
+    password: staff1
+
+    username: staff2
+    password: staff2
+
+    username: staff3
+    password: staff3

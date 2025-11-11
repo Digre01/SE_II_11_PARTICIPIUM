@@ -74,7 +74,7 @@ const fetchCategories = async () => {
 
 // PATCH /api/sessions/:id/role
 export async function assignRole(userId, roleId, officeId) {
-  const response = await fetch(`${SERVER_URL}/api/sessions/${userId}/role`, {
+  const response = await fetch(`${SERVER_URL}/api/v1/sessions/${userId}/role`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json'

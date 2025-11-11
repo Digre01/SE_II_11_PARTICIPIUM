@@ -37,6 +37,16 @@ router.patch('/:id/role', authorizeUserType(['ADMIN']),
     }
 );
 
+// PATCH /api/v1/sessions/:id/role - Assign role to staff (ADMIN only)
+router.patch('/:id/role', authorizeUserType(['ADMIN']), async function(req, res, next) {
+    try {
+        const userId = Number(req.params.id);
+        const { roleId, officeId } = req.body;
+        const result = await userController.assignRole(userId, roleId, officeId);
+        res.status(200).json(result);
+    } catch (err) { next(err); }
+});
+
 // GET list of staff users available for role assignment (ADMIN only)
 router.get('/available_staff', authorizeUserType(['ADMIN']), async function(req, res, next) {
     try {
