@@ -1,7 +1,8 @@
 import Router from "express";
 import userController from "../controllers/userController.js";
 import passport from "passport";
-import { requireAdminIfCreatingStaff } from "../middlewares/userAuthorization.js";
+import { requireAdminIfCreatingStaff, authorizeUserType } from "../middlewares/userAuthorization.js";
+import {BadRequestError} from "../errors/BadRequestError.js";
 
 const router = Router();
 
@@ -11,6 +12,40 @@ router.post('/login', passport.authenticate('local'), function(
     res) {
         res.status(201).json(req.user);
 });
+
+// Assign role to a user (ADMIN only)
+router.patch('/:id/role', authorizeUserType(['ADMIN']),
+    async function(req, res, next) {
+        try {
+            const body = req.body || {};
+            if (!Object.prototype.hasOwnProperty.call(body, 'roleId')) {
+                const err = new BadRequestError('roleId is required');
+                //err.status = 400;
+                return next(err);
+            }
+            if (!Object.prototype.hasOwnProperty.call(body, 'officeId')) {
+                const err = new BadRequestError('officeId is required');
+                //err.status = 400;
+                return next(err);
+            }
+
+            const updated = await userController.assignRole(req.params.id, body.roleId, body.officeId);
+            return res.status(200).json(updated);
+        } catch (err) {
+            next(err);
+        }
+    }
+);
+
+// GET list of staff users available for role assignment (ADMIN only)
+router.get('/available_staff', authorizeUserType(['ADMIN']), async function(req, res, next) {
+    try {
+        const users = await userController.getAvailableStaffForRoleAssignment();
+        const mapped = users.map(u => ({ id: u.id, username: u.username, name: u.name, surname: u.surname }));
+        res.status(200).json(mapped);
+    } catch (err) { next(err); }
+});
+
 
 //signup
 router.post("/signup", requireAdminIfCreatingStaff,

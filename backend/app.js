@@ -9,6 +9,8 @@ import categoryRoutes from './routes/categoryRoutes.mjs';
 import multerErrorHandler from './middlewares/multerErrorHandler.js';
 import errorHandler from './middlewares/errorHandler.js';
 import corsOptions from "./config/cors.js";
+import rolesRoutes from "./routes/rolesRoutes.js";
+import officeRoutes from "./routes/officeRoutes.js";
 
 // init express
 const app = new express();
@@ -31,7 +33,9 @@ app.use(passport.authenticate('session'));
 // API routes
 
 app.use('/public', express.static(new URL('./public', import.meta.url).pathname));
-app.use('/api/sessions', userRoutes);
+app.use('/api/v1/sessions', userRoutes);
+app.use('/api/v1/roles', rolesRoutes);
+app.use('/api/v1/offices', officeRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/reports', reportRoutes);
 

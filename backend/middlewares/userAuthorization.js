@@ -1,16 +1,18 @@
-import { UnauthorizedError } from '../errors/UnauthorizedError.js';
-import { InsufficientRightsError } from '../errors/InsufficientRightsError.js';
+import {UnauthorizedError} from "../errors/UnauthorizedError.js";
+import {InsufficientRightsError} from "../errors/InsufficientRightsError.js";
 
 export function authorizeUserType(allowedTypes) {
     return async function (req, res, next) {
 
         if (!req.isAuthenticated()) {
-            const err = new UnauthorizedError('Unauthorized');
+            const err = new UnauthorizedError('UNAUTHORIZED');
             return next(err);
         }
-
-        if (!allowedTypes.includes(req.user.userType)) {
-            const err = new InsufficientRightsError('Forbidden');
+        // perform a case-insensitive check between allowedTypes and the caller's userType
+        const normalizedAllowed = (allowedTypes || []).map(a => String(a).toUpperCase());
+        const callerType = String(req.user?.userType || '').toUpperCase();
+        if (!normalizedAllowed.includes(callerType)) {
+            const err = new InsufficientRightsError('FORBIDDEN');
             return next(err);
         }
         next();

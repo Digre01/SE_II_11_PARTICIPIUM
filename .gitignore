@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+/backend/coverage
 
 #Do not push the env and the database
 *.env
