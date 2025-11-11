@@ -24,24 +24,20 @@ export function requireAdminIfCreatingStaff(req, res, next) {
     try {
         const requestedUserType = req.body?.userType;
 
-        //CITIZEN signup
+        // CITIZEN signup
         if (!requestedUserType || String(requestedUserType).toUpperCase() !== 'STAFF') {
             return next();
         }
 
-        //STAFF signup
+        // STAFF signup
         if (!req.isAuthenticated || !req.isAuthenticated()) {
-            const err = new Error('UNAUTHORIZED');
-            err.status = 401;
-            return next(err);
+            return next(new UnauthorizedError('Unauthorized'));
         }
 
         // And ADMIN role
         const callerType = String(req.user?.userType || '').toUpperCase();
         if (callerType !== 'ADMIN') {
-            const err = new Error('FORBIDDEN');
-            err.status = 403;
-            return next(err);
+            return next(new InsufficientRightsError('Forbidden'));
         }
 
         return next();

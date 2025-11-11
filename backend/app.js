@@ -47,16 +47,12 @@ app.use(multerErrorHandler);
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
 
-  const status = err.status || (
-    err?.message === 'UNAUTHORIZED' ? 401 :
-    err?.message === 'FORBIDDEN' ? 403 :
-    500
-  );
-
+  const status = err.status || err.statusCode || 500;
   let message = 'Internal Server Error';
-  if (status === 401) message = 'Unauthorized user';
-  else if (status === 403) message = 'Forbidden';
-  else if (err?.message && !['UNAUTHORIZED', 'FORBIDDEN'].includes(err.message)) message = err.message;
+
+  if (err?.message) {
+    message = err.message;
+  }
 
   res.status(status).json({ error: message });
 });
