@@ -103,7 +103,7 @@ describe("Auth routes (integration, mocked DB)", () => {
 
     it("POST /api/v1/sessions/login -> 401 con username inesistente", async () => {
         const res = await request(app)
-            .post("/api/sessions/login")
+            .post("/api/v1/sessions/login")
             .send({ username: "nonexist", password: "irrelevant" });
         expect(res.status).toBe(401);
     });
