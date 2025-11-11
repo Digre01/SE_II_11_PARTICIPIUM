@@ -1,6 +1,7 @@
 import { Container } from 'react-bootstrap'
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet'
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router';
 
 
 function SingleClickMarker({ onPointChange }) {
@@ -23,6 +24,8 @@ function SingleClickMarker({ onPointChange }) {
     }
     });
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     map.locate();
   }, [map]);
@@ -37,8 +40,9 @@ function SingleClickMarker({ onPointChange }) {
       {selectedPoint && (
         <Marker position={selectedPoint}
           eventHandlers={{ add: (ev) => ev.target.openPopup() }}>
-          <Popup>Lat: {selectedPoint.lat.toFixed(5)}, Lng: {selectedPoint.lng.toFixed(5)} 
-            <br /> Compile Report
+          <Popup> <div>  
+            <button onClick={() => navigate('/report', {state: {lat: selectedPoint.lat, lng: selectedPoint.lng} })}>Create Report </button>
+          </div>
           </Popup>
         </Marker>
       )}
