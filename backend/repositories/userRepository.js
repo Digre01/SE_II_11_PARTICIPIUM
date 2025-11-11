@@ -47,15 +47,6 @@ class UserRepository {
         return await qb.getMany();
     }
 
-    async getAllRoles() {
-        const roleRepo = AppDataSourcePostgres.getRepository(Roles);
-        return await roleRepo.find();
-    }
-
-    async getAllOffices() {
-        const officeRepo = AppDataSourcePostgres.getRepository(Office);
-        return await officeRepo.find();
-    }
 
     async assignRoleToUser(userId, roleId, officeId) {
         const userRepo = AppDataSourcePostgres.getRepository(Users);

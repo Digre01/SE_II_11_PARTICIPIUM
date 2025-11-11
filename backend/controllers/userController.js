@@ -1,4 +1,6 @@
 import {userRepository} from "../repositories/userRepository.js";
+import {rolesRepository} from "../repositories/rolesRepository.js";
+import {officeRepository} from "../repositories/officeRepository.js";
 import crypto from "crypto";
 import userService from "../services/userService.js";
 import {mapUserToDTO} from "../mappers/userMappers.js";
@@ -12,11 +14,11 @@ async function getAvailableStaffForRoleAssignment() {
 }
 
 async function getAllRoles() {
-    return await userRepository.getAllRoles();
+    return await rolesRepository.findAll();
 }
 
 async function getAllOffices() {
-    return await userRepository.getAllOffices();
+    return await officeRepository.findAll();
 }
 
 async function createUser({username, email, name, surname, password, userType}){
