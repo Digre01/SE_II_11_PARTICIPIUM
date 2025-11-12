@@ -11,7 +11,6 @@ import {
   Icon
 } from 'design-react-kit';
 import { Link } from 'react-router-dom';
-import { LogoutButton } from '../authComponents/loginForm';
 
 function AdminHeader({ user, loggedIn, isAdmin, handleLogout }) {
   const [isOpen, setIsOpen] = useState(false);
