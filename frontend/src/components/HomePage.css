@@ -1,0 +1,6 @@
+/* Tint the default Leaflet pin for selected points (keeps same shape) */
+.selected-pin-red {
+  /* Adjust these values to fine-tune the red tone */
+  filter: hue-rotate(-100deg) saturate(3) brightness(0.95);
+  
+}
