@@ -1,22 +1,20 @@
 import { Form, FormGroup, Select, Button, Alert } from "design-react-kit";
-import { Row, Col } from 'react-bootstrap';
 import { useState, useEffect } from "react";
 import API from "../API/API.mjs";
 
 function AssignRole() {
-    const [form, setForm] = useState({ userId: '', roleId: '', officeId: '' });
+    const [form, setForm] = useState({ userId: '', roleId: ''});
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState(null);
     const [staffOptions, setStaffOptions] = useState([]);
     const [roleOptions, setRoleOptions] = useState([]);
-    const [officeOptions, setOfficeOptions] = useState([]);
     const [alertOpen, setAlertOpen] = useState(true);
 
     const onChange = (field) => (e) => {
         setForm(f => ({ ...f, [field]: e.target.value }));
     };
 
-    const reset = () => setForm({ userId: '', roleId: '', officeId: '' });
+    const reset = () => setForm({ userId: '', roleId: ''});
 
     useEffect(() => {
         let mounted = true;
@@ -24,11 +22,9 @@ function AssignRole() {
             try {
                 const staff = await API.fetchAvailableStaff();
                 const roles = await API.fetchRoles();
-                const offices = await API.fetchOffices();
                 if (!mounted) return;
                 setStaffOptions(staff || []);
                 setRoleOptions(roles || []);
-                setOfficeOptions(offices || []);
             } catch (e) {
             }
         })();
@@ -39,14 +35,14 @@ function AssignRole() {
         e.preventDefault();
         setMessage(null);
 
-        if (!form.userId || !form.roleId || !form.officeId) {
+        if (!form.userId || !form.roleId) {
             setMessage({ type: 'danger', text: 'User, Role and Office are required' });
             return;
         }
 
         setSubmitting(true);
         try {
-            await API.assignRole(Number(form.userId), Number(form.roleId), Number(form.officeId));
+            await API.assignRole(Number(form.userId), Number(form.roleId), null);
             setMessage({ type: 'success', text: 'Role assigned successfully' });
             reset();
         } catch (err) {

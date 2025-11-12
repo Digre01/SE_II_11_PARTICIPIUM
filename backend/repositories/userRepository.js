@@ -51,18 +51,23 @@ class UserRepository {
     async assignRoleToUser(userId, roleId, officeId) {
         const userRepo = AppDataSourcePostgres.getRepository(Users);
         const user = await userRepo.findOneBy({ id: Number(userId) });
-        if(!user) {
+        if (!user) {
             throw new NotFoundError(`User with id '${userId}' not found`);
         }
 
-        // Validate officeId exists (office must be linked)
-        if (officeId === undefined || officeId === null) {
-            throw new NotFoundError(`officeId is required`);
-        }
-        const officeRepo = AppDataSourcePostgres.getRepository(Office);
-        const office = await officeRepo.findOneBy({ id: Number(officeId) });
-        if (!office) {
-            throw new NotFoundError(`Office with id '${officeId}' not found`);
+        // Normalize ids
+        const normalizedRoleId = Number(roleId);
+        const normalizedOfficeId = (officeId === undefined || officeId === null || officeId === '')
+            ? null
+            : Number(officeId);
+
+        // If officeId is provided (non-null), validate it exists
+        if (normalizedOfficeId !== null) {
+            const officeRepo = AppDataSourcePostgres.getRepository(Office);
+            const office = await officeRepo.findOneBy({ id: normalizedOfficeId });
+            if (!office) {
+                throw new NotFoundError(`Office with id '${officeId}' not found`);
+            }
         }
 
         // Only users of type STAFF can be assigned roles
@@ -71,21 +76,22 @@ class UserRepository {
             throw new InsufficientRightsError('Only staff accounts can be assigned a role');
         }
 
+        // Validate role exists
         const roleRepo = AppDataSourcePostgres.getRepository(Roles);
-        const role = await roleRepo.findOneBy({ id: Number(roleId) });
-        if(!role) {
+        const role = await roleRepo.findOneBy({ id: normalizedRoleId });
+        if (!role) {
             throw new NotFoundError(`Role with id '${roleId}' not found`);
         }
 
         const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);
         let userOffice = await userOfficeRepo.findOneBy({ userId: Number(userId) });
         if (userOffice) {
-            userOffice.roleId = Number(roleId);
-            userOffice.officeId = Number(officeId);
+            userOffice.roleId = normalizedRoleId;
+            userOffice.officeId = normalizedOfficeId;
             await userOfficeRepo.save(userOffice);
         } else {
             // create a new UserOffice mapping with role and office
-            userOffice = userOfficeRepo.create({ userId: Number(userId), officeId: Number(officeId), roleId: Number(roleId) });
+            userOffice = userOfficeRepo.create({ userId: Number(userId), officeId: normalizedOfficeId, roleId: normalizedRoleId });
             await userOfficeRepo.save(userOffice);
         }
 

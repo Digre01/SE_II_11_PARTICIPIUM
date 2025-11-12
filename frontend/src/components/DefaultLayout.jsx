@@ -1,4 +1,4 @@
-import NavComponent from '../components/Header';
+import NavComponent from './Header/Header';
 import { Outlet } from 'react-router';
 
 function DefaultLayout({ user, loggedIn, isAdmin, handleLogout}) {
