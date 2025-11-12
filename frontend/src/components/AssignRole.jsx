@@ -45,6 +45,8 @@ function AssignRole() {
             await API.assignRole(Number(form.userId), Number(form.roleId), null);
             setMessage({ type: 'success', text: 'Role assigned successfully' });
             reset();
+            const staff = await API.fetchAvailableStaff();
+            setStaffOptions(staff || []);
         } catch (err) {
             const text = typeof err === 'string' ? err : (err?.error || 'Error assigning role');
             setMessage({ type: 'danger', text });
