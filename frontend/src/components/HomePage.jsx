@@ -1,7 +1,9 @@
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet'
-import { useEffect, useState, useMemo} from 'react'
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useMemo} from 'react'
+import { useNavigate, Link } from 'react-router';
 import { Row, Col, Card, Button } from 'design-react-kit';
+import L from 'leaflet';
+import './HomePage.css';
 
 
 function SingleClickMarker({ onPointChange, user, loggedIn }) {
@@ -45,10 +47,17 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
 
 
 export default function HomePage({ user, loggedIn, isAdmin }) {
+  
+  
   return !isAdmin ? (
     
     <MapContainer 
       center={[45.0703, 7.6869]} 
+      maxBounds={[
+        [45.0027, 7.5703],  //South-West
+        [45.144, 7.7783]    //North-East
+      ]} 
+      maxBoundsViscosity={1.0}
       zoom={15}
       minZoom={15}
       maxZoom={15} 
