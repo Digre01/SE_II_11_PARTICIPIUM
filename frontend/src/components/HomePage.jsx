@@ -1,5 +1,5 @@
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo} from 'react'
 import { useNavigate, Link } from 'react-router-dom';
 import { Row, Col, Card, Button } from 'design-react-kit';
 

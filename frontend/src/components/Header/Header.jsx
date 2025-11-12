@@ -1,7 +1,7 @@
 import {
   Headers,
 } from 'design-react-kit';
-import AdminHeader from './NavHeader';
+import AdminHeader from './AdminHeader';
 import AuthHeader from './AuthHeader';
 
 function NavComponent({ user, loggedIn, isAdmin, handleLogout }) {
