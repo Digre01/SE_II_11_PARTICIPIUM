@@ -37,7 +37,7 @@ beforeAll(async () => {
   await AppDataSourcePostgres.initialize();
   await seedDatabase();
   adminCookie = await loginAndGetCookie('admin', 'admin');
-  citizenCookie = await loginAndGetCookie('citizen', 'password');
+  citizenCookie = await loginAndGetCookie('citizen', 'citizen');
 });
 
 afterAll(async () => {

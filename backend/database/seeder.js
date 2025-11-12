@@ -61,15 +61,9 @@ export async function seedDatabase() {
   const rolesExisting = await rolesRepo.find();
   if (rolesExisting.length === 0) {
     await rolesRepo.save([
-      { name: 'Water Systems Technician' },
-      { name: 'Accessibility Coordinator' },
-      { name: 'Wastewater Engineer' },
-      { name: 'Lighting Technician' },
-      { name: 'Waste Management Officer' },
-      { name: 'Traffic Systems Technician' },
-      { name: 'Public Works Supervisor' },
-      { name: 'Parks and Recreation Officer' },
-      { name: 'General Maintenance Worker' }
+      { name: 'Municipal Public Relations Officer' },
+      { name: 'Municipal Administrator' },
+      { name: 'Technical Office Staff Member.' },
     ]);
     console.log("Added default Roles");
   }

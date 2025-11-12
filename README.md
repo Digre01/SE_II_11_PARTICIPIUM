@@ -45,15 +45,18 @@ password: postgres
 db: se_ii_db
 
 ## User credentials
-Citizen:
+### Citizen:
+
     username: citizen
     password: citizen
 
-Admin:
+### Admin:
+
     username: admin
     password: admin
 
-Staff:
+### Staff:
+
     username: staff1
     password: staff1
 

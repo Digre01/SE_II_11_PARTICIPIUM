@@ -97,7 +97,7 @@ function AssignRole() {
                             ))}
                         </Select>
                     </FormGroup>
-
+                        {/*
                         <FormGroup className="mb-4">
                             <Select
                                 name="officeId"
@@ -115,6 +115,7 @@ function AssignRole() {
                                 ))}
                             </Select>
                         </FormGroup>
+                        */}
 
                     {message && (
                         <div className="mb-3">

@@ -3,7 +3,7 @@ import 'bootstrap-italia/dist/css/bootstrap-italia.min.css';
 
 import { Route, Routes, Navigate } from 'react-router'; 
 import DefaultLayout from './components/DefaultLayout';
-import HomePage from './components/HomePage';
+import HomePage from './components/HomePage.jsx';
 import StaffRegistration from './components/StaffRegistration';
 import AssignRole from './components/AssignRole';
 import ReportForm from './components/ReportForm';
@@ -66,7 +66,7 @@ function App() {
   return (
     <Routes>
       <Route element={<DefaultLayout user={user} loggedIn={loggedIn} isAdmin={isAdmin} handleLogout={handleLogout}/> }>
-        <Route path='/' element={<HomePage user={user} loggedIn={loggedIn} />}/>
+        <Route path='/' element={<HomePage user={user} loggedIn={loggedIn} isAdmin={isAdmin} />}/>
         <Route path='/login' element={
           loggedIn ? <Navigate to='/' replace /> : <LoginForm handleLogin={handleLogin}/>
         }/>
