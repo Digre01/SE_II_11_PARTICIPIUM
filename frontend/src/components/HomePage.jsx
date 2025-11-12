@@ -1,10 +1,7 @@
-import { Container } from 'react-bootstrap'
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet'
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom';
-import { Button } from 'design-react-kit';
-import L from 'leaflet';
-import './HomePage.css';
+import { useEffect, useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom';
+import { Row, Col, Card, Button } from 'design-react-kit';
 
 
 function SingleClickMarker({ onPointChange, user, loggedIn }) {
@@ -29,7 +26,6 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
 
   return (
     <>
-      {/* Nessuna geolocalizzazione automatica all'avvio */}
       {selectedPoint && (
         <Marker position={selectedPoint} icon={selectedPinIcon}
           eventHandlers={{ add: (ev) => ev.target.openPopup() }}>
@@ -48,12 +44,12 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
 }
 
 
-export default function HomePage({ user, loggedIn }) {
-  return (
+export default function HomePage({ user, loggedIn, isAdmin }) {
+  return !isAdmin ? (
+    
     <MapContainer 
       center={[45.0703, 7.6869]} 
       zoom={15}
-      //Parameters for zoom control
       minZoom={15}
       maxZoom={15} 
       zoomControl={false}
@@ -64,12 +60,49 @@ export default function HomePage({ user, loggedIn }) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      {/* Marker fisso al centro di Torino con stile standard */}
       <Marker position={{ lat: 45.0703, lng: 7.6869 }}>
         <Popup>Turin Center</Popup>
       </Marker>
       <SingleClickMarker onPointChange={(point) => console.log('Selected point:', point)} user={user} loggedIn={loggedIn} />
     </MapContainer>
+  ) : (
+    <Row className="g-4">
+      <Col md="6" xs="12">
+        <Card image rounded shadow="sm">
+          <h3 className="it-card-title ">
+            <Link className="it-card-link" to="/staff_signup">
+              Register Staff Member
+            </Link>
+          </h3>
+          <div className="it-card-body">
+            <p className="it-card-text">
+              Create a new staff account
+            </p>
+            <Button color="primary" tag={Link} to="/staff_signup">
+              Go to Staff Signup
+            </Button>
+          </div>
+
+        </Card>
+      </Col>
+      <Col md="6" xs="12">
+        <Card image rounded shadow="sm">
+          <h3 className="it-card-title ">
+            <Link className="it-card-link" to="/assign_role">
+              Assign Roles
+            </Link>
+          </h3>
+          <div className="it-card-body">
+            <p className="it-card-text">
+              Manage user roles and permissions for staff members.
+            </p>
+            <Button color="primary" tag={Link} to="/assign_role">
+              Go to Assign Role
+            </Button>
+          </div>
+        </Card>
+      </Col>
+    </Row>
   );
 }
 

@@ -1,4 +1,4 @@
-import {Alert, Button, Col, Form, Input, Row} from "design-react-kit";
+import {Alert, Button, Col, Form, Input, Row, Icon, NavLink} from "design-react-kit";
 import {useActionState, useState} from "react";
 import {useNavigate} from "react-router";
 
@@ -95,12 +95,15 @@ function LogoutButton(props) {
     const navigate = useNavigate();
 
     return(
-        <Button
-            onClick={() => {props.handleLogout(); navigate('/');}} className="btn-lg" variant="warning"
+        <NavLink
+            href="#" 
+            onClick={() => {props.handleLogout(); navigate('/');}} 
         >
+            <Icon icon="it-logout" className="me-2" />
             Logout
-        </Button>
+        </NavLink>
     )
+   
 }
 
 export {LoginForm, LogoutButton};
