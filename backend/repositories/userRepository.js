@@ -97,6 +97,29 @@ class UserRepository {
 
         return await userOfficeRepo.findOne({ where: { userId: Number(userId) }, relations: ['role', 'office'] });
     }
+
+    //Update user info for telegram, email and photoURL
+    async configUserAccount(userId, telegram, emailNotification, photoUrl){
+        const userRepo = AppDataSourcePostgres.getRepository(Users);
+        
+        const user = await userRepo.findOneBy({ id: Number(userId) });
+        if (!user) {
+            throw new NotFoundError(`User with id '${userId}' not found`);
+        }
+
+        user.telegram = telegram;
+        user.emailNotification = emailNotification;
+        
+        // Photos association
+        if (photosUrl) {
+            const photoRepo = AppDataSourcePostgres.getRepository(Photos);
+            const photoEntity = photoRepo.create({ link: photoUrl});
+            await photoRepo.save(photoEntity);
+            user.photoId = photoEntity.id;
+        }
+
+        return await userRepo.update(user);
+    }
 }
 
 export const userRepository = new UserRepository();

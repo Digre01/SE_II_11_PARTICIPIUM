@@ -47,6 +47,20 @@ router.patch('/:id/role', authorizeUserType(['ADMIN']), async function(req, res,
     } catch (err) { next(err); }
 });
 
+
+
+//PATCH /api/v1/session/:id/config - Update info of my account
+router.patch('/:id/config', authorizeUserType(['CITIZEN']), async function(req, res, next) {
+    try {
+        const userId = Number(req.params.id);
+        const {telegram, emailNotification, photoUrl} = req.body;
+        const result = await userController.configAccount(userId, telegram, emailNotification, photoUrl);
+        res.status(200).json(result);
+    } catch (err) {next(err); }
+    
+})
+
+
 // GET list of staff users available for role assignment (ADMIN only)
 router.get('/available_staff', authorizeUserType(['ADMIN']), async function(req, res, next) {
     try {

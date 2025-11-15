@@ -45,6 +45,26 @@ const logOut = async() => {
         return null;
 }
 
+//Update account
+/*
+telegram: text?,
+emailNotifications: boolean,
+photoDataUrl: text?,
+*/
+const updateAccount = async (userId, data) => {
+    const response = await fetch(SERVER_URL + `/api/v1/session/${userId}/config`, {
+      method: 'PATCH',
+      body: data,
+      credentials: 'include'
+    });
+    if(response.ok) {
+      return await response.json();
+    } else {
+      const errDetails = await response.text();
+      throw errDetails;
+    }
+}
+
 /* Reports */
 // POST /api/v1/reports
 const createReport = async (formData) => {
@@ -119,6 +139,7 @@ export async function fetchOffices() {
   if (response.ok) return await response.json();
   throw await response.text();
 }
+
 
 const API = { signUp, logIn, logOut, createReport, fetchCategories, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices };
 export default API;

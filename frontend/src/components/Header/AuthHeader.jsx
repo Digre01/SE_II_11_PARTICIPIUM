@@ -50,15 +50,7 @@ function AuthHeader({ user, loggedIn, isAdmin, handleLogout }) {
               </DropdownToggle>
               <DropdownMenu className="dropdown-offset-y">
                 <LinkList>
-                  <LinkListItem inDropdown href="/setting">
-                    <Icon icon="it-settings" size="sm" className="me-1" />
-                    <span>Settings</span>
-                  </LinkListItem>
-                  <LinkListItem inDropdown href="/setting">
-                    <Icon icon="it-settings" size="sm" className="me-1" />
-                    <span>Settings</span>
-                  </LinkListItem>
-                  <LinkListItem inDropdown href="/setting">
+                  <LinkListItem inDropdown tag={Link} to="/setting">
                     <Icon icon="it-settings" size="sm" className="me-1" />
                     <span>Settings</span>
                   </LinkListItem>

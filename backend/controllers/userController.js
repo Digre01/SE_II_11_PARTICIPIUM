@@ -39,5 +39,10 @@ async function assignRole(userId, roleId, officeId) {
     };
 }
 
-const userController = { getUserByUsername, createUser, assignRole, getAvailableStaffForRoleAssignment, getAllRoles, getAllOffices };
+async function configAccount(userId, telegram, emailNotification, photoUrl){
+    const user = await userRepository.configUserAccount(userId, telegram, emailNotification, photoUrl);
+    
+}
+
+const userController = { getUserByUsername, createUser, assignRole, getAvailableStaffForRoleAssignment, getAllRoles, getAllOffices, configAccount };
 export default userController;

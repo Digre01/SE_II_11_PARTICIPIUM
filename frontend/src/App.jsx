@@ -7,6 +7,7 @@ import HomePage from './components/HomePage.jsx';
 import StaffRegistration from './components/StaffRegistration';
 import AssignRole from './components/AssignRole';
 import ReportForm from './components/ReportForm';
+import AccountConfig from './components/AccountConfig.jsx';
 import API from "./API/API.mjs";
 import { useState, useEffect } from "react";
 import { LoginForm } from "./components/authComponents/loginForm.jsx";
@@ -89,6 +90,11 @@ function App() {
           isCitizen
             ? <ReportForm user={user} loggedIn={loggedIn}/>
             : <Navigate to="/" replace />
+        } />
+        <Route path='/setting' element={
+          (!loggedIn)
+            ? <Navigate to="/login" replace />
+            : <AccountConfig user={user} loggedIn={loggedIn} />
         } />
       </Route>
     </Routes>

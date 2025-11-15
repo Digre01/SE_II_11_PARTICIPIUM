@@ -25,6 +25,18 @@ export const Users = new EntitySchema({
       type: String,
       nullable: false
     },
+    telegramId: {
+      type: String,
+      nullable: true
+    },
+    photoId:{
+      type: String,
+      nullable: true
+    },
+    emailNotifications: {
+      type: Boolean,
+      nullable: false
+    },
     password: {
       type: String,
       nullable: false
@@ -36,7 +48,8 @@ export const Users = new EntitySchema({
     userType: {
       type: String,
       nullable: false
-    }
+    },
+    
   },
   relations: {
     reports: {
