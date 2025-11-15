@@ -34,7 +34,7 @@ function LoginForm(props) {
             { isPending && <Alert variant="warning">Please, wait for the server's response...</Alert> }
             <div className="container mt-5">
                 <Form action={formAction} className="mb-4">
-                    <Row>
+                    <Row className="gy-2">
                         <Input
                             label="Username"
                             name="username"
@@ -62,22 +62,25 @@ function LoginForm(props) {
                         </Alert>
                     )}
 
-                    <Row>
-                        <Col sm="auto">
+                    <Row className="gy-3">
+                        <Col className="col-12 col-sm-auto">
                             <Button
                                 color="primary"
                                 outline
                                 type="reset"
+                                className="w-100 w-sm-auto"
                                 disabled={isPending}
                             >
                                 Cancel
                             </Button>
                         </Col>
-                        <Col sm="auto">
+                        <Col className="col-12 col-sm-auto">
                             <Button
                                 color="primary"
                                 type="submit"
+                                className="w-100 w-sm-auto"
                                 disabled={isPending}
+                                
                             >
                                 Confirm
                             </Button>

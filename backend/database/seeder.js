@@ -63,7 +63,7 @@ export async function seedDatabase() {
     await rolesRepo.save([
       { name: 'Municipal Public Relations Officer' },
       { name: 'Municipal Administrator' },
-      { name: 'Technical Office Staff Member.' },
+      { name: 'Technical Office Staff Member' },
     ]);
     console.log("Added default Roles");
   }
