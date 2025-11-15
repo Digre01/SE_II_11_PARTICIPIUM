@@ -118,15 +118,16 @@ export default function AccountConfig({ user, loggedIn }) {
 		setSuccessOpen(true);
 		setErrorOpen(true);
 		try {
-			const payload = {
-				telegram: telegram.trim(),
-				emailNotifications,
-				photoDataUrl: photoDataUrl || ''
-			};
-			saveSettings(userId, payload);
-			setSuccess('Settings saved locally.');
+			const formData = new FormData();
+			if (telegram.trim() !== '') formData.append('telegramId', telegram.trim());
+			formData.append('emailNotifications', String(emailNotifications));
+			if (photoFile) {
+				formData.append('photo', photoFile);
+			}
+			await API.updateAccount(userId, formData);
+			setSuccess('Profile updated successfully.');
 		} catch (err) {
-			setError('Unable to save settings.');
+			setError(typeof err === 'string' ? err : 'Unable to update profile.');
 		} finally {
 			setSaving(false);
 		}
@@ -246,11 +247,10 @@ export default function AccountConfig({ user, loggedIn }) {
 							type="button"
 							className="w-100 w-sm-auto"
 							onClick={() => {
-								const saved = loadSettings(userId) || {};
-								setTelegram(saved.telegram || '');
-								setEmailNotifications(Boolean(saved.emailNotifications));
-								setPhotoDataUrl(saved.photoDataUrl || '');
-								setPhotoPreview(saved.photoDataUrl || '');
+								setTelegram('');
+								setEmailNotifications(true);
+								setPhotoDataUrl('');
+								setPhotoPreview('');
 								setPhotoFile(null);
 								setSuccess('');
 								setError('');

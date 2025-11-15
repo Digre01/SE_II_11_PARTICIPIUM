@@ -45,24 +45,20 @@ const logOut = async() => {
         return null;
 }
 
-//Update account
-/*
-telegram: text?,
-emailNotifications: boolean,
-photoDataUrl: text?,
-*/
-const updateAccount = async (userId, data) => {
-    const response = await fetch(SERVER_URL + `/api/v1/session/${userId}/config`, {
-      method: 'PATCH',
-      body: data,
-      credentials: 'include'
-    });
-    if(response.ok) {
-      return await response.json();
-    } else {
-      const errDetails = await response.text();
-      throw errDetails;
-    }
+// Update account (multipart/form-data)
+// Expects FormData with optional fields: telegramId (string), emailNotifications (boolean-like), photo (File)
+const updateAccount = async (userId, formData) => {
+  const response = await fetch(SERVER_URL + `/api/v1/sessions/${userId}/config`, {
+    method: 'PATCH',
+    body: formData,
+    credentials: 'include'
+  });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    const errDetails = await response.text();
+    throw errDetails;
+  }
 }
 
 /* Reports */
@@ -141,5 +137,5 @@ export async function fetchOffices() {
 }
 
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices };
+const API = { signUp, logIn, logOut, createReport, fetchCategories, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount };
 export default API;

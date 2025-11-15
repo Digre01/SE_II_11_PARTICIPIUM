@@ -6,6 +6,7 @@ import {NotFoundError} from "../errors/NotFoundError.js";
 import {Office} from "../entities/Offices.js";
 import {ConflictError} from "../errors/ConflictError.js";
 import { InsufficientRightsError } from "../errors/InsufficientRightsError.js";
+import { Photos } from "../entities/Photos.js";
 
 class UserRepository {
     get repo() {
@@ -98,27 +99,31 @@ class UserRepository {
         return await userOfficeRepo.findOne({ where: { userId: Number(userId) }, relations: ['role', 'office'] });
     }
 
-    //Update user info for telegram, email and photoURL
-    async configUserAccount(userId, telegram, emailNotification, photoUrl){
+    // Update user info for telegram, email notifications and profile photo URL
+    async configUserAccount(userId, telegramId, emailNotifications, photoUrl){
         const userRepo = AppDataSourcePostgres.getRepository(Users);
-        
+
         const user = await userRepo.findOneBy({ id: Number(userId) });
         if (!user) {
             throw new NotFoundError(`User with id '${userId}' not found`);
         }
 
-        user.telegram = telegram;
-        user.emailNotification = emailNotification;
-        
-        // Photos association
-        if (photosUrl) {
+        if (telegramId !== undefined) {
+            user.telegramId = telegramId || null;
+        }
+        if (emailNotifications !== undefined) {
+            user.emailNotifications = Boolean(emailNotifications);
+        }
+        if (photoUrl) {
+            // Create a Photos record and link it to the user (Users.photoId -> Photos.id)
             const photoRepo = AppDataSourcePostgres.getRepository(Photos);
-            const photoEntity = photoRepo.create({ link: photoUrl});
-            await photoRepo.save(photoEntity);
-            user.photoId = photoEntity.id;
+            const photo = photoRepo.create({ link: photoUrl });
+            const saved = await photoRepo.save(photo);
+            user.photoId = saved.id;
         }
 
-        return await userRepo.update(user);
+        await userRepo.save(user);
+        return user;
     }
 }
 

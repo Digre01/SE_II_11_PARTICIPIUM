@@ -3,6 +3,8 @@ import userController from "../controllers/userController.js";
 import passport from "passport";
 import { requireAdminIfCreatingStaff, authorizeUserType } from "../middlewares/userAuthorization.js";
 import {BadRequestError} from "../errors/BadRequestError.js";
+import upload from '../middlewares/uploadMiddleware.js';
+import fs from 'fs';
 
 const router = Router();
 
@@ -49,16 +51,52 @@ router.patch('/:id/role', authorizeUserType(['ADMIN']), async function(req, res,
 
 
 
-//PATCH /api/v1/session/:id/config - Update info of my account
-router.patch('/:id/config', authorizeUserType(['CITIZEN']), async function(req, res, next) {
-    try {
-        const userId = Number(req.params.id);
-        const {telegram, emailNotification, photoUrl} = req.body;
-        const result = await userController.configAccount(userId, telegram, emailNotification, photoUrl);
-        res.status(200).json(result);
-    } catch (err) {next(err); }
-    
-})
+// PATCH /api/v1/sessions/:id/config - Update info of my account (single profile photo)
+router.patch(
+    '/:id/config',
+    authorizeUserType(['CITIZEN']),
+    upload.single('photo'),
+    async (req, res, next) => {
+        // Remove uploaded file on error
+        const deleteUploadedFile = () => {
+            if (req.file) {
+                try {
+                    fs.unlinkSync(req.file.path);
+                } catch (err) {
+                    console.error('Deleting file error:', req.file.path, err);
+                }
+            }
+        };
+
+        try {
+            const userId = Number(req.params.id);
+
+            // Optional fields via multipart/form-data
+            const telegramId = req.body?.telegramId ?? undefined;
+            const emailNotificationsRaw = req.body?.emailNotifications ?? undefined;
+            let emailNotifications;
+            if (emailNotificationsRaw !== undefined) {
+                const val = String(emailNotificationsRaw).toLowerCase();
+                emailNotifications = (val === 'true' || val === '1' || val === 'yes' || val === 'on');
+            }
+
+            // Compute photo public URL if provided
+            const photoUrl = req.file ? `/public/${req.file.filename}` : undefined;
+
+            const result = await userController.configAccount(
+                userId,
+                telegramId,
+                emailNotifications,
+                photoUrl
+            );
+
+            return res.status(200).json({ message: 'Account updated', user: result });
+        } catch (err) {
+            deleteUploadedFile();
+            next(err);
+        }
+    }
+);
 
 
 // GET list of staff users available for role assignment (ADMIN only)

@@ -39,9 +39,9 @@ async function assignRole(userId, roleId, officeId) {
     };
 }
 
-async function configAccount(userId, telegram, emailNotification, photoUrl){
-    const user = await userRepository.configUserAccount(userId, telegram, emailNotification, photoUrl);
-    
+async function configAccount(userId, telegramId, emailNotifications, photoUrl){
+    const user = await userRepository.configUserAccount(userId, telegramId, emailNotifications, photoUrl);
+    return user;
 }
 
 const userController = { getUserByUsername, createUser, assignRole, getAvailableStaffForRoleAssignment, getAllRoles, getAllOffices, configAccount };
