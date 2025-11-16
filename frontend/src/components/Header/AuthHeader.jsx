@@ -21,6 +21,7 @@ import { LogoutButton } from '../authComponents/loginForm';
 
 function AuthHeader({ user, loggedIn, isAdmin, handleLogout }) {
   const [isOpen, setIsOpen] = useState(false);
+  const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
 
   return (
     <Header theme="dark" type="slim" className="shadow-sm app-header">
@@ -50,10 +51,12 @@ function AuthHeader({ user, loggedIn, isAdmin, handleLogout }) {
               </DropdownToggle>
               <DropdownMenu className="dropdown-offset-y">
                 <LinkList>
-                  <LinkListItem inDropdown tag={Link} to="/setting">
-                    <Icon icon="it-settings" size="sm" className="me-1" />
-                    <span>Settings</span>
-                  </LinkListItem>
+                  {isCitizen && (
+                    <LinkListItem inDropdown tag={Link} to="/setting">
+                      <Icon icon="it-settings" size="sm" className="me-1" />
+                      <span>Account config</span>
+                    </LinkListItem>
+                  )}
                 </LinkList>
               </DropdownMenu>
             </Dropdown>

@@ -94,7 +94,9 @@ function App() {
         <Route path='/setting' element={
           (!loggedIn)
             ? <Navigate to="/login" replace />
-            : <AccountConfig user={user} loggedIn={loggedIn} />
+            : (isCitizen)
+              ? <AccountConfig user={user} loggedIn={loggedIn} />
+              : <Navigate to="/" replace />
         } />
       </Route>
     </Routes>

@@ -1,277 +1,329 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-	Form,
-	Input,
-	Button,
-	Alert,
-	Upload,
-	UploadList,
-	UploadListItem,
-	Row,
-	Col
+    Form,
+    Input,
+    Button,
+    Alert,
+    Upload,
+    UploadList,
+    UploadListItem,
+    Row,
+    Col
 } from 'design-react-kit';
-import API from "../API/API.mjs";
+import API, { SERVER_URL } from "../API/API.mjs";
 
 // Local persistence helpers
-const loadSettings = (userId) => {
-	try {
-		const raw = localStorage.getItem(`accountSettings:${userId}`);
-		if (!raw) return null;
-		return JSON.parse(raw);
-	} catch {
-		return null;
-	}
+const loadSettings = async (userId) => {
+    try {
+        if (!userId) return null;
+        const raw = localStorage.getItem(`accountSettings:${userId}`);
+        const stored = raw ? JSON.parse(raw) : {};
+        let photoUrl = '';
+        try {
+            photoUrl = await API.fetchProfilePicture(userId);
+        } catch {
+            // If no photo is set or fetch fails, just ignore
+        }
+        return { ...stored, photoUrl };
+    } catch {
+        return null;
+    }
 };
 
-const saveSettings = async (userId, settings) => {
-	try {
-		localStorage.setItem(`accountSettings:${userId}`, JSON.stringify(settings));
-		await API.updateAccount(userId, settings);
-	} catch {
-		// ignore storage failures
-	}
+const saveSettings = async (userId, formData, { emailNotifications } = {}) => {
+    try {
+        await API.updateAccount(userId, formData);
+
+        // Try to refresh the stored photo URL after update
+        let photoUrl = '';
+        try {
+            photoUrl = await API.fetchProfilePicture(userId);
+        } catch {
+            // ignore
+        }
+
+        const stored = { emailNotifications: !!emailNotifications, photoUrl: photoUrl || '' };
+        localStorage.setItem(`accountSettings:${userId}`, JSON.stringify(stored));
+
+        return { photoUrl };
+    } catch {
+        // ignore failures
+        return {};
+    }
 };
 
 // Convert File -> base64 data URL
 const fileToDataUrl = (file) => new Promise((resolve, reject) => {
-	const reader = new FileReader();
-	reader.onload = () => resolve(reader.result);
-	reader.onerror = reject;
-	reader.readAsDataURL(file);
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
 });
 
 export default function AccountConfig({ user, loggedIn }) {
-	const userId = user?.id;
+    const userId = user?.id;
 
-	const [telegram, setTelegram] = useState('');
-	const [emailNotifications, setEmailNotifications] = useState(true);
-	const [photoFile, setPhotoFile] = useState(null);
-	const [photoPreview, setPhotoPreview] = useState('');
-	const [photoDataUrl, setPhotoDataUrl] = useState('');
+    // Editable fields
+    const [telegram, setTelegram] = useState(user?.telegramId ?? '');
+    const [emailNotifications, setEmailNotifications] = useState(user?.emailNotifications ?? true);
 
-	const [saving, setSaving] = useState(false);
-	const [success, setSuccess] = useState('');
-	const [error, setError] = useState('');
-	const [successOpen, setSuccessOpen] = useState(true);
-	const [errorOpen, setErrorOpen] = useState(true);
+    // Photo state
+    const [photoFile, setPhotoFile] = useState(null);          // newly selected file
+    const [photoPreview, setPhotoPreview] = useState('');      // blob URL for selected file
+    const [photoDataUrl, setPhotoDataUrl] = useState('');      // base64 for selected file (if needed)
+    const [currentPhotoUrl, setCurrentPhotoUrl] = useState(''); // existing photo from server
 
-	// Load saved settings at mount
-	useEffect(() => {
-		const saved = loadSettings(userId);
-		if (saved) {
-			setTelegram(saved.telegram || '');
-			setEmailNotifications(Boolean(saved.emailNotifications));
-			if (saved.photoDataUrl) {
-				setPhotoDataUrl(saved.photoDataUrl);
-				setPhotoPreview(saved.photoDataUrl);
-			}
-		}
-	}, [userId]);
+    const [saving, setSaving] = useState(false);
+    const [success, setSuccess] = useState('');
+    const [error, setError] = useState('');
+    const [successOpen, setSuccessOpen] = useState(true);
+    const [errorOpen, setErrorOpen] = useState(true);
 
-	// Keep preview URL in sync with selected file
-	useEffect(() => {
-		if (!photoFile) return;
-		const url = URL.createObjectURL(photoFile);
-		setPhotoPreview(url);
-		return () => URL.revokeObjectURL(url);
-	}, [photoFile]);
+    // Initialize from user when available
+    useEffect(() => {
+        if (!userId) return;
+        console.log(user);
+        setTelegram(user?.telegramId || '');
+        setEmailNotifications(user?.emailNotifications ?? true);
+    }, [userId, user?.telegramId, user?.emailNotifications]);
 
-	const handleFileChange = async (e) => {
-		setError('');
-		setErrorOpen(true);
-		const files = Array.from(e.target.files || []);
-		if (files.length === 0) {
-			setPhotoFile(null);
-			return;
-		}
-		const file = files[0];
-		if (!file.type.startsWith('image/')) {
-			setError('Only image files are allowed.');
-			setPhotoFile(null);
-			return;
-		}
-		if (file.size > 2 * 1024 * 1024) {
-			setError('Image must be at most 2MB.');
-			setPhotoFile(null);
-			return;
-		}
-		setPhotoFile(file);
-		try {
-			const dataUrl = await fileToDataUrl(file);
-			setPhotoDataUrl(dataUrl);
-		} catch {
-			setError('Could not read the selected image.');
-		}
-	};
+    // Load saved settings at mount (only current photo)
+    useEffect(() => {
+        let ignore = false;
+        (async () => {
+            if (!userId) return;
+            const saved = await loadSettings(userId);
+            if (!saved || ignore) return;
+            if (saved.photoUrl) {
+                const absoluteUrl = saved.photoUrl.startsWith('http')
+                    ? saved.photoUrl
+                    : `${SERVER_URL}${saved.photoUrl}`;
+                // Do NOT set photoPreview here; keep it only for user-selected files
+                setCurrentPhotoUrl(absoluteUrl);
+                setPhotoDataUrl('');
+            }
+        })();
+        return () => { ignore = true; };
+    }, [userId]);
 
-	const handleRemovePhoto = () => {
-		setPhotoFile(null);
-		setPhotoPreview('');
-		setPhotoDataUrl('');
-	};
+    // Keep preview URL in sync with selected file
+    useEffect(() => {
+        if (!photoFile) return;
+        const url = URL.createObjectURL(photoFile);
+        setPhotoPreview(url);
+        return () => URL.revokeObjectURL(url);
+    }, [photoFile]);
 
-	const handleSave = async (e) => {
-		e.preventDefault();
-		setSaving(true);
-		setSuccess('');
-		setError('');
-		setSuccessOpen(true);
-		setErrorOpen(true);
-		try {
-			const formData = new FormData();
-			if (telegram.trim() !== '') formData.append('telegramId', telegram.trim());
-			formData.append('emailNotifications', String(emailNotifications));
-			if (photoFile) {
-				formData.append('photo', photoFile);
-			}
-			await API.updateAccount(userId, formData);
-			setSuccess('Profile updated successfully.');
-		} catch (err) {
-			setError(typeof err === 'string' ? err : 'Unable to update profile.');
-		} finally {
-			setSaving(false);
-		}
-	};
+    const handleFileChange = async (e) => {
+        setError('');
+        setErrorOpen(true);
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) {
+            setPhotoFile(null);
+            return;
+        }
+        const file = files[0];
+        if (!file.type.startsWith('image/')) {
+            setError('Only image files are allowed.');
+            setPhotoFile(null);
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            setError('Image must be at most 2MB.');
+            setPhotoFile(null);
+            return;
+        }
+        setPhotoFile(file);
+        try {
+            const dataUrl = await fileToDataUrl(file);
+            setPhotoDataUrl(dataUrl);
+        } catch {
+            setError('Could not read the selected image.');
+        }
+    };
 
-	const avatarList = useMemo(() => {
-		if (!photoPreview && !photoDataUrl) return [];
-		const src = photoPreview || photoDataUrl;
-		return [{ name: 'profile-photo', size: 0, src }];
-	}, [photoPreview, photoDataUrl]);
+    const handleRemovePhoto = () => {
+        setPhotoFile(null);
+        setPhotoPreview('');
+        setPhotoDataUrl('');
+        // Do not touch currentPhotoUrl here; it's the existing server image
+    };
 
-	const telegramHelp = 'Your Telegram username (without @).';
+    const handleSave = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        setSuccess('');
+        setError('');
+        setSuccessOpen(true);
+        setErrorOpen(true);
+        try {
+            const formData = new FormData();
+            if (telegram.trim() !== '') formData.append('telegramId', telegram.trim());
+            formData.append('emailNotifications', String(emailNotifications));
+            if (photoFile) {
+                formData.append('photo', photoFile);
+            }
+            const { photoUrl } = await saveSettings(userId, formData, { emailNotifications });
+            setSuccess('Profile updated successfully.');
 
-	return (
-		<div className="container mt-5">
-					{(photoPreview || photoDataUrl) && (
-						<div className="d-flex justify-content-center mb-3">
-							<img
-								src={photoPreview || photoDataUrl}
-								alt="Profile photo preview"
-								style={{
-									width: 'clamp(96px, 35vw, 128px)',
-									height: 'clamp(96px, 35vw, 128px)',
-									borderRadius: '50%',
-									objectFit: 'cover',
-									border: '2px solid #e0e0e0'
-								}}
-							/>
-						</div>
-					)}
+            // If a new photo was uploaded, refresh the current photo shown
+            if (photoUrl) {
+                const absoluteUrl = photoUrl.startsWith('http') ? photoUrl : `${SERVER_URL}${photoUrl}`;
+                setCurrentPhotoUrl(absoluteUrl);
+            }
 
-			<Form onSubmit={handleSave} className="mb-4">
-						<Row className="gy-2">
-							<Input id="info_username" label="Username" value={user?.username ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
-							<Input id="info_email" label="Email" value={user?.email ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
-							<Input id="info_name" label="Name" value={user?.name ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
-							<Input id="info_surname" label="Surname" value={user?.surname ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
-							<Input id="info_role" label="Role" value={user?.userType ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
+            // Clear selected file state after successful save
+            setPhotoFile(null);
+            setPhotoPreview('');
+            setPhotoDataUrl('');
+        } catch (err) {
+            setError(typeof err === 'string' ? err : 'Unable to update profile.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // Only show UploadList if the user has selected a new file
+    const avatarList = useMemo(() => {
+        if (!photoFile && !photoDataUrl) return [];
+        const src = photoDataUrl || photoPreview;
+        return src ? [{ name: 'profile-photo', size: 0, src }] : [];
+    }, [photoFile, photoPreview, photoDataUrl]);
+
+    const telegramHelp = 'Your Telegram username (without @).';
+
+    return (
+        <div className="container mt-5">
+            {(photoPreview || photoDataUrl || currentPhotoUrl) && (
+                <div className="d-flex justify-content-center mb-4">
+                    <img
+                        src={photoPreview || photoDataUrl || currentPhotoUrl}
+                        alt="Profile photo preview"
+                        style={{
+                            width: 'clamp(96px, 35vw, 128px)',
+                            height: 'clamp(96px, 35vw, 128px)',
+                            borderRadius: '60%',
+                            objectFit: 'cover',
+                            border: '2px solid #e0e0e0'
+                        }}
+                    />
+                </div>
+            )}
+
+            <Form onSubmit={handleSave} className="mb-4">
+                <Row className="gy-2">
+                    <Input id="info_username" label="Username" value={user?.username ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
+                    <Input id="info_email" label="Email" value={user?.email ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
+                    <Input id="info_name" label="Name" value={user?.name ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
+                    <Input id="info_surname" label="Surname" value={user?.surname ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
+                    <Input id="info_role" label="Role" value={user?.userType ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
+                </Row>
+                <div className="form-text mt-1 mb-3">These details are read-only.</div>
+
+                <h6 className="mb-2 mt-3">Profile</h6>
+                <div className="text-center mb-3">
+                    <Upload
+                        id="profile_photo"
+                        label="Upload an image (max 2MB)"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        multiple={false}
+                        style={{ margin: '0 auto', display: 'inline-block' }}
+                    />
+                </div>
+
+                {avatarList.length > 0 && (
+                    <div className="d-flex justify-content-center mb-3 overflow-auto" style={{ maxWidth: '100%' }}>
+                        <UploadList previewImage tipologia="file">
+                            {avatarList.map((f, idx) => (
+                                <UploadListItem
+                                    key={idx}
+                                    fileName={f.name}
+                                    fileWeight={''}
+                                    previewImage
+                                    previewImageAlt={f.name}
+                                    previewImageSrc={f.src}
+                                    uploadStatus="success"
+                                    onDispose={handleRemovePhoto}
+                                />
+                            ))}
+                        </UploadList>
+                    </div>
+                )}
+
+                <Row className="gy-2 align-items-center mt-4">
+                    <Input
+                        id="telegram"
+                        name="telegram"
+                        label="Telegram username"
+                        placeholder="e.g. john_doe"
+                        value={telegram}
+                        onChange={(e) => setTelegram(e.target.value)}
+                        infoText={telegramHelp}
+                        wrapperClassName="col-12 col-md-6"
+                    />
+                </Row>
+				<Row>
+                        <div className="form-check form-switch mt-3 mt-md-0">
+                            <input
+                                id="emailNotifications"
+                                className="form-check-input"
+                                type="checkbox"
+                                checked={emailNotifications}
+                                onChange={(e) => setEmailNotifications(e.target.checked)}
+                                aria-label="Toggle email notifications"
+                            />
+                            <label className="form-check-label" htmlFor="emailNotifications">
+                                Email notifications
+                            </label>
+                            <div className="form-text">Emails are not implemented; this toggle is saved locally only.</div>
+                        </div>
 				</Row>
-				<div className="form-text mt-1 mb-3">These details are read-only.</div>
 
-				<h6 className="mb-2 mt-3">Profile</h6>
-				<div className="text-center mb-3">
-					<Upload
-						id="profile_photo"
-						label="Upload an image (max 2MB)"
-						accept="image/*"
-						onChange={handleFileChange}
-						multiple={false}
-						style={{ margin: '0 auto', display: 'inline-block' }}
-					/>
-				</div>
-						{(avatarList.length > 0) && (
-							<div className="d-flex justify-content-center mb-3 overflow-auto" style={{ maxWidth: '100%' }}>
-						<UploadList previewImage tipologia="file">
-							{avatarList.map((f, idx) => (
-								<UploadListItem
-									key={idx}
-									fileName={f.name}
-									fileWeight={''}
-									previewImage
-									previewImageAlt={f.name}
-									previewImageSrc={f.src}
-									uploadStatus="success"
-									onDispose={() => handleRemovePhoto()}
-								/>
-							))}
-						</UploadList>
-					</div>
-				)}
+                {error && (
+                    <Alert color="danger" isOpen={errorOpen} toggle={() => setErrorOpen(false)}>
+                        {error}
+                    </Alert>
+                )}
+                {success && (
+                    <Alert color="success" isOpen={successOpen} toggle={() => setSuccessOpen(false)}>
+                        {success}
+                    </Alert>
+                )}
 
-				<Row className="gy-2 align-items-center">
-								<Input
-						id="telegram"
-						name="telegram"
-						label="Telegram username"
-						placeholder="e.g. john_doe"
-						value={telegram}
-						onChange={(e) => setTelegram(e.target.value)}
-						infoText={telegramHelp}
-									wrapperClassName="col-12 col-md-6"
-					/>
-					<Col className="col-12 col-md-6">
-						<div className="form-check form-switch mt-3 mt-md-0">
-							<input
-								id="emailNotifications"
-								className="form-check-input"
-								type="checkbox"
-								checked={emailNotifications}
-								onChange={(e) => setEmailNotifications(e.target.checked)}
-											aria-label="Toggle email notifications"
-							/>
-							<label className="form-check-label" htmlFor="emailNotifications">
-								Email notifications
-							</label>
-							<div className="form-text">Emails are not implemented; this toggle is saved locally only.</div>
-						</div>
-					</Col>
-				</Row>
-
-				{error && (
-					<Alert color="danger" isOpen={errorOpen} toggle={() => setErrorOpen(false)}>
-						{error}
-					</Alert>
-				)}
-				{success && (
-					<Alert color="success" isOpen={successOpen} toggle={() => setSuccessOpen(false)}>
-						{success}
-					</Alert>
-				)}
-
-				<Row className="gy-3 mt-2">
-					<Col className="col-12 col-sm-auto">
-						<Button
-							color="primary"
-							outline
-							type="button"
-							className="w-100 w-sm-auto"
-							onClick={() => {
-								setTelegram('');
-								setEmailNotifications(true);
-								setPhotoDataUrl('');
-								setPhotoPreview('');
-								setPhotoFile(null);
-								setSuccess('');
-								setError('');
-							}}
-						>
-							Cancel
-						</Button>
-					</Col>
-					<Col className="col-12 col-sm-auto">
-						<Button
-							color="primary"
-							type="submit"
-							className="w-100 w-sm-auto"
-							disabled={saving}
-						>
-							{saving ? 'Saving…' : 'Save changes'}
-						</Button>
-					</Col>
-				</Row>
-			</Form>
-		</div>
-	);
+                <Row className="gy-3 mt-2">
+                    <Col className="col-12 col-sm-auto">
+                        <Button
+                            color="primary"
+                            outline
+                            type="button"
+                            className="w-100 w-sm-auto"
+                            onClick={() => {
+                                setTelegram(user?.telegramId || '');
+                                setEmailNotifications(user?.emailNotifications ?? true);
+                                setPhotoDataUrl('');
+                                setPhotoPreview('');
+                                setPhotoFile(null);
+                                setSuccess('');
+                                setError('');
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </Col>
+                    <Col className="col-12 col-sm-auto">
+                        <Button
+                            color="primary"
+                            type="submit"
+                            className="w-100 w-sm-auto"
+                            disabled={saving}
+                        >
+                            {saving ? 'Saving…' : 'Save changes'}
+                        </Button>
+                    </Col>
+                </Row>
+            </Form>
+        </div>
+    );
 }
 

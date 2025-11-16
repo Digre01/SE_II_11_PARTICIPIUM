@@ -43,6 +43,12 @@ async function configAccount(userId, telegramId, emailNotifications, photoUrl){
     const user = await userRepository.configUserAccount(userId, telegramId, emailNotifications, photoUrl);
     return user;
 }
+async function getPfpUrl(userId) {
+    const photoUrl = await userRepository.getPfpUrl(userId);
+    return photoUrl;
+}
+    
 
-const userController = { getUserByUsername, createUser, assignRole, getAvailableStaffForRoleAssignment, getAllRoles, getAllOffices, configAccount };
+
+const userController = { getUserByUsername, createUser, assignRole, getAvailableStaffForRoleAssignment, getAllRoles, getAllOffices, configAccount, getPfpUrl };
 export default userController;

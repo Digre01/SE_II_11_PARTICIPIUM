@@ -125,6 +125,28 @@ class UserRepository {
         await userRepo.save(user);
         return user;
     }
+
+    //Get PFP of the user
+    async getPfpUrl(userId) {
+        const userRepo = AppDataSourcePostgres.getRepository(Users);
+
+        const user = await userRepo.findOneBy({ id: Number(userId) });
+        if (!user) {
+            throw new NotFoundError(`User with id '${userId}' not found`);
+        }
+
+        const photoRepo = AppDataSourcePostgres.getRepository(Photos);
+        if (!user.photoId) {
+            throw new NotFoundError(`'${userId}' profile picture not found`);
+        }
+        const photo = await photoRepo.findOneBy({ id: Number(user.photoId) });
+        
+        if(!photo){
+             throw new NotFoundError(`'${userId}' profile picture not found`);
+        }
+        return photo.link;
+        
+    }
 }
 
 export const userRepository = new UserRepository();

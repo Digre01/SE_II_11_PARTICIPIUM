@@ -39,6 +39,9 @@ router.patch('/:id/role', authorizeUserType(['ADMIN']),
     }
 );
 
+
+
+
 // PATCH /api/v1/sessions/:id/role - Assign role to staff (ADMIN only)
 router.patch('/:id/role', authorizeUserType(['ADMIN']), async function(req, res, next) {
     try {
@@ -49,7 +52,14 @@ router.patch('/:id/role', authorizeUserType(['ADMIN']), async function(req, res,
     } catch (err) { next(err); }
 });
 
-
+// GET /api/v1/sessions/:id/pfp - Get profile picture URL for a user (authenticated)
+router.get('/:id/pfp', authorizeUserType(['CITIZEN']), async function(req, res, next) {
+    try {
+        const userId = Number(req.params.id);
+        const result = await userController.getPfpUrl(userId);
+        res.status(200).json(result);
+    } catch (err) { next(err); }
+});
 
 // PATCH /api/v1/sessions/:id/config - Update info of my account (single profile photo)
 router.patch(

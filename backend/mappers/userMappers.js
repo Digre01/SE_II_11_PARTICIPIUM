@@ -7,6 +7,8 @@ export function mapUserToDTO(user) {
         surname: user.surname,
         userType: user.userType,
         officeId: user.userOffice ? (user.userOffice.officeId ?? null) : null,
-        roleId: user.userOffice ? (user.userOffice.roleId ?? null) : null
+        roleId: user.userOffice ? (user.userOffice.roleId ?? null) : null,
+        telegramId: user.telegramId ?? null,
+        emailNotifications: user.emailNotifications ?? null,
     }
 }
