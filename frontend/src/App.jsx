@@ -1,16 +1,16 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-italia/dist/css/bootstrap-italia.min.css';
 
-import { Route, Routes, Navigate } from 'react-router'; 
+import {Route, Routes, Navigate,} from 'react-router';
 import DefaultLayout from './components/DefaultLayout';
 import HomePage from './components/HomePage.jsx';
 import StaffRegistration from './components/StaffRegistration';
 import AssignRole from './components/AssignRole';
 import ReportForm from './components/ReportForm';
-import API from "./API/API.mjs";
 import { useState, useEffect } from "react";
 import { LoginForm } from "./components/authComponents/loginForm.jsx";
 import SignUpForm from "./components/authComponents/signUpForm.jsx";
+import ReportsPage from "./components/reportsPage.jsx";
 
 
 
@@ -48,7 +48,7 @@ function App() {
     const user = await API.logIn(credentials); 
     setUser(user);
     setLoggedIn(true);
-    return { user, isAdmin: user?.userType === 'admin' }; 
+    return { user, isAdmin: user?.userType === 'admin' };
   };
 
   const handleLogout = async () => {
@@ -90,6 +90,9 @@ function App() {
             ? <ReportForm user={user} loggedIn={loggedIn}/>
             : <Navigate to="/" replace />
         } />
+        <Route path='/offices/:officeId/reports' element={
+          <ReportsPage user={user}/>
+        }/>
       </Route>
     </Routes>
   );

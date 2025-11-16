@@ -48,8 +48,11 @@ export class ReportRepository {
 		return savedReport;
 	}
 
-    async getAllReports() {
-        return await this.repo.find();
+    async getAllReports(officeId) {
+        return await this.repo.find({
+            where: { category: { id: officeId } },
+            relations: ['category']
+        });
     }
 }
 

@@ -3,6 +3,7 @@ import {createReport, getAllReports} from "../controllers/reportController.mjs";
 import upload from '../middlewares/uploadMiddleware.js';
 import { authorizeUserType } from '../middlewares/userAuthorization.js';
 import fs from 'fs';
+import {BadRequestError} from "../errors/BadRequestError.js";
 
 const router = Router();
 
@@ -51,7 +52,7 @@ router.post('/',
 });
 
 router.get('/',
-    authorizeUserType(['officer']),
+    authorizeUserType(['staff']),
     async (req, res, next) => {
 
         try {
@@ -60,6 +61,6 @@ router.get('/',
         } catch (error) {
             next(error);
         }
-})
+});
 
 export default router;

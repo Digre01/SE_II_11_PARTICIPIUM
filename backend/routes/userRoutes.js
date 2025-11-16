@@ -3,6 +3,7 @@ import userController from "../controllers/userController.js";
 import passport from "passport";
 import { requireAdminIfCreatingStaff, authorizeUserType } from "../middlewares/userAuthorization.js";
 import {BadRequestError} from "../errors/BadRequestError.js";
+import userOfficeController from "../controllers/userOfficeController..js";
 
 const router = Router();
 
@@ -56,6 +57,14 @@ router.get('/available_staff', authorizeUserType(['ADMIN']), async function(req,
     } catch (err) { next(err); }
 });
 
+router.get('/:id/office', async function(req, res, next) {
+    try {
+        const office = await userOfficeController.getUserOfficeByUserId(req.params.id);
+        res.status(200).json(office);
+    } catch (err) {
+        next(err);
+    }
+})
 
 //signup
 router.post("/signup", requireAdminIfCreatingStaff,

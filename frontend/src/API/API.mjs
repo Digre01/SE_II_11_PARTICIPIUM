@@ -120,5 +120,18 @@ export async function fetchOffices() {
   throw await response.text();
 }
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices };
+export async function fetchReports() {
+    const response = await fetch(`${SERVER_URL}/api/v1/reports`, {
+        method: 'GET',
+        credentials: 'include',
+    });
+    if (response.ok) {
+        return await response.json();
+    } else {
+        throw await response.text();
+    }
+}
+
+const API = {
+    signUp, logIn, logOut, createReport, fetchCategories, assignRole, fetchAvailableStaff, fetchRoles, fetchReports};
 export default API;
