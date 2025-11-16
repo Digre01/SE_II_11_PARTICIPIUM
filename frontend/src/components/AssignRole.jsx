@@ -36,13 +36,13 @@ function AssignRole() {
         setMessage(null);
 
         if (!form.userId || !form.roleId) {
-            setMessage({ type: 'danger', text: 'User, Role and Office are required' });
+            setMessage({ type: 'danger', text: 'User and Role are required' });
             return;
         }
 
         setSubmitting(true);
         try {
-            await API.assignRole(Number(form.userId), Number(form.roleId), null);
+            await API.assignRole(Number(form.userId), Number(form.roleId));
             setMessage({ type: 'success', text: 'Role assigned successfully' });
             reset();
             const staff = await API.fetchAvailableStaff();
@@ -95,25 +95,6 @@ function AssignRole() {
                             ))}
                         </Select>
                     </FormGroup>
-                        {/*
-                        <FormGroup className="mb-4">
-                            <Select
-                                name="officeId"
-                                id="officeId"
-                                value={form.officeId}
-                                onChange={(e) => {
-                                    const v = e && e.target ? e.target.value : e;
-                                    setForm(f => ({ ...f, officeId: v }));
-                                }}
-                                label="Office"
-                            >
-                                <option value="">Choose from the list</option>
-                                {officeOptions.map(o => (
-                                    <option key={o.id} value={o.id}>{o.name}</option>
-                                ))}
-                            </Select>
-                        </FormGroup>
-                        */}
 
                     {message && (
                         <div className="mb-3">

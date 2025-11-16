@@ -8,6 +8,9 @@ let userRepository;
 let userService;
 
 describe('E2E: userRoutes assign role', () => {
+  // Keep track of test users to cleanup
+  const testUsernames = [];
+
   beforeAll(async () => {
     const data = await import('../../config/data-source.js');
     dataSource = data.AppDataSourcePostgres;
@@ -25,6 +28,17 @@ describe('E2E: userRoutes assign role', () => {
   }, 30000);
 
   afterAll(async () => {
+    // Cleanup test users and related UserOffice rows
+    for (const username of testUsernames) {
+      const user = await userRepository.getUserByUsername(username);
+      if (user) {
+        // Delete UserOffice row if exists
+        const userOfficeRepo = dataSource.getRepository('UserOffice');
+        await userOfficeRepo.delete({ userId: user.id });
+        // Delete user
+        await userRepository.repo.delete({ id: user.id });
+      }
+    }
     if (dataSource?.isInitialized) {
       await dataSource.destroy();
     }
@@ -42,11 +56,13 @@ describe('E2E: userRoutes assign role', () => {
   it('returns 403 when authenticated as citizen', async () => {
     const agent = request.agent(app);
     const rnd = Math.random().toString(36).slice(2, 8);
+    const citizenUsername = `cit_${rnd}`;
+    testUsernames.push(citizenUsername);
     const signUpRes = await agent
       .post('/api/v1/sessions/signup')
       .send({
-        username: `cit_${rnd}`,
-        email: `cit_${rnd}@example.com`,
+        username: citizenUsername,
+        email: `${citizenUsername}@example.com`,
         name: 'Test',
         surname: 'Citizen',
         password: 'password123',
@@ -67,6 +83,7 @@ describe('E2E: userRoutes assign role', () => {
     const password = 'Admin#12345';
     const hashed = await userService.hashPassword(password, salt);
     const adminUsername = `admin_e2e_${Math.random().toString(36).slice(2,6)}`;
+    testUsernames.push(adminUsername);
     await userRepository.createUser(
       adminUsername,
       `${adminUsername}@example.com`,
@@ -92,6 +109,7 @@ describe('E2E: userRoutes assign role', () => {
       const passS = 'Staff#12345';
       const hashS = await userService.hashPassword(passS, saltS);
       const uname = `staff_e2e_${Math.random().toString(36).slice(2,6)}`;
+      testUsernames.push(uname);
       staff = await userRepository.createUser(
         uname,
         `${uname}@example.com`,
@@ -116,5 +134,8 @@ describe('E2E: userRoutes assign role', () => {
       role: expect.any(Object),
       office: expect.any(Object)
     });
+      // Cleanup UserOffice row
+      const userOfficeRepo = dataSource.getRepository('UserOffice');
+      await userOfficeRepo.delete({ userId: staff.id });
   }, 30000);
 });

@@ -12,12 +12,22 @@ export const Roles = new EntitySchema({
     name: {
       type: String,
       nullable: false
+    },
+    officeId: {
+      type: Number,
+      nullable: false
     }
   },
   relations: {
     userOffice: {
       type: 'one-to-many',
       target: 'UserOffice',
+      inverseSide: 'role'
+    },
+    office: {
+      type: 'many-to-one',
+      target: 'Offices',
+      joinColumn: { name: 'officeId' },
       inverseSide: 'role'
     }
   }

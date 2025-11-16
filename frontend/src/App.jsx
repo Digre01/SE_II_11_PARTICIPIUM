@@ -25,7 +25,7 @@ function App() {
     // Recupera lo stato utente dalla sessione attiva
     const fetchCurrentUser = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/sessions/current', {
+        const response = await fetch('http://localhost:3000/api/v1/sessions/current', {
           credentials: 'include'
         });
         if (response.ok) {
