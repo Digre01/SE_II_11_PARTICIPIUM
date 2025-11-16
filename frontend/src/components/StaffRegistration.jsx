@@ -74,12 +74,12 @@ function StaffRegistration(){
         <>
         <div className="container mt-5">
             <Form onSubmit={onSubmit} className="mb-4">
-                <Row>
+                <Row className="gy-3">
                     <Input
                         label="Name"
                         placeholder="Insert first name"
                         type="text"
-                        wrapperClassName="col col-md-5"
+                        wrapperClassName="col-12 col-md-5"
                         value={form.name}
                         onChange={onChange("name")}
                     />
@@ -87,17 +87,17 @@ function StaffRegistration(){
                         label="Surname"
                         placeholder="Insert last name"
                         type="text"
-                        wrapperClassName="col col-md-5"
+                        wrapperClassName="col-12 col-md-5"
                         value={form.surname}
                         onChange={onChange("surname")}
                     />
                 </Row>
-                <Row>
+                <Row className="gy-3">
                    <Input
                         label="Username"
                         placeholder="Insert username"
                         type="text"
-                        wrapperClassName="col col-md-4"
+                        wrapperClassName="col-12 col-md-4"
                         value={form.username}
                         onChange={onChange("username")}
                     />
@@ -105,25 +105,26 @@ function StaffRegistration(){
                         label="Email"
                         placeholder="Insert a mail"
                         type="email"
-                        wrapperClassName="col col-md-4"
+                        wrapperClassName="col-12 col-md-4"
                         value={form.email}
                         onChange={onChange("email")}
                     />
                 </Row>
-                <Row>
+                <Row className="gy-3">
                     <Input
                         label="Password"
                         placeholder="Insert a password"
                         type="text"
-                        wrapperClassName="col col-md-4"
+                        wrapperClassName="col-12 col-md-4"
                         value={form.password}
                         onChange={onChange("password")}
                     />
-                    <Col sm="auto">
+                    <Col className="col-12 col-sm-auto">
                         <Button
                             color="secondary"
                             type="button"
                             onClick={generatePassword}
+                            className="w-100 w-sm-auto"
                         >
                         Random Password
                         </Button>
@@ -138,23 +139,25 @@ function StaffRegistration(){
                 </Alert>
                 )}
 
-                <Row>
-                    <Col sm="auto">
+                <Row className="gy-2">
+                    <Col className="col-12 col-sm-auto">
                         <Button
                             color="primary"
                             outline
                             type="button"
                             onClick={reset}
                             disabled={submitting}
+                            className="w-100 w-sm-auto"
                         >
                             Cancel
                         </Button>
                     </Col>
-                    <Col sm="auto">
+                    <Col className="col-12 col-sm-auto">
                         <Button
                             color="primary"
                             type="submit"
                             disabled={submitting}
+                            className="w-100 w-sm-auto"
                         >
                             Confirm
                         </Button>

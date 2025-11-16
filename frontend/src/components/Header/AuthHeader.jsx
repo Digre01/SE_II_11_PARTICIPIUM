@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import './AuthHeader.css';
 import {
   Header,
   HeaderContent,
@@ -6,10 +7,14 @@ import {
   HeaderToggler,
   TabNavLink,
   Collapse,
-  Nav,
   NavItem,
   Icon,
-  HeaderRightZone
+  HeaderRightZone,
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
+  LinkList,
+  LinkListItem
 } from 'design-react-kit';
 import { Link } from 'react-router-dom';
 import { LogoutButton } from '../authComponents/loginForm';
@@ -18,14 +23,11 @@ function AuthHeader({ user, loggedIn, isAdmin, handleLogout }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <Header theme="dark"  type="slim"  className="shadow-sm">
+    <Header theme="dark" type="slim" className="shadow-sm app-header">
       <HeaderContent expand="lg">
-        {/* Brand */}
         <HeaderBrand tag={Link} to="/" className="text-decoration-none text-dark fw-bold fs-4">
           PARTICIPIUM
         </HeaderBrand>
-
-        {/* Toggler (mobile) */}
         <HeaderToggler
           aria-controls="navbar"
           aria-expanded={isOpen}
@@ -34,50 +36,52 @@ function AuthHeader({ user, loggedIn, isAdmin, handleLogout }) {
         >
           <Icon icon="it-burger" />
         </HeaderToggler>
-
-        {/* Menu collapsabile */}
-        <Collapse
-          navbar
-          isOpen={isOpen}
-          id="navbar"
-        >
+        <Collapse navbar isOpen={isOpen} id="navbar">
+          <NavItem>
+            <TabNavLink tag={Link} to="/">Home</TabNavLink>
+          </NavItem>
         </Collapse>
         <HeaderRightZone>
-
-                {/* Login / Username */}
-                {loggedIn && user ? (
-                  <NavItem>
-                      <Icon icon="it-user" size="sm" className="me-1" />
-                      {user.username}
-                  </NavItem>
-                ) : (
-                  <NavItem>
-                    <TabNavLink tag={Link} to="/login">
-                      <Icon icon="it-user" size="sm" className="me-1" />
-                      Login
-                    </TabNavLink>
-                  </NavItem>
-                )}
-
-                {/* SignUp */}
-                {!loggedIn && !user && !isAdmin ? (
-                  <NavItem>
-                    <TabNavLink tag={Link} to="/signup">
-                      <Icon icon="it-sign" size="sm" className="me-1" />
-                      Sign Up
-                    </TabNavLink>
-                  </NavItem>
-                ) : null}
-
-                {/*Logout*/ }
-                {loggedIn && (
-                <NavItem>
-                  <LogoutButton handleLogout={handleLogout} color="warning" tag={Link} to="/">
-                    Logout
-                  </LogoutButton>
-                </NavItem>
-              )}
-          
+          {loggedIn && user ? (
+            <Dropdown direction="down">
+              <DropdownToggle tag="a">
+                <Icon icon="it-user" size="sm" className="me-1" />
+                {user.username}
+              </DropdownToggle>
+              <DropdownMenu className="dropdown-offset-y">
+                <LinkList>
+                  <LinkListItem inDropdown href="/setting">
+                    <Icon icon="it-settings" size="sm" className="me-1" />
+                    <span>Settings</span>
+                  </LinkListItem>
+                  <LinkListItem inDropdown href="/setting">
+                    <Icon icon="it-settings" size="sm" className="me-1" />
+                    <span>Settings</span>
+                  </LinkListItem>
+                  <LinkListItem inDropdown href="/setting">
+                    <Icon icon="it-settings" size="sm" className="me-1" />
+                    <span>Settings</span>
+                  </LinkListItem>
+                </LinkList>
+              </DropdownMenu>
+            </Dropdown>
+          ) : (
+            <TabNavLink tag={Link} to="/login">
+              <Icon icon="it-user" size="sm" className="me-1" />
+              Login
+            </TabNavLink>
+          )}
+          {!loggedIn && !user && !isAdmin ? (
+            <TabNavLink tag={Link} to="/signup">
+              <Icon icon="it-sign" size="sm" className="me-1" />
+              Sign Up
+            </TabNavLink>
+          ) : null}
+          {loggedIn && (
+            <LogoutButton handleLogout={handleLogout} color="warning" tag={Link} to="/">
+              Logout
+            </LogoutButton>
+          )}
         </HeaderRightZone>
       </HeaderContent>
     </Header>
@@ -85,3 +89,4 @@ function AuthHeader({ user, loggedIn, isAdmin, handleLogout }) {
 }
 
 export default AuthHeader;
+

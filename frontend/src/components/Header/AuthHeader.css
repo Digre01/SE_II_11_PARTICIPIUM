@@ -1,0 +1,14 @@
+.app-header {
+  position: relative;
+  z-index: 2000; /* sopra i pane Leaflet (<= 700) */
+}
+
+/* Raise the whole sticky header layer above Leaflet */
+.app-header-wrapper {
+  z-index: 4000 !important; /* higher than any Leaflet pane */
+}
+
+/* Add a responsive-friendly vertical spacing to the dropdown menu */
+.dropdown-offset-y {
+  margin-top: 50px !important; /* push the menu 50px down on Y axis */
+}

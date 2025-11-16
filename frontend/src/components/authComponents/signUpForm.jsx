@@ -47,13 +47,13 @@ function SignUpForm(props){
         <>
             <div className="container mt-5">
                 <Form action={formAction} className="mb-4">
-                    <Row>
+                    <Row className="gy-3">
                         <Input
                             label="Name"
                             name="name"
                             placeholder="Insert first name"
                             type="text"
-                            wrapperClassName="col col-md-5"
+                            wrapperClassName="col-12 col-md-6"
                             defaultValue={form.name}
                             onChange={handleInputChange}
                         />
@@ -62,18 +62,18 @@ function SignUpForm(props){
                             name="surname"
                             placeholder="Insert last name"
                             type="text"
-                            wrapperClassName="col col-md-5"
+                            wrapperClassName="col-12 col-md-6"
                             defaultValue={form.surname}
                             onChange={handleInputChange}
                         />
                     </Row>
-                    <Row>
+                    <Row className="gy-3">
                         <Input
                             label="Username"
                             name="username"
                             placeholder="Insert username"
                             type="text"
-                            wrapperClassName="col col-md-4"
+                            wrapperClassName="col-12 col-md-6"
                             defaultValue={form.username}
                             onChange={handleInputChange}
                         />
@@ -82,18 +82,18 @@ function SignUpForm(props){
                             name="email"
                             placeholder="Insert an email"
                             type="email"
-                            wrapperClassName="col col-md-4"
+                            wrapperClassName="col-12 col-md-6"
                             defaultValue={form.email}
                             onChange={handleInputChange}
                         />
                     </Row>
-                    <Row>
+                    <Row className="gy-3">
                         <Input
                             label="Password"
                             name="password"
                             placeholder="Insert a password"
-                            type="text"
-                            wrapperClassName="col col-md-4"
+                            type="password"
+                            wrapperClassName="col-12 col-md-6"
                             defaultValue={form.password}
                             onChange={handleInputChange}
                         />
@@ -102,12 +102,12 @@ function SignUpForm(props){
                             name="confirmPassword"
                             placeholder="Rewrite the password"
                             type="password"
-                            wrapperClassName="col col-md-4"
+                            wrapperClassName="col-12 col-md-6"
                             value={form.confirmPassword}
                             onChange={handleInputChange}
                         />
                         {form.confirmPassword !== '' && !passwordsMatch && (
-                            <div className="col-10 text-danger small mt-1">Password are not matching</div>
+                            <div className="col-12 text-danger small mt-1">Passwords do not match</div>
                         )}
                     </Row>
 
@@ -118,12 +118,13 @@ function SignUpForm(props){
                         </Alert>
                     )}
 
-                    <Row>
+                    <Row className="gy-2">
                         <Col sm="auto">
                             <Button
                                 color="primary"
                                 outline
                                 type="reset"
+                                className="w-100 w-sm-auto"
                                 disabled={isPending}
                             >
                                 Cancel
@@ -133,6 +134,7 @@ function SignUpForm(props){
                             <Button
                                 color="primary"
                                 type="submit"
+                                className="w-100 w-sm-auto"
                                 disabled={isPending || !passwordsMatch}
                             >
                                 Confirm

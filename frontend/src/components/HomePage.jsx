@@ -103,7 +103,7 @@ export default function HomePage({ user, loggedIn, isAdmin }) {
           </h3>
           <div className="it-card-body">
             <p className="it-card-text">
-              Manage user roles and permissions for staff members.
+              Manage user roles for staff members.
             </p>
             <Button color="primary" tag={Link} to="/assign_role">
               Go to Assign Role
