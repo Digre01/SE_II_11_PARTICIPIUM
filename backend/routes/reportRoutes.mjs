@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createReport } from "../controllers/reportController.mjs";
+import {createReport, getAllReports} from "../controllers/reportController.mjs";
 import upload from '../middlewares/uploadMiddleware.js';
 import { authorizeUserType } from '../middlewares/userAuthorization.js';
 import fs from 'fs';
@@ -49,5 +49,17 @@ router.post('/',
     next(error);
   }
 });
+
+router.get('/',
+    authorizeUserType(['officer']),
+    async (req, res, next) => {
+
+        try {
+            const reports = await getAllReports();
+            res.status(200).json(reports);
+        } catch (error) {
+            next(error);
+        }
+})
 
 export default router;

@@ -1,10 +1,9 @@
-
-import { AppDataSourcePostgres } from "../config/data-source.js";
-import { Report } from "../entities/Reports.js";
-import { Photos } from "../entities/Photos.js";
-import { Users } from "../entities/Users.js";
-import { Categories } from "../entities/Categories.js";
-import { NotFoundError } from "../errors/NotFoundError.js";
+import {AppDataSourcePostgres} from "../config/data-source.js";
+import {Report} from "../entities/Reports.js";
+import {Photos} from "../entities/Photos.js";
+import {Users} from "../entities/Users.js";
+import {Categories} from "../entities/Categories.js";
+import {NotFoundError} from "../errors/NotFoundError.js";
 
 export class ReportRepository {
 	get repo() {
@@ -48,6 +47,10 @@ export class ReportRepository {
 
 		return savedReport;
 	}
+
+    async getAllReports() {
+        return await this.repo.find();
+    }
 }
 
 export const reportRepository = new ReportRepository();
