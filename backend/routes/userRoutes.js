@@ -21,16 +21,9 @@ router.patch('/:id/role', authorizeUserType(['ADMIN']),
             const body = req.body || {};
             if (!Object.prototype.hasOwnProperty.call(body, 'roleId')) {
                 const err = new BadRequestError('roleId is required');
-                //err.status = 400;
                 return next(err);
             }
-            if (!Object.prototype.hasOwnProperty.call(body, 'officeId')) {
-                const err = new BadRequestError('officeId is required');
-                //err.status = 400;
-                return next(err);
-            }
-
-            const updated = await userController.assignRole(req.params.id, body.roleId, body.officeId);
+            const updated = await userController.assignRole(req.params.id, body.roleId);
             return res.status(200).json(updated);
         } catch (err) {
             next(err);
@@ -42,8 +35,8 @@ router.patch('/:id/role', authorizeUserType(['ADMIN']),
 router.patch('/:id/role', authorizeUserType(['ADMIN']), async function(req, res, next) {
     try {
         const userId = Number(req.params.id);
-        const { roleId, officeId } = req.body;
-        const result = await userController.assignRole(userId, roleId, officeId);
+        const { roleId } = req.body;
+        const result = await userController.assignRole(userId, roleId);
         res.status(200).json(result);
     } catch (err) { next(err); }
 });

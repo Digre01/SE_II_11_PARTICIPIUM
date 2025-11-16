@@ -29,7 +29,7 @@ async function createUser({username, email, name, surname, password, userType}){
 }
 
 async function assignRole(userId, roleId, officeId) {
-    const userOffice = await userRepository.assignRoleToUser(userId, roleId, officeId);
+    const userOffice = await userRepository.assignRoleToUser(userId, roleId);
     return {
         userId: userOffice.userId,
         officeId: userOffice.officeId ?? null,

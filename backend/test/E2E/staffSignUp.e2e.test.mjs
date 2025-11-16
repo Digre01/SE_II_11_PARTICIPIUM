@@ -17,9 +17,14 @@ const staffUsernames = [
 ];
 
 async function cleanupStaffUsers() {
-  const repo = AppDataSourcePostgres.getRepository('Users');
+  const userRepo = AppDataSourcePostgres.getRepository('Users');
+  const userOfficeRepo = AppDataSourcePostgres.getRepository('UserOffice');
   for (const username of staffUsernames) {
-    await repo.delete({ username });
+    const user = await userRepo.findOneBy({ username });
+    if (user) {
+      await userOfficeRepo.delete({ userId: user.id });
+      await userRepo.delete({ id: user.id });
+    }
   }
 }
 

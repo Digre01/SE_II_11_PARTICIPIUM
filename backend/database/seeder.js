@@ -5,9 +5,10 @@ export async function seedDatabase() {
   // Offices
   const { Office: Offices } = await import("../entities/Offices.js");
   const officeRepo = AppDataSourcePostgres.getRepository(Offices);
-  const officesExisting = await officeRepo.find();
+  let officesExisting = await officeRepo.find();
   if (officesExisting.length === 0) {
     await officeRepo.save([
+      { name: 'Organization Office' },
       { name: 'Water Office' },
       { name: 'Architectural Barriers Office' },
       { name: 'Sewer System Office' },
@@ -19,7 +20,11 @@ export async function seedDatabase() {
       { name: 'Generic Office' }
     ]);
     console.log("Added default Offices");
+    officesExisting = await officeRepo.find(); // aggiorna con gli id generati
   }
+  // Mappa nome office -> id
+  const officeMap = {};
+  officesExisting.forEach(o => { officeMap[o.name] = o.id; });
 
   // Categories
   const { Categories } = await import("../entities/Categories.js");
@@ -27,15 +32,15 @@ export async function seedDatabase() {
   const categoriesExisting = await categoryRepo.find();
   if (categoriesExisting.length === 0) {
     await categoryRepo.save([
-      { name: 'Water Supply – Drinking Water', officeId: 1 },
-      { name: 'Architectural Barriers', officeId: 2 },
-      { name: 'Sewer System', officeId: 3 },
-      { name: 'Public Lighting', officeId: 4 },
-      { name: 'Waste', officeId: 5 },
-      { name: 'Road Signs and Traffic Lights', officeId: 6 },
-      { name: 'Roads and Urban Furnishings', officeId: 7 },
-      { name: 'Public Green Areas and Playgrounds', officeId: 8 },
-      { name: 'Other', officeId: 9 }
+      { name: 'Water Supply – Drinking Water', officeId: officeMap['Water Office'] },
+      { name: 'Architectural Barriers', officeId: officeMap['Architectural Barriers Office'] },
+      { name: 'Sewer System', officeId: officeMap['Sewer System Office'] },
+      { name: 'Public Lighting', officeId: officeMap['Public Lighting Office'] },
+      { name: 'Waste', officeId: officeMap['Waste Management Office'] },
+      { name: 'Road Signs and Traffic Lights', officeId: officeMap['Road Signs and Traffic Lights Office'] },
+      { name: 'Roads and Urban Furnishings', officeId: officeMap['Roads and Urban Furnishings Office'] },
+      { name: 'Public Green Areas and Playgrounds', officeId: officeMap['Public Green Areas and Playgrounds Office'] },
+      { name: 'Other', officeId: officeMap['Generic Office'] }
     ]);
     console.log("Added default Categories");
   }
@@ -61,9 +66,17 @@ export async function seedDatabase() {
   const rolesExisting = await rolesRepo.find();
   if (rolesExisting.length === 0) {
     await rolesRepo.save([
-      { name: 'Municipal Public Relations Officer' },
-      { name: 'Municipal Administrator' },
-      { name: 'Technical Office Staff Member' },
+      { name: 'Municipal Public Relations Officer', officeId: officeMap['Organization Office'] },
+      { name: 'Municipal Administrator', officeId: officeMap['Organization Office'] },
+      { name: 'Water Systems Technician', officeId: officeMap['Water Office'] },
+      { name: 'Accessibility Coordinator', officeId: officeMap['Architectural Barriers Office'] },
+      { name: 'Wastewater Engineer', officeId: officeMap['Sewer System Office'] },
+      { name: 'Lighting Technician', officeId: officeMap['Public Lighting Office'] },
+      { name: 'Waste Management Officer', officeId: officeMap['Waste Management Office'] },
+      { name: 'Traffic Systems Technician', officeId: officeMap['Road Signs and Traffic Lights Office'] },
+      { name: 'Public Works Supervisor', officeId: officeMap['Roads and Urban Furnishings Office'] },
+      { name: 'Parks and Recreation Officer', officeId: officeMap['Public Green Areas and Playgrounds Office'] },
+      { name: 'General Maintenance Worker', officeId: officeMap['Generic Office'] },
     ]);
     console.log("Added default Roles");
   }
