@@ -3,6 +3,7 @@ import cookie from 'cookie';
 import { sessionMiddleware } from './config/session.js';
 import passport from './config/passport.js';
 import { createMessage, createSystemMessage } from './repositories/messageRepository.js';
+import { createNotification } from './repositories/notificationRepository.js';
 import { AppDataSourcePostgres } from './config/data-source.js';
 import { Conversation } from './entities/Conversation.js';
 
@@ -76,6 +77,14 @@ export async function broadcastToConversation(conversationId, messageObj) {
   const conv = await repo.findOne({ where: { id: conversationId }, relations: ['participants'] });
   if (!conv) return;
   for (const participant of conv.participants) {
+    // Se sender è presente, escludi solo lui. Se sender è null, tutti ricevono la notifica.
+    if (!messageObj.sender || !messageObj.sender.id || String(participant.id) !== String(messageObj.sender.id)) {
+      try {
+        await createNotification(participant.id, messageObj.id);
+      } catch (e) {
+        console.error('Error creating notification:', e);
+      }
+    }
     const sockets = userSockets.get(participant.id);
     if (sockets) {
       for (const ws of sockets) {

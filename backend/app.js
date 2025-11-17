@@ -14,6 +14,7 @@ import officeRoutes from "./routes/officeRoutes.js";
 import conversationRoutes from './routes/conversationRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import { sessionMiddleware } from './config/session.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 
 // init express
 const app = new express();
@@ -39,6 +40,7 @@ app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/reports', reportRoutes);
 app.use('/api/v1/conversations', conversationRoutes);
 app.use('/api/v1/conversations', messageRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 app.use(errorHandler);
 app.use(multerErrorHandler);
