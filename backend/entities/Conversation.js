@@ -9,6 +9,12 @@ export const Conversation = new EntitySchema({
   },
   relations: {
     report: { type: "one-to-one", target: "Reports", joinColumn: true },
-    messages: { type: "one-to-many", target: "Message", inverseSide: "conversation" }
+    messages: { type: "one-to-many", target: "Message", inverseSide: "conversation" },
+    participants: {
+      type: "many-to-many",
+      target: "Users",
+      joinTable: true,
+      inverseSide: "conversations"
+    }
   }
 });

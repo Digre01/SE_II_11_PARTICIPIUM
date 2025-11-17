@@ -12,3 +12,9 @@ export async function createMessage(conversationId, userId, content) {
   const message = repo.create({ conversation: { id: conversationId }, sender: { id: userId }, content });
   return await repo.save(message);
 }
+
+export async function createSystemMessage(conversationId, content) {
+  const repo = AppDataSourcePostgres.getRepository(Message);
+  const message = repo.create({ conversation: { id: conversationId }, sender: null, content, isSystem: true });
+  return await repo.save(message);
+}

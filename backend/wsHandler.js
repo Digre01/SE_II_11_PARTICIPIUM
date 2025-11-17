@@ -2,6 +2,12 @@ import { WebSocketServer } from 'ws';
 import cookie from 'cookie';
 import { sessionMiddleware } from './config/session.js';
 import passport from './config/passport.js';
+import { createMessage, createSystemMessage } from './repositories/messageRepository.js';
+import { AppDataSourcePostgres } from './config/data-source.js';
+import { Conversation } from './entities/Conversation.js';
+
+// Mappa globale: userId -> array di ws
+const userSockets = new Map();
 
 export function setupWebSocket(server) {
   const wss = new WebSocketServer({ noServer: true });
@@ -34,14 +40,47 @@ export function setupWebSocket(server) {
     const userId = req.session.passport.user;
     ws.userId = userId;
 
-    ws.on('message', (data) => {
-      // Gestisci i messaggi
+    // Registrazione: aggiungi ws alla mappa
+    if (!userSockets.has(userId)) userSockets.set(userId, []);
+    userSockets.get(userId).push(ws);
+
+    ws.on('message', async (data) => {
+      try {
+        const msg = JSON.parse(data);
+        const { conversationId, content } = msg;
+        // Salva il messaggio nel DB
+        const savedMsg = await createMessage(conversationId, userId, content);
+        // Broadcast ai partecipanti
+        broadcastToConversation(conversationId, savedMsg);
+      } catch (err) {
+        ws.send(JSON.stringify({ error: 'Invalid message format or server error.' }));
+      }
     });
 
     ws.on('close', () => {
-      // Cleanup
+      // Cleanup: rimuovi ws dalla mappa
+      const arr = userSockets.get(userId);
+      if (arr) {
+        const idx = arr.indexOf(ws);
+        if (idx !== -1) arr.splice(idx, 1);
+        if (arr.length === 0) userSockets.delete(userId);
+      }
     });
   });
 
-  return wss; // Opzionale: ritorna wss se ti serve altrove
+}
+
+// Funzione di broadcast ai partecipanti di una conversazione
+export async function broadcastToConversation(conversationId, messageObj) {
+  const repo = AppDataSourcePostgres.getRepository(Conversation);
+  const conv = await repo.findOne({ where: { id: conversationId }, relations: ['participants'] });
+  if (!conv) return;
+  for (const participant of conv.participants) {
+    const sockets = userSockets.get(participant.id);
+    if (sockets) {
+      for (const ws of sockets) {
+        ws.send(JSON.stringify({ message: messageObj }));
+      }
+    }
+  }
 }

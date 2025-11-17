@@ -8,6 +8,9 @@ import {Categories} from "../entities/Categories.js";
 import {Photos} from "../entities/Photos.js";
 import {Office} from "../entities/Offices.js";
 import {Roles} from "../entities/Roles.js";
+import {Message} from "../entities/Message.js";
+import {Conversation} from "../entities/Conversation.js";
+import {Notification} from "../entities/Notification.js";
 
 dotenv.config();
 
@@ -18,7 +21,7 @@ export const AppDataSourcePostgres = new DataSource({
   username: process.env.PG_USER || "postgres",
   password: process.env.PG_PASSWORD || "postgres",
   database: process.env.PG_DB || "se_ii_db",
-  entities: [Users, Report, UserOffice, Categories, Photos, Office, Roles],
+  entities: [Users, Report, UserOffice, Categories, Photos, Office, Roles, Message, Conversation, Notification],
   synchronize: true,
   logging: false,
 });

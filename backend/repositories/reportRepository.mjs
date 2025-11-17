@@ -12,7 +12,6 @@ export class ReportRepository {
 	}
 
 	async createReport({ title, description, categoryId, userId, latitude, longitude, photos }) {
-		
 		const userRepo = AppDataSourcePostgres.getRepository(Users);
 		const userExists = await userRepo.findOneBy({ id: Number(userId) });
 		if (!userExists) {
@@ -45,6 +44,18 @@ export class ReportRepository {
 				await photoRepo.save(photoEntity);
 			}
 		}
+
+		// Conversation creation
+		const { createConversation } = await import('./conversationRepository.js');
+		const savedConversation = await createConversation({ report: savedReport, participants: [userExists] });
+
+		// First message
+		const { createSystemMessage } = await import('./messageRepository.js');
+		const systemMsg = await createSystemMessage(savedConversation.id, 'Report status change to: Pending Approval');
+
+		// Broadcast del messaggio autogenerato
+		const { broadcastToConversation } = await import('../wsHandler.js');
+		await broadcastToConversation(savedConversation.id, systemMsg);
 
 		return savedReport;
 	}
