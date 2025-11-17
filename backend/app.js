@@ -11,6 +11,8 @@ import errorHandler from './middlewares/errorHandler.js';
 import corsOptions from "./config/cors.js";
 import rolesRoutes from "./routes/rolesRoutes.js";
 import officeRoutes from "./routes/officeRoutes.js";
+import conversationRoutes from './routes/conversationRoutes.js';
+import messageRoutes from './routes/messageRoutes.js';
 
 // init express
 const app = new express();
@@ -38,6 +40,8 @@ app.use('/api/v1/roles', rolesRoutes);
 app.use('/api/v1/offices', officeRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/reports', reportRoutes);
+app.use('/api/v1/conversations', conversationRoutes);
+app.use('/api/v1/conversations/:conversationId/messages', messageRoutes);
 
 app.use(errorHandler);
 app.use(multerErrorHandler);
