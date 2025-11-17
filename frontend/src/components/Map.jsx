@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import './HomePage.css';
 
+
 function SingleClickMarker({ onPointChange, user, loggedIn }) {
   const [selectedPoint, setSelectedPoint] = useState(null);
+  const [selectedAddress, setSelectedAddress] = useState(null);
   const navigate = useNavigate();
   const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
 
@@ -15,8 +17,32 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
     click(e) {
       setSelectedPoint(e.latlng);
       onPointChange?.(e.latlng);
+      /* Reverse geocoding to get address
+      Nominatim.reverseGeocode({
+        lat: e.latlng.lat,
+        lon: e.latlng.lng,
+        addressdetails: 1,
+        format: 'json'
+      }).then((data) => {
+        if (data && data.address) {
+          const addr = data.address;  
+          const selectedAddress = [
+            addr.road || '',
+            addr.house_number || '',
+            addr.city || addr.town || addr.village || '',
+            addr.state || '',
+            addr.postcode || '',
+            addr.country || ''
+          ].filter(Boolean).join(', ');
+          setSelectedAddress(selectedAddress);
+        } else {
+          setSelectedAddress(null);
+        }
+      });*/
     }
   });
+
+
 
   return (
     <>
@@ -28,6 +54,7 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
         >
           {isCitizen && (
             <Popup>
+              {selectedAddress || `${selectedPoint.lat.toFixed(5)}, ${selectedPoint.lng.toFixed(5)}`}<br />
               <button
                 onClick={() => navigate('/report', { state: { lat: selectedPoint.lat, lng: selectedPoint.lng } })}
               >
