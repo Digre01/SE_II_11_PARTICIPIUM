@@ -17,15 +17,16 @@ import ConversationPage from './components/messageComponents/ConversationPage.js
 
 
 
+
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [user, setUser] = useState(undefined);
+  const [loading, setLoading] = useState(true);
 
   const isAdmin = String(user?.userType || '').toLowerCase() === 'admin';
   const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
 
   useEffect(() => {
-    // Recupera lo stato utente dalla sessione attiva
     const fetchCurrentUser = async () => {
       try {
         const response = await fetch('http://localhost:3000/api/v1/sessions/current', {
@@ -42,6 +43,8 @@ function App() {
       } catch {
         setUser(undefined);
         setLoggedIn(false);
+      } finally {
+        setLoading(false);
       }
     };
     fetchCurrentUser();
@@ -65,6 +68,16 @@ function App() {
     setUser(user);
     setLoggedIn(true);
   };
+
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Routes>

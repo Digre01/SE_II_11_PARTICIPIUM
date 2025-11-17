@@ -50,15 +50,6 @@ export default function HomePage({ user, loggedIn, isAdmin }) {
   
   
   return !isAdmin ? (
-    <>
-    <Button
-      color="primary"
-      style={{ position: 'absolute', top: 20, right: 20, zIndex: 1000 }}
-      tag={Link}
-      to="/conversations"
-    >
-      Go to Conversations
-    </Button>
     <MapContainer 
       center={[45.0703, 7.6869]} 
       maxBounds={[
@@ -82,7 +73,6 @@ export default function HomePage({ user, loggedIn, isAdmin }) {
       </Marker>
       <SingleClickMarker onPointChange={(point) => console.log('Selected point:', point)} user={user} loggedIn={loggedIn} />
     </MapContainer>
-    </>
   ) : (
     <Row className="g-4">
       <Col md="6" xs="12">

@@ -16,11 +16,9 @@ const ConversationPage = ({ user }) => {
       try {
         const msgs = await API.fetchMessages(conversationId);
         setMessages(msgs);
-        // Prova a recuperare il titolo del report dalla prima risposta
         if (msgs.length > 0 && msgs[0].conversation && msgs[0].conversation.report) {
           setReportTitle(msgs[0].conversation.report.title);
         } else {
-          // fallback: fetch conversazione
           const convs = await API.fetchConversations();
           const conv = convs.find(c => String(c.id) === String(conversationId));
           setReportTitle(conv?.report?.title || "Messages");
@@ -43,8 +41,6 @@ const ConversationPage = ({ user }) => {
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="alert alert-danger">{error}</div>;
 
-  // Funzione per determinare l'allineamento (userId dal sender confrontato con l'utente corrente)
-  // Determina tipo e stile del messaggio
   const getMessageType = (msg) => {
     if (msg.isSystem) return "system";
     if (msg.sender?.id && user?.id && String(msg.sender.id) === String(user.id)) return "mine";
@@ -58,12 +54,11 @@ const ConversationPage = ({ user }) => {
   };
 
   const getBgColor = (type) => {
-    if (type === "system") return "#cce4ff"; // azzurro pastello
-    if (type === "mine") return "#b6f5c9";   // verde pastello
-    return "#ffe5b4";                         // arancione pastello
+    if (type === "system") return "#cce4ff";
+    if (type === "mine") return "#b6f5c9";
+    return "#ffe5b4";
   };
 
-  // Suddivisione per giorno
   const renderMessages = () => {
     const rendered = [];
     let lastDate = null;

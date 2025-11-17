@@ -22,6 +22,7 @@ import { LogoutButton } from '../authComponents/loginForm';
 function AuthHeader({ user, loggedIn, isAdmin, handleLogout }) {
   const [isOpen, setIsOpen] = useState(false);
   const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
+  const isStaff = String(user?.userType || '').toLowerCase() === 'staff';
 
   return (
     <Header theme="dark" type="slim" className="shadow-sm app-header">
@@ -43,6 +44,12 @@ function AuthHeader({ user, loggedIn, isAdmin, handleLogout }) {
           </NavItem>
         </Collapse>
         <HeaderRightZone>
+          {loggedIn && user && (isCitizen || isStaff) && (
+            <TabNavLink tag={Link} to="/conversations" className="me-2" title="Conversazioni">
+              <Icon icon="it-mail" size="sm" className="me-1" />
+              <span className="align-middle">Notifications</span>
+            </TabNavLink>
+          )}
           {loggedIn && user ? (
             <Dropdown direction="down">
               <DropdownToggle tag="a">
