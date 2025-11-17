@@ -25,6 +25,19 @@ export const Users = new EntitySchema({
       type: String,
       nullable: false
     },
+    telegramId: {
+      type: String,
+      nullable: true
+    },
+    photoId: {
+      type: Number,
+      nullable: true
+    },
+    emailNotifications: {
+      type: Boolean,
+      nullable: false,
+      default: false
+    },
     password: {
       type: String,
       nullable: false
@@ -36,13 +49,19 @@ export const Users = new EntitySchema({
     userType: {
       type: String,
       nullable: false
-    }
+    },
+    
   },
   relations: {
     reports: {
       type: 'one-to-many',
       target: 'Reports',
       inverseSide: 'user'
+    },
+    photo: {
+      type: 'many-to-one',
+      target: 'Photos',
+      joinColumn: { name: 'photoId' }
     },
     userOffice: {
       type: 'one-to-one',

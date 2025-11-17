@@ -15,7 +15,7 @@ export const Photos = new EntitySchema({
     },
     reportId: {
       type: Number,
-      nullable: false
+      nullable: true
     }
   },
   relations: {
