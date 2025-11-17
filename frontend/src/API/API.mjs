@@ -103,6 +103,26 @@ const fetchCategories = async () => {
   }
 };
 
+// GET /api/v1/conversations
+const fetchConversations = async () => {
+  const response = await fetch(SERVER_URL + '/api/v1/conversations', { credentials: 'include' });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+};
+
+// GET /api/v1/conversations/:conversationId/messages
+const fetchMessages = async (conversationId) => {
+  const response = await fetch(SERVER_URL + `/api/v1/conversations/${conversationId}/messages`, { credentials: 'include' });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+};
+
 // PATCH /api/sessions/:id/role
 export async function assignRole(userId, roleId) {
   const response = await fetch(`${SERVER_URL}/api/v1/sessions/${userId}/role`, {
@@ -152,5 +172,5 @@ export async function fetchOffices() {
 }
 
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture };
+const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchConversations, fetchMessages, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture };
 export default API;

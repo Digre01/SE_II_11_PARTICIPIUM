@@ -38,7 +38,7 @@ app.use('/api/v1/offices', officeRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/reports', reportRoutes);
 app.use('/api/v1/conversations', conversationRoutes);
-app.use('/api/v1/conversations/:conversationId/messages', messageRoutes);
+app.use('/api/v1/conversations', messageRoutes);
 
 app.use(errorHandler);
 app.use(multerErrorHandler);

@@ -1,8 +1,9 @@
 import express from 'express';
 import { getMessages, sendMessage } from '../controllers/messageController.js';
 const router = express.Router();
+import { authorizeUserType } from '../middlewares/userAuthorization.js';
 
-router.get('/:conversationId/messages', getMessages);
-router.post('/:conversationId/messages', sendMessage);
+router.get('/:conversationId/messages', authorizeUserType(['citizen', 'STAFF']), getMessages);
+router.post('/:conversationId/messages', authorizeUserType(['citizen', 'STAFF']), sendMessage);
 
 export default router;

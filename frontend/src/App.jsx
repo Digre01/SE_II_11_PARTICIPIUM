@@ -12,6 +12,8 @@ import API from "./API/API.mjs";
 import { useState, useEffect } from "react";
 import { LoginForm } from "./components/authComponents/loginForm.jsx";
 import SignUpForm from "./components/authComponents/signUpForm.jsx";
+import ConversationsPage from './components/messageComponents/ConversationsPage.jsx';
+import ConversationPage from './components/messageComponents/ConversationPage.jsx';
 
 
 
@@ -97,6 +99,16 @@ function App() {
             : (isCitizen)
               ? <AccountConfig user={user} loggedIn={loggedIn} />
               : <Navigate to="/" replace />
+        } />
+        <Route path='/conversations' element={
+          (!loggedIn)
+            ? <Navigate to="/login" replace />
+            : <ConversationsPage user={user} loggedIn={loggedIn} />
+        } />
+        <Route path='/conversations/:conversationId' element={
+          (!loggedIn)
+            ? <Navigate to="/login" replace />
+            : <ConversationPage user={user} loggedIn={loggedIn} />
         } />
       </Route>
     </Routes>

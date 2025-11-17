@@ -8,7 +8,7 @@ export async function getConversationsForUser(userId) {
     where: qb => {
       qb.where('participants.id = :userId', { userId });
     },
-    relations: ['report', 'participants']
+    relations: ['report']
   });
 }
 
