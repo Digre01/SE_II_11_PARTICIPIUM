@@ -3,13 +3,12 @@ import { Conversation } from '../entities/Conversation.js';
 
 export async function getConversationsForUser(userId) {
   const repo = AppDataSourcePostgres.getRepository(Conversation);
-  // Trova tutte le conversazioni dove l'utente è tra i partecipanti
-  return await repo.find({
-    where: qb => {
-      qb.where('participants.id = :userId', { userId });
-    },
-    relations: ['report']
-  });
+  // Usa query builder per filtrare correttamente le conversazioni dove l'utente è partecipante
+  return await repo.createQueryBuilder('conversation')
+    .leftJoinAndSelect('conversation.report', 'report')
+    .leftJoinAndSelect('conversation.participants', 'participant')
+    .where('participant.id = :userId', { userId })
+    .getMany();
 }
 
 export async function createConversation({ report, participants }) {
