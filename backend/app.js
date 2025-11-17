@@ -13,6 +13,7 @@ import rolesRoutes from "./routes/rolesRoutes.js";
 import officeRoutes from "./routes/officeRoutes.js";
 import conversationRoutes from './routes/conversationRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
+import { sessionMiddleware } from './config/session.js';
 
 // init express
 const app = new express();
@@ -23,11 +24,7 @@ app.use(express.json());
 
 app.use(cors(corsOptions));
 
-app.use(session({
-    secret: "shhhhh... it's a secret!",
-    resave: false,
-    saveUninitialized: false,
-}));
+app.use(sessionMiddleware);
 
 app.use(passport.initialize());
 app.use(passport.authenticate('session'));
