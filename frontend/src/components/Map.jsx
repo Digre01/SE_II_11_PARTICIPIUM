@@ -1,5 +1,5 @@
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
-import { useState, useMemo } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import './HomePage.css';
@@ -42,15 +42,31 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
 }
 
 export default function Map({ user, loggedIn, onPointChange }) {
+  const center = [45.0703, 7.6869];
+  const initialZoom = 12; // start wider
+  const targetZoom = 15;  // animate to this
+
+  function IntroZoom() {
+    const map = useMap();
+    useEffect(() => {
+      // Ensure starting state, then animate into the center
+      map.setView(center, initialZoom, { animate: false });
+      // Use flyTo for a smooth pan+zoom animation
+      requestAnimationFrame(() => map.flyTo(center, targetZoom, { duration: 1.2 }));
+    }, [map]);
+    return null;
+  }
+
   return (
     <MapContainer
       data-testid="map-container"
-      center={[45.0703, 7.6869]}
-      zoom={15}
+      center={center}
+      zoom={initialZoom}
       maxBounds={[[45.0027, 7.5703], [45.144, 7.7783]]}
       maxBoundsViscosity={1.0}
       style={{ height: '90vh', width: '100%' }}
     >
+      <IntroZoom />
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
