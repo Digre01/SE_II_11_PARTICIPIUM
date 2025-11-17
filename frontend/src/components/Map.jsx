@@ -1,13 +1,28 @@
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import './HomePage.css';
-
+// Simple reverse geocode via Nominatim without extra deps
+async function reverseGeocode({ lat, lon, signal }) {
+  const url = new URL('https://nominatim.openstreetmap.org/reverse');
+  url.searchParams.set('format', 'jsonv2');
+  url.searchParams.set('lat', String(lat));
+  url.searchParams.set('lon', String(lon));
+  url.searchParams.set('addressdetails', '1');
+  url.searchParams.set('zoom', '18');
+  const res = await fetch(url.toString(), {
+    headers: { 'Accept-Language': 'it' },
+    signal
+  });
+  if (!res.ok) throw new Error(`Reverse geocode failed: ${res.status}`);
+  return res.json();
+}
 
 function SingleClickMarker({ onPointChange, user, loggedIn }) {
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const requestRef = useRef(null);
   const navigate = useNavigate();
   const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
 
@@ -17,28 +32,35 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
     click(e) {
       setSelectedPoint(e.latlng);
       onPointChange?.(e.latlng);
-      /* Reverse geocoding to get address
-      Nominatim.reverseGeocode({
-        lat: e.latlng.lat,
-        lon: e.latlng.lng,
-        addressdetails: 1,
-        format: 'json'
-      }).then((data) => {
-        if (data && data.address) {
-          const addr = data.address;  
-          const selectedAddress = [
-            addr.road || '',
-            addr.house_number || '',
-            addr.city || addr.town || addr.village || '',
-            addr.state || '',
-            addr.postcode || '',
-            addr.country || ''
-          ].filter(Boolean).join(', ');
-          setSelectedAddress(selectedAddress);
-        } else {
-          setSelectedAddress(null);
-        }
-      });*/
+      // Reverse geocoding to get address 
+      try {
+        if (requestRef.current) requestRef.current.abort();
+        const ctrl = new AbortController();
+        requestRef.current = ctrl;
+        reverseGeocode({ lat: e.latlng.lat, lon: e.latlng.lng, signal: ctrl.signal })
+          .then((data) => {
+            if (data && data.address) {
+              const addr = data.address;
+              const formattedAddress = [
+                addr.road || '',
+                addr.house_number || '',
+                addr.city || addr.town || addr.village || '',
+                addr.state || ''
+              ].filter(Boolean).join(', ');
+              setSelectedAddress(formattedAddress);
+            } else {
+              setSelectedAddress(null);
+            }
+          })
+          .catch((err) => {
+            if (err.name !== 'AbortError') setSelectedAddress(null);
+          })
+          .finally(() => {
+            requestRef.current = null;
+          });
+      } catch {
+        setSelectedAddress('Address not available');
+      }
     }
   });
 
@@ -56,7 +78,7 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
             <Popup>
               {selectedAddress || `${selectedPoint.lat.toFixed(5)}, ${selectedPoint.lng.toFixed(5)}`}<br />
               <button
-                onClick={() => navigate('/report', { state: { lat: selectedPoint.lat, lng: selectedPoint.lng } })}
+                onClick={() => navigate('/report', { state: { lat: selectedPoint.lat, lng: selectedPoint.lng, address: selectedAddress || null } })}
               >
                 Create Report
               </button>
