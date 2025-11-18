@@ -84,6 +84,12 @@ function AuthHeader({ user, loggedIn, isAdmin, isReportsAllowed, handleLogout, n
                       <span>Reports</span>
                     </LinkListItem>
                   )}
+                  {!isReportsAllowed && isStaff && (
+                    <LinkListItem inDropdown tag={Link} to="/officeReports">
+                      <Icon icon="it-list" size="sm" className="me-1" />
+                      <span>Office Reports</span>
+                    </LinkListItem>
+                  )}
                   {isCitizen && (
                     <LinkListItem inDropdown tag={Link} to="/setting">
                       <Icon icon="it-settings" size="sm" className="me-1" />

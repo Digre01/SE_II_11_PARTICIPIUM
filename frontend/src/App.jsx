@@ -16,7 +16,7 @@ import { LoginForm } from "./components/authComponents/loginForm.jsx";
 import SignUpForm from "./components/authComponents/signUpForm.jsx";
 import ConversationsPage from './components/messageComponents/ConversationsPage.jsx';
 import ConversationPage from './components/messageComponents/ConversationPage.jsx';
-
+import ReportsPage from './components/ReportsPage.jsx';
 
 
 
@@ -190,6 +190,14 @@ function App() {
             ? <Navigate to="/login" replace />
             : (isReportsAllowed)
               ? <StaffReports />
+              : <Navigate to="/" replace />
+        } />
+
+        <Route path='/officeReports' element={
+          (!loggedIn)
+            ? <Navigate to="/login" replace />
+            : (!isReportsAllowed && isStaff)
+              ? <ReportsPage user={user} />
               : <Navigate to="/" replace />
         } />
 

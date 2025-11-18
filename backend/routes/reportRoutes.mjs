@@ -54,7 +54,7 @@ router.post('/',
 
 // GET /api/v1/reports (list)
 // Only staff members with the 'Municipal Public Relations Officer' role can access
-router.get('/', authorizeUserType(['staff']), authorizeRole('Municipal Public Relations Officer'), async (req, res, next) => {
+router.get('/', authorizeUserType(['staff']), async (req, res, next) => {
   try {
     const reports = await getAllReports();
     res.json(reports);
