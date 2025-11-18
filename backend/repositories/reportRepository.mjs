@@ -59,6 +59,31 @@ export class ReportRepository {
 
 		return savedReport;
 	}
+
+
+	async getAllReports() {
+		return await this.repo.find({ relations: ['photos', 'category'] });
+	}
+
+	async getReportById(id) {
+		return await this.repo.findOne({ where: { id: Number(id) }, relations: ['photos', 'category'] });
+	}
+
+	async reviewReport({ reportId, action, explanation, categoryId }) {
+		const report = await this.repo.findOneBy({ id: Number(reportId) });
+		if (!report) return null;
+
+		if (action === 'reject') {
+			report.status = 'rejected';
+			report.reject_explanation = explanation || '';
+		} else if (action === 'accept') {
+			report.status = 'accepted';
+			report.reject_explanation = '';
+			if (categoryId) report.categoryId = Number(categoryId);
+		}
+
+		return await this.repo.save(report);
+	}
 }
 
 export const reportRepository = new ReportRepository();

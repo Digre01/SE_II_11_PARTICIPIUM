@@ -8,6 +8,8 @@ import StaffRegistration from './components/StaffRegistration';
 import AssignRole from './components/AssignRole';
 import ReportForm from './components/ReportForm';
 import AccountConfig from './components/AccountConfig.jsx';
+import ReportReview from './components/ReportReview.jsx';
+import StaffReports from './components/StaffReports';
 import API from "./API/API.mjs";
 import { useState, useEffect, useRef } from "react";
 import { LoginForm } from "./components/authComponents/loginForm.jsx";
@@ -26,6 +28,7 @@ function App() {
   const [notificationCount, setNotificationCount] = useState(0);
   const [wsMessage, setWsMessage] = useState(null);
   const wsRef = useRef(null);
+  const [isReportsAllowed, setIsReportsAllowed] = useState(false);
 
   const isAdmin = String(user?.userType || '').toLowerCase() === 'admin';
   const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
@@ -53,6 +56,9 @@ function App() {
         if (response.ok) {
           const userData = await response.json();
           setUser(userData);
+          // determine if the user has the specific role required for reports
+          const roleName = userData?.roleName || null;
+          setIsReportsAllowed(Boolean(roleName && String(roleName).toLowerCase() === 'municipal public relations officer'));
           setLoggedIn(true);
         } else {
           setUser(undefined);
@@ -114,6 +120,8 @@ function App() {
   const handleLogin = async (credentials) => {
     const user = await API.logIn(credentials); 
     setUser(user);
+    const roleName = user?.roleName || null;
+    setIsReportsAllowed(Boolean(roleName && String(roleName).toLowerCase() === 'municipal public relations officer'));
     setLoggedIn(true);
     updateNotificationCount();
     return { user, isAdmin: user?.userType === 'admin' }; 
@@ -129,6 +137,7 @@ function App() {
   const handleSignUp = async (data) => {
     const user = await API.signUp(data);
     setUser(user);
+    setIsReportsAllowed(false);
     setLoggedIn(true);
     updateNotificationCount();
   };
@@ -150,7 +159,7 @@ function App() {
 
   return (
     <Routes>
-      <Route element={<DefaultLayout user={user} loggedIn={loggedIn} isAdmin={isAdmin} handleLogout={handleLogout} notificationCount={notificationCount}/> }>
+      <Route element={<DefaultLayout user={user} loggedIn={loggedIn} isAdmin={isAdmin} isReportsAllowed={isReportsAllowed} handleLogout={handleLogout} notificationCount={notificationCount}/> }>
         <Route path='/' element={<HomePage user={user} loggedIn={loggedIn} isAdmin={isAdmin} />}/>
         <Route path='/login' element={
           loggedIn ? <Navigate to='/' replace /> : <LoginForm handleLogin={handleLogin}/>
@@ -174,6 +183,21 @@ function App() {
           isCitizen
             ? <ReportForm user={user} loggedIn={loggedIn}/>
             : <Navigate to="/" replace />
+        } />
+        <Route path='/reports' element={
+          (!loggedIn)
+            ? <Navigate to="/login" replace />
+            : (isReportsAllowed)
+              ? <StaffReports />
+              : <Navigate to="/" replace />
+        } />
+
+        <Route path='/review/:id' element={
+          (!loggedIn)
+            ? <Navigate to="/login" replace />
+            : (isReportsAllowed)
+              ? <ReportReview user={user} loggedIn={loggedIn} />
+              : <Navigate to="/" replace />
         } />
         <Route path='/setting' element={
           (!loggedIn)

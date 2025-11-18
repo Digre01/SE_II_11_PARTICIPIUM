@@ -20,7 +20,7 @@ import {
 import { Link } from 'react-router-dom';
 import { LogoutButton } from '../authComponents/loginForm';
 
-function AuthHeader({ user, loggedIn, isAdmin, handleLogout, notificationCount }) {
+function AuthHeader({ user, loggedIn, isAdmin, isReportsAllowed, handleLogout, notificationCount }) {
   const [isOpen, setIsOpen] = useState(false);
   const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
   const isStaff = String(user?.userType || '').toLowerCase() === 'staff';
@@ -78,6 +78,12 @@ function AuthHeader({ user, loggedIn, isAdmin, handleLogout, notificationCount }
               </DropdownToggle>
               <DropdownMenu className="dropdown-offset-y">
                 <LinkList>
+                  {isReportsAllowed && (
+                    <LinkListItem inDropdown tag={Link} to="/reports">
+                      <Icon icon="it-list" size="sm" className="me-1" />
+                      <span>Reports</span>
+                    </LinkListItem>
+                  )}
                   {isCitizen && (
                     <LinkListItem inDropdown tag={Link} to="/setting">
                       <Icon icon="it-settings" size="sm" className="me-1" />

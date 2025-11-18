@@ -123,6 +123,32 @@ const createReport = async (formData) => {
   }
 };
 
+// GET /api/v1/reports (staff)
+const fetchReports = async () => {
+  const response = await fetch(SERVER_URL + '/api/v1/reports', { credentials: 'include' });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+
+// GET /api/v1/reports/:id
+const fetchReport = async (id) => {
+  const response = await fetch(SERVER_URL + `/api/v1/reports/${id}`, { credentials: 'include' });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+
+// PATCH /api/v1/reports/:id/review
+const reviewReport = async (id, payload) => {
+  const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/review`, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+
 // GET /api/v1/categories
 const fetchCategories = async () => {
   const response = await fetch(SERVER_URL + '/api/v1/categories', { credentials: 'include' });
@@ -203,5 +229,5 @@ export async function fetchOffices() {
 }
 
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchConversations, fetchMessages, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead };
+const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchConversations, fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead };
 export default API;
