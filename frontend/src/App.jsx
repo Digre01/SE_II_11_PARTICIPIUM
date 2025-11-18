@@ -32,6 +32,7 @@ function App() {
 
   const isAdmin = String(user?.userType || '').toLowerCase() === 'admin';
   const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
+  const isStaff = String(user?.userType || '').toLowerCase() === 'staff';
 
   // Aggiorna il conteggio notifiche
   const updateNotificationCount = async () => {
