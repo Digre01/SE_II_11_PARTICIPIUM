@@ -122,14 +122,42 @@ export class ReportRepository {
 		if (!report) return null;
 		report.status = 'in_progress';
 		report.technicianId = Number(technicianId);
-		return await this.repo.save(report);
+		const savedReport = await this.repo.save(report);
+
+		// Trova la conversazione associata al report
+		const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
+		const conversation = await convRepo.findOne({ where: { report: { id: report.id } }, relations: ['participants'] });
+		if (conversation) {
+			// Aggiungi il tecnico ai partecipanti
+			const { addParticipantToConversation } = await import('./conversationRepository.js');
+			await addParticipantToConversation(conversation.id, technicianId);
+
+			// Messaggio automatico per cambio stato
+			const { createSystemMessage } = await import('./messageRepository.js');
+			const { broadcastToConversation } = await import('../wsHandler.js');
+			const sysMsg = await createSystemMessage(conversation.id, `Report status change to: In Progress`);
+			await broadcastToConversation(conversation.id, sysMsg);
+		}
+		return savedReport;
 	}
 
 	async finishReport({ reportId, technicianId }) {
 		const report = await this.repo.findOneBy({ id: Number(reportId) });
 		if (!report || report.technicianId !== Number(technicianId)) return null;
 		report.status = 'resolved';
-		return await this.repo.save(report);
+		const savedReport = await this.repo.save(report);
+
+		// Trova la conversazione associata al report
+		const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
+		const conversation = await convRepo.findOne({ where: { report: { id: report.id } } });
+		if (conversation) {
+			// Messaggio automatico per cambio stato
+			const { createSystemMessage } = await import('./messageRepository.js');
+			const { broadcastToConversation } = await import('../wsHandler.js');
+			const sysMsg = await createSystemMessage(conversation.id, `Report status change to: Resolved`);
+			await broadcastToConversation(conversation.id, sysMsg);
+		}
+		return savedReport;
 	}
 }
 

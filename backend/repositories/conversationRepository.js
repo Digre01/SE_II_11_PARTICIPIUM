@@ -15,3 +15,27 @@ export async function createConversation({ report, participants }) {
   const conversationEntity = repo.create({ report, participants });
   return await repo.save(conversationEntity);
 }
+
+// Aggiungi uno user ai partecipanti di una conversazione
+export async function addParticipantToConversation(conversationId, userId) {
+  const repo = AppDataSourcePostgres.getRepository(Conversation);
+  const conversation = await repo.findOne({
+    where: { id: conversationId },
+    relations: ['participants']
+  });
+  if (!conversation) throw new Error('Conversation not found');
+
+  // Controlla se lo user è già tra i partecipanti
+  if (conversation.participants.some(u => u.id === userId)) {
+    return conversation;
+  }
+
+  // Recupera l'utente
+  const userRepo = AppDataSourcePostgres.getRepository('Users');
+  const user = await userRepo.findOneBy({ id: userId });
+  if (!user) throw new Error('User not found');
+
+  conversation.participants.push(user);
+  await repo.save(conversation);
+  return conversation;
+}
