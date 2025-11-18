@@ -83,4 +83,24 @@ router.patch('/:id/review', authorizeUserType(['staff']), authorizeRole('Municip
   } catch (err) { next(err); }
 });
 
+// PATCH /api/v1/reports/:id/start
+router.patch('/:id/start', authorizeUserType(['staff']), async (req, res, next) => {
+  try {
+    const technicianId = req.user?.id;
+    const updated = await import('../controllers/reportController.mjs').then(mod => mod.startReport({ reportId: req.params.id, technicianId }));
+    if (!updated) return next(new NotFoundError('Not found'));
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+// PATCH /api/v1/reports/:id/finish
+router.patch('/:id/finish', authorizeUserType(['staff']), async (req, res, next) => {
+  try {
+    const technicianId = req.user?.id;
+    const updated = await import('../controllers/reportController.mjs').then(mod => mod.finishReport({ reportId: req.params.id, technicianId }));
+    if (!updated) return next(new NotFoundError('Not found'));
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
 export default router;

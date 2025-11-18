@@ -1,4 +1,3 @@
-
 import { AppDataSourcePostgres } from "../config/data-source.js";
 import { Report } from "../entities/Reports.js";
 import { Photos } from "../entities/Photos.js";
@@ -115,6 +114,21 @@ export class ReportRepository {
 			}
 		}
 
+		return await this.repo.save(report);
+	}
+
+	async startReport({ reportId, technicianId }) {
+		const report = await this.repo.findOneBy({ id: Number(reportId) });
+		if (!report) return null;
+		report.status = 'in_progress';
+		report.technicianId = Number(technicianId);
+		return await this.repo.save(report);
+	}
+
+	async finishReport({ reportId, technicianId }) {
+		const report = await this.repo.findOneBy({ id: Number(reportId) });
+		if (!report || report.technicianId !== Number(technicianId)) return null;
+		report.status = 'resolved';
 		return await this.repo.save(report);
 	}
 }

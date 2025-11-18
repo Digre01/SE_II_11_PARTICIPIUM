@@ -1,3 +1,10 @@
+export async function startReport({ reportId, technicianId }) {
+  return await reportRepository.startReport({ reportId, technicianId });
+}
+
+export async function finishReport({ reportId, technicianId }) {
+  return await reportRepository.finishReport({ reportId, technicianId });
+}
 import { reportRepository } from "../repositories/reportRepository.mjs";
 
 export async function createReport(reportData) {

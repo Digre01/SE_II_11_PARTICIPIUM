@@ -40,6 +40,10 @@ export const Report = new EntitySchema({
     categoryId: {
       type: Number,
       nullable: false
+    },
+    technicianId: {
+      type: Number,
+      nullable: true
     }
   },
   relations: {
@@ -54,6 +58,12 @@ export const Report = new EntitySchema({
       target: 'Categories',
       joinColumn: { name: 'categoryId' },
       inverseSide: 'reports'
+    },
+    technician: {
+      type: 'many-to-one',
+      target: 'Users',
+      joinColumn: { name: 'technicianId' },
+      inverseSide: 'assignedReports'
     },
     photos: {
       type: 'one-to-many',
