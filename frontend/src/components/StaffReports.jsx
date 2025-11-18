@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../API/API.mjs';
 
-export default function StaffReports() {
+export default function StaffReports({ wsMessage }) {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Carica i report all'avvio
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -18,6 +19,18 @@ export default function StaffReports() {
     })();
     return () => { mounted = false; };
   }, []);
+
+  // Aggiorna la lista dei report in tempo reale quando arriva un messaggio via WebSocket
+  useEffect(() => {
+    if (!wsMessage) return;
+    async function refresh() {
+      try {
+        const r = await API.fetchReports();
+        setReports(r || []);
+      } catch {}
+    }
+    refresh();
+  }, [wsMessage]);
 
   if (loading) return <div className="container mt-4">Loading reports...</div>;
 

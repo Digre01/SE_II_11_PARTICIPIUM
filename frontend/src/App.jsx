@@ -91,7 +91,7 @@ function App() {
       wsRef.current = ws;
 
       ws.onopen = () => {
-        // console.log('WebSocket connected');
+        //console.log('WebSocket connected');
       };
 
       ws.onmessage = async (event) => {
@@ -99,6 +99,7 @@ function App() {
           const data = JSON.parse(event.data);
           if (data.message) {
             // Aggiorna notifiche e triggera aggiornamento conversazioni/messaggi
+            //console.log('Received WS message:', data.message);
             await updateNotificationCount();
             setWsMessage(data.message); // Passa il messaggio ai figli
           }
@@ -189,7 +190,7 @@ function App() {
           (!loggedIn)
             ? <Navigate to="/login" replace />
             : (isReportsAllowed)
-              ? <StaffReports />
+              ? <StaffReports wsMessage={wsMessage} />
               : <Navigate to="/" replace />
         } />
 

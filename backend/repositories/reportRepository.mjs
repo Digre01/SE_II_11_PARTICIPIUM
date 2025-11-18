@@ -45,9 +45,22 @@ export class ReportRepository {
 			}
 		}
 
+		// Trova tutti gli staff member con ruolo 'Municipal Public Relations Officer' tramite join
+		const staffRepo = AppDataSourcePostgres.getRepository(Users);
+		const staffMembers = await staffRepo.find({
+			where: { userType: 'STAFF' },
+			relations: ['userOffice', 'userOffice.role']
+		});
+		const municipalStaff = staffMembers.filter(u =>
+			u.userOffice &&
+			u.userOffice.role &&
+			u.userOffice.role.name === 'Municipal Public Relations Officer'
+		);
+
 		// Conversation creation
 		const { createConversation } = await import('./conversationRepository.js');
-		const savedConversation = await createConversation({ report: savedReport, participants: [userExists] });
+		const participants = municipalStaff.length > 0 ? [userExists, ...municipalStaff] : [userExists];
+		const savedConversation = await createConversation({ report: savedReport, participants });
 
 		// First message
 		const { createSystemMessage } = await import('./messageRepository.js');
