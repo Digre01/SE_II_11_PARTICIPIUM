@@ -20,7 +20,14 @@ const ConversationPage = ({ user, handleNotificationsUpdate, wsMessage }) => {
           handleNotificationsUpdate();
         }
         const msgs = await API.fetchMessages(conversationId);
-        setMessages(msgs);
+          // Ordina per data crescente
+          setMessages(
+            [...msgs].sort((a, b) => {
+              const da = a.createdAt ? new Date(a.createdAt) : 0;
+              const db = b.createdAt ? new Date(b.createdAt) : 0;
+              return da - db;
+            })
+          );
         if (msgs.length > 0 && msgs[0].conversation && msgs[0].conversation.report) {
           setReportTitle(msgs[0].conversation.report.title);
         } else {
@@ -45,7 +52,13 @@ const ConversationPage = ({ user, handleNotificationsUpdate, wsMessage }) => {
       async function refresh() {
         try {
           const msgs = await API.fetchMessages(conversationId);
-          setMessages(msgs);
+            setMessages(
+              [...msgs].sort((a, b) => {
+                const da = a.createdAt ? new Date(a.createdAt) : 0;
+                const db = b.createdAt ? new Date(b.createdAt) : 0;
+                return da - db;
+              })
+            );
         } catch {}
       }
       refresh();

@@ -76,10 +76,30 @@ export class ReportRepository {
 		if (action === 'reject') {
 			report.status = 'rejected';
 			report.reject_explanation = explanation || '';
+			// Messaggio automatico per rifiuto
+			const { createSystemMessage } = await import('./messageRepository.js');
+			const { broadcastToConversation } = await import('../wsHandler.js');
+			// Trova la conversazione associata al report
+			const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
+			const conversation = await convRepo.findOne({ where: { report: { id: report.id } } });
+			if (conversation) {
+				const sysMsg = await createSystemMessage(conversation.id, `Report status change to: Rejected${explanation ? ' - ' + explanation : ''}`);
+				await broadcastToConversation(conversation.id, sysMsg);
+			}
 		} else if (action === 'accept') {
 			report.status = 'accepted';
 			report.reject_explanation = '';
 			if (categoryId) report.categoryId = Number(categoryId);
+			// Messaggio automatico per accettazione
+			const { createSystemMessage } = await import('./messageRepository.js');
+			const { broadcastToConversation } = await import('../wsHandler.js');
+			// Trova la conversazione associata al report
+			const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
+			const conversation = await convRepo.findOne({ where: { report: { id: report.id } } });
+			if (conversation) {
+				const sysMsg = await createSystemMessage(conversation.id, 'Report status change to: Accepted');
+				await broadcastToConversation(conversation.id, sysMsg);
+			}
 		}
 
 		return await this.repo.save(report);
