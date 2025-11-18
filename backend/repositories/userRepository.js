@@ -14,11 +14,11 @@ class UserRepository {
     }
 
     async getUserById(id) {
-        return await this.repo.findOneBy({ id } );
+        return await this.repo.findOne({ where: { id }, relations: ['userOffice', 'userOffice.role'] } );
     }
 
     async getUserByUsername(username) {
-        return await this.repo.findOneBy({username});
+        return await this.repo.findOne({ where: { username }, relations: ['userOffice', 'userOffice.role'] });
     }
 
     async createUser(username, email, name, surname, password, salt, userType){
