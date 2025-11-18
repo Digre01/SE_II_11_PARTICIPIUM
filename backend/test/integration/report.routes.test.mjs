@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
+import { InsufficientRightsError } from '../../errors/InsufficientRightsError.js';
 
 // Repository mock
 const mockRepo = {
@@ -11,11 +12,19 @@ await jest.unstable_mockModule('../../repositories/reportRepository.mjs', () => 
   reportRepository: mockRepo,
 }));
 
-// Mock authorization middleware (must include every named export app.js imports)
+// Mock authorization middleware with role enforcement based on X-Role header
 await jest.unstable_mockModule('../../middlewares/userAuthorization.js', () => ({
-  authorizeUserType: () => (req, _res, next) => {
-    if (req.header('Authorization')) {
-      req.user = { id: 10, role: 'citizen' };
+  authorizeUserType: (allowed) => (req, _res, next) => {
+    const roleHdr = req.header('X-Test-Role');
+    if (roleHdr) {
+      req.user = { id: 10, userType: roleHdr };
+      const normalized = (allowed || []).map(a => String(a).toUpperCase());
+      const caller = String(roleHdr).toUpperCase();
+      if (!normalized.includes(caller)) {
+        return next(new InsufficientRightsError('Forbidden'));
+      }
+    } else if (req.header('Authorization')) {
+      req.user = { id: 10, userType: 'citizen' };
     }
     next();
   },
@@ -33,6 +42,11 @@ await jest.unstable_mockModule('../../middlewares/uploadMiddleware.js', () => ({
       } else {
         req.files = [];
       }
+      next();
+    },
+    single: () => (req, _res, next) => {
+      const name = req.header('X-Test-Photo');
+      req.file = name ? { filename: name.trim(), path: `/tmp/${name.trim()}` } : undefined;
       next();
     }
   }
@@ -100,6 +114,16 @@ describe('POST /api/v1/reports', () => {
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/All fields are required/);
     expect(mockRepo.createReport).not.toHaveBeenCalled();
+  });
+
+  it('rejects when admin tries citizen-only endpoint', async () => {
+    const body = { title: 'T', description: 'D', categoryId: 5, latitude: 1, longitude: 2 };
+    const res = await request(app)
+      .post('/api/v1/reports')
+      .set('X-Test-Role', 'admin') // simulate admin user
+      .set('X-Test-Photos', 'a.jpg')
+      .send(body);
+    expect(res.status).toBe(403);
   });
 
   it('rejects wrong number of photos (0)', async () => {
