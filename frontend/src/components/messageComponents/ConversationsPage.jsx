@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../API/API.mjs";
 
+
 const ConversationsPage = () => {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [notificationCounts, setNotificationCounts] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,6 +15,8 @@ const ConversationsPage = () => {
       try {
         const data = await API.fetchConversations();
         setConversations(data);
+        const counts = await API.fetchNotificationCounts();
+        setNotificationCounts(counts || {});
       } catch (err) {
         setError("Unable to load conversations.");
       } finally {
@@ -40,11 +44,31 @@ const ConversationsPage = () => {
             <li
               key={conv.id}
               className="list-group-item list-group-item-action"
-              style={{ cursor: "pointer" }}
+              style={{ cursor: "pointer", position: "relative" }}
               onClick={() => handleClick(conv.id)}
             >
               <div><strong>Report:</strong> {conv.report?.title || "-"}</div>
               <div><strong>Status:</strong> {conv.report?.status || "-"}</div>
+              {notificationCounts[conv.id] > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: '50%',
+                  right: 18,
+                  transform: 'translateY(-50%)',
+                  minWidth: 26,
+                  height: 26,
+                  background: '#28a745',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '2px solid #fff',
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: '0.8rem',
+                  zIndex: 2
+                }}>{notificationCounts[conv.id]}</span>
+              )}
             </li>
           ))}
         </ul>

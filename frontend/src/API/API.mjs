@@ -1,3 +1,34 @@
+// POST /api/v1/notifications/:conversationId/read
+const markNotificationsAsRead = async (conversationId) => {
+  const response = await fetch(SERVER_URL + `/api/v1/notifications/${conversationId}/read`, {
+    method: 'POST',
+    credentials: 'include'
+  });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+};
+// GET /api/v1/notifications
+const fetchNotifications = async () => {
+  const response = await fetch(SERVER_URL + '/api/v1/notifications', { credentials: 'include' });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+};
+
+// GET /api/v1/notifications/counts
+const fetchNotificationCounts = async () => {
+  const response = await fetch(SERVER_URL + '/api/v1/notifications/counts', { credentials: 'include' });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+};
 export const SERVER_URL = "http://localhost:3000";
 
 // Sign up a new user
@@ -172,5 +203,5 @@ export async function fetchOffices() {
 }
 
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchConversations, fetchMessages, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture };
+const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchConversations, fetchMessages, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead };
 export default API;

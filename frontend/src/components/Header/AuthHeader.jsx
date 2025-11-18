@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import API from '../../API/API.mjs';
 import './AuthHeader.css';
 import {
   Header,
@@ -23,6 +24,23 @@ function AuthHeader({ user, loggedIn, isAdmin, handleLogout }) {
   const [isOpen, setIsOpen] = useState(false);
   const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
   const isStaff = String(user?.userType || '').toLowerCase() === 'staff';
+  const [hasNotifications, setHasNotifications] = useState(false);
+
+  useEffect(() => {
+    async function checkNotifications() {
+      if (loggedIn && (isCitizen || isStaff) && user) {
+        try {
+          const notifications = await API.fetchNotifications();
+          setHasNotifications(notifications && notifications.length > 0);
+        } catch (e) {
+          setHasNotifications(false);
+        }
+      } else {
+        setHasNotifications(false);
+      }
+    }
+    checkNotifications();
+  }, [loggedIn, isCitizen, isStaff, user]);
 
   return (
     <Header theme="dark" type="slim" className="shadow-sm app-header">
@@ -45,9 +63,22 @@ function AuthHeader({ user, loggedIn, isAdmin, handleLogout }) {
         </Collapse>
         <HeaderRightZone>
           {loggedIn && user && (isCitizen || isStaff) && (
-            <TabNavLink tag={Link} to="/conversations" className="me-2" title="Conversazioni">
+            <TabNavLink tag={Link} to="/conversations" className="me-2" title="Conversazioni" style={{ position: 'relative' }}>
               <Icon icon="it-mail" size="sm" className="me-1" />
               <span className="align-middle">Notifications</span>
+              {hasNotifications && (
+                <span style={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 1,
+                  width: 12,
+                  height: 12,
+                  background: '#28a745',
+                  borderRadius: '50%',
+                  display: 'inline-block',
+                  border: '2px solid #fff'
+                }}></span>
+              )}
             </TabNavLink>
           )}
           {loggedIn && user ? (

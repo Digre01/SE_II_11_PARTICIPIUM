@@ -14,6 +14,8 @@ const ConversationPage = ({ user }) => {
   useEffect(() => {
     async function fetchData() {
       try {
+        // Segna le notifiche come lette all'apertura della conversazione
+        await API.markNotificationsAsRead(conversationId);
         const msgs = await API.fetchMessages(conversationId);
         setMessages(msgs);
         if (msgs.length > 0 && msgs[0].conversation && msgs[0].conversation.report) {
