@@ -159,6 +159,48 @@ export class ReportRepository {
 		}
 		return savedReport;
 	}
+
+		async suspendReport({ reportId, technicianId }) {
+		const report = await this.repo.findOneBy({ id: Number(reportId) });
+		if (!report) return null;
+		report.status = 'suspended';
+		// Se il report era in_progress, mantiene technicianId, altrimenti rimane null
+		const savedReport = await this.repo.save(report);
+
+		// Messaggio automatico
+		const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
+		const conversation = await convRepo.findOne({ where: { report: { id: report.id } } });
+		if (conversation) {
+			const { createSystemMessage } = await import('./messageRepository.js');
+			const { broadcastToConversation } = await import('../wsHandler.js');
+			const sysMsg = await createSystemMessage(conversation.id, `Report status change to: Suspended`);
+			await broadcastToConversation(conversation.id, sysMsg);
+		}
+		return savedReport;
+	}
+
+	async resumeReport({ reportId, technicianId }) {
+		const report = await this.repo.findOneBy({ id: Number(reportId) });
+		if (!report) return null;
+		// Se technicianId è valorizzato, torna in_progress, altrimenti torna assigned
+		if (report.technicianId) {
+			report.status = 'in_progress';
+		} else {
+			report.status = 'assigned';
+		}
+		const savedReport = await this.repo.save(report);
+
+		// Messaggio automatico
+		const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
+		const conversation = await convRepo.findOne({ where: { report: { id: report.id } } });
+		if (conversation) {
+			const { createSystemMessage } = await import('./messageRepository.js');
+			const { broadcastToConversation } = await import('../wsHandler.js');
+			const sysMsg = await createSystemMessage(conversation.id, `Report status change to: ${report.status === 'in_progress' ? 'In Progress (Resumed)' : 'Assigned (Resumed)'}`);
+			await broadcastToConversation(conversation.id, sysMsg);
+		}
+		return savedReport;
+	}
 }
 
 export const reportRepository = new ReportRepository();

@@ -1,10 +1,3 @@
-export async function startReport({ reportId, technicianId }) {
-  return await reportRepository.startReport({ reportId, technicianId });
-}
-
-export async function finishReport({ reportId, technicianId }) {
-  return await reportRepository.finishReport({ reportId, technicianId });
-}
 import { reportRepository } from "../repositories/reportRepository.mjs";
 
 export async function createReport(reportData) {
@@ -22,4 +15,20 @@ export async function getReport(id) {
 
 export async function reviewReport(reviewData) {
   return await reportRepository.reviewReport(reviewData);
+}
+
+export async function suspendReport({ reportId, technicianId }) {
+  return await reportRepository.suspendReport({ reportId, technicianId });
+}
+
+export async function resumeReport({ reportId, technicianId }) {
+  return await reportRepository.resumeReport({ reportId, technicianId });
+}
+
+export async function startReport({ reportId, technicianId }) {
+  return await reportRepository.startReport({ reportId, technicianId });
+}
+
+export async function finishReport({ reportId, technicianId }) {
+  return await reportRepository.finishReport({ reportId, technicianId });
 }

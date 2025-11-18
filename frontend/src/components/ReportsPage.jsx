@@ -16,19 +16,46 @@ function ReportRow({ idx, report, user, onAction }) {
                 return "success";
             case "rejected":
                 return "danger";
+            case "suspended":
+                return "secondary";
             default:
                 return "secondary";
         }
     };
 
-    // Determina il bottone da mostrare
-    let actionButton = null;
-    if (String(report.status).toLowerCase() === "assigned") {
-        actionButton = <Button variant="success" size="sm" onClick={() => onAction('start', report.id)}>START</Button>;
-    } else if (String(report.status).toLowerCase() === "in_progress") {
+    // Determina i bottoni da mostrare
+    let actionButtons = [];
+    const status = String(report.status).toLowerCase();
+
+    if (status === "assigned") {
+        actionButtons.push(
+            <Button key="start" variant="success" size="sm" className="me-2" onClick={() => onAction('start', report.id)}>START</Button>
+        );
+        actionButtons.push(
+            <Button key="suspend" variant="warning" size="sm" onClick={() => onAction('suspend', report.id)}>SUSPEND</Button>
+        );
+    } else if (status === "in_progress") {
         if (report.technicianId === user?.id) {
-            actionButton = <Button variant="danger" size="sm" onClick={() => onAction('finish', report.id)}>FINISH</Button>;
-        } // else: nessun bottone
+            actionButtons.push(
+                <Button key="finish" variant="danger" size="sm" className="me-2" onClick={() => onAction('finish', report.id)}>FINISH</Button>
+            );
+            actionButtons.push(
+                <Button key="suspend" variant="warning" size="sm" onClick={() => onAction('suspend', report.id)}>SUSPEND</Button>
+            );
+        }
+    } else if (status === "suspended") {
+        // Se il report è suspended prima di essere in_progress (technicianId null)
+        if (!report.technicianId) {
+            // Chiunque dell'ufficio può vedere RESUME
+            actionButtons.push(
+                <Button key="resume" variant="info" size="sm" onClick={() => onAction('resume', report.id)}>RESUME</Button>
+            );
+        } else if (report.technicianId === user?.id) {
+            // Se era in_progress e ora suspended, solo il tecnico assegnato può vedere RESUME
+            actionButtons.push(
+                <Button key="resume" variant="info" size="sm" onClick={() => onAction('resume', report.id)}>RESUME</Button>
+            );
+        }
     }
 
     return (
@@ -43,7 +70,7 @@ function ReportRow({ idx, report, user, onAction }) {
                 </Badge>
             </td>
             <td className="text-end">
-                {actionButton}
+                {actionButtons.length > 0 ? actionButtons.map(btn => btn) : null}
             </td>
         </tr>
     );
@@ -65,6 +92,8 @@ function ReportCard({ report }) {
                 return "success";
             case "rejected":
                 return "danger";
+            case "suspended":
+                return "secondary";
             default:
                 return "secondary";
         }
@@ -112,16 +141,17 @@ function ReportsPage({user}) {
     }, []);
 
     const officeReports = (reports || []).filter(r => {
-        const statusMatch = String(r.status || '').toLowerCase() === 'assigned' || 
-                   String(r.status || '').toLowerCase() === 'in_progress';
+        const statusMatch = ["assigned", "in_progress", "suspended"].includes(String(r.status || '').toLowerCase());
         const officeMatch = r.category?.officeId === user?.officeId;
         return statusMatch && officeMatch;
     });
 
     const yourReports = (reports || []).filter(r => {
-        const statusMatch = String(r.status || '').toLowerCase() === 'in_progress';
-        const technicianMatch = r.technicianId === user?.id;
-        return statusMatch && technicianMatch;
+        const status = String(r.status || '').toLowerCase();
+        if (status === 'in_progress' && r.technicianId === user?.id) return true;
+        // Mostra anche report suspended assegnati a te
+        if (status === 'suspended' && r.technicianId === user?.id) return true;
+        return false;
     });
 
     // Handler per azioni dei bottoni
@@ -131,6 +161,10 @@ function ReportsPage({user}) {
                 await API.startReport(reportId);
             } else if (action === 'finish') {
                 await API.finishReport(reportId);
+            } else if (action === 'suspend') {
+                await API.suspendReport(reportId);
+            } else if (action === 'resume') {
+                await API.resumeReport(reportId);
             }
             // Aggiorna la lista dopo l'azione
             const data = await API.fetchReports();
@@ -155,7 +189,7 @@ function ReportsPage({user}) {
                         <th>Latitude</th>
                         <th>Longitude</th>
                         <th>Status</th>
-                        <th className="text-end">Action</th>
+                        <th className="text-end">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -195,7 +229,7 @@ function ReportsPage({user}) {
                         <th>Latitude</th>
                         <th>Longitude</th>
                         <th>Status</th>
-                        <th className="text-end">Action</th>
+                        <th className="text-end">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
