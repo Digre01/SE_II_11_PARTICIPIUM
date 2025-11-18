@@ -9,7 +9,7 @@ import AssignRole from './components/AssignRole';
 import ReportForm from './components/ReportForm';
 import AccountConfig from './components/AccountConfig.jsx';
 import API from "./API/API.mjs";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { LoginForm } from "./components/authComponents/loginForm.jsx";
 import SignUpForm from "./components/authComponents/signUpForm.jsx";
 import ConversationsPage from './components/messageComponents/ConversationsPage.jsx';
@@ -24,6 +24,8 @@ function App() {
   const [user, setUser] = useState(undefined);
   const [loading, setLoading] = useState(true);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [wsMessage, setWsMessage] = useState(null);
+  const wsRef = useRef(null);
 
   const isAdmin = String(user?.userType || '').toLowerCase() === 'admin';
   const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
@@ -69,6 +71,44 @@ function App() {
   useEffect(() => {
     updateNotificationCount();
     // eslint-disable-next-line
+  }, [loggedIn, user]);
+
+  // Connessione WebSocket e gestione eventi
+  useEffect(() => {
+    if (loggedIn && user) {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      const ws = new window.WebSocket('ws://localhost:3000/ws');
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        // console.log('WebSocket connected');
+      };
+
+      ws.onmessage = async (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.message) {
+            // Aggiorna notifiche e triggera aggiornamento conversazioni/messaggi
+            await updateNotificationCount();
+            setWsMessage(data.message); // Passa il messaggio ai figli
+          }
+        } catch {}
+      };
+
+      ws.onclose = () => {
+        wsRef.current = null;
+      };
+      ws.onerror = () => {};
+    }
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+    };
   }, [loggedIn, user]);
 
   const handleLogin = async (credentials) => {
@@ -145,12 +185,12 @@ function App() {
         <Route path='/conversations' element={
           (!loggedIn)
             ? <Navigate to="/login" replace />
-            : <ConversationsPage user={user} loggedIn={loggedIn} handleNotificationsUpdate={handleNotificationsUpdate} />
+            : <ConversationsPage user={user} loggedIn={loggedIn} handleNotificationsUpdate={handleNotificationsUpdate} wsMessage={wsMessage} />
         } />
         <Route path='/conversations/:conversationId' element={
           (!loggedIn)
             ? <Navigate to="/login" replace />
-            : <ConversationPage user={user} loggedIn={loggedIn} handleNotificationsUpdate={handleNotificationsUpdate} />
+            : <ConversationPage user={user} loggedIn={loggedIn} handleNotificationsUpdate={handleNotificationsUpdate} wsMessage={wsMessage} />
         } />
       </Route>
     </Routes>

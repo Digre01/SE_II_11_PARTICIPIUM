@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import API from "../../API/API.mjs";
 import { isSameDay, format, parseISO } from "date-fns";
 
-const ConversationPage = ({ user, handleNotificationsUpdate }) => {
+const ConversationPage = ({ user, handleNotificationsUpdate, wsMessage }) => {
   const { conversationId } = useParams();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,6 +36,21 @@ const ConversationPage = ({ user, handleNotificationsUpdate }) => {
     }
     fetchData();
   }, [conversationId, handleNotificationsUpdate]);
+
+  // Aggiorna i messaggi in tempo reale quando arriva un messaggio dal WS
+  useEffect(() => {
+    if (!wsMessage) return;
+    // Aggiorna solo se il messaggio è della conversazione attuale
+    if (wsMessage.conversation && String(wsMessage.conversation.id) === String(conversationId)) {
+      async function refresh() {
+        try {
+          const msgs = await API.fetchMessages(conversationId);
+          setMessages(msgs);
+        } catch {}
+      }
+      refresh();
+    }
+  }, [wsMessage, conversationId]);
 
   useEffect(() => {
     if (scrollContainerRef.current) {

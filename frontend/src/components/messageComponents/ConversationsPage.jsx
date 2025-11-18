@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import API from "../../API/API.mjs";
 
 
-const ConversationsPage = () => {
+const ConversationsPage = ({ wsMessage }) => {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notificationCounts, setNotificationCounts] = useState({});
   const navigate = useNavigate();
 
+  // Carica conversazioni e notifiche all'avvio
   useEffect(() => {
     async function fetchData() {
       try {
@@ -25,6 +26,20 @@ const ConversationsPage = () => {
     }
     fetchData();
   }, []);
+
+  // Aggiorna conversazioni/notifiche in tempo reale quando arriva un messaggio dal WS
+  useEffect(() => {
+    if (!wsMessage) return;
+    async function refresh() {
+      try {
+        const data = await API.fetchConversations();
+        setConversations(data);
+        const counts = await API.fetchNotificationCounts();
+        setNotificationCounts(counts || {});
+      } catch {}
+    }
+    refresh();
+  }, [wsMessage]);
 
   const handleClick = (conversationId) => {
     navigate(`/conversations/${conversationId}`);
