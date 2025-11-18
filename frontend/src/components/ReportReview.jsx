@@ -32,7 +32,7 @@ export default function ReportReview({ user, loggedIn }) {
   const handleAccept = async () => {
     try {
       const updated = await API.reviewReport(id, { action: 'accept', categoryId });
-      setMessage('Report accepted.');
+      setMessage('Report assigned.');
       setReport(updated);
       navigate('/reports');
     } catch (err) {

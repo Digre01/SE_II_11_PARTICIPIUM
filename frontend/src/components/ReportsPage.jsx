@@ -10,7 +10,7 @@ function ReportRow({ idx, report, user, onAction }) {
         switch (status) {
             case "pending":
                 return "warning";
-            case "accepted":
+            case "assigned":
                 return "primary";
             case "in_progress":
                 return "success";
@@ -23,7 +23,7 @@ function ReportRow({ idx, report, user, onAction }) {
 
     // Determina il bottone da mostrare
     let actionButton = null;
-    if (String(report.status).toLowerCase() === "accepted") {
+    if (String(report.status).toLowerCase() === "assigned") {
         actionButton = <Button variant="success" size="sm" onClick={() => onAction('start', report.id)}>START</Button>;
     } else if (String(report.status).toLowerCase() === "in_progress") {
         if (report.technicianId === user?.id) {
@@ -59,7 +59,7 @@ function ReportCard({ report }) {
         switch (status) {
             case "pending":
                 return "warning";
-            case "accepted":
+            case "assigned":
                 return "primary";
             case "in_progress":
                 return "success";
@@ -112,8 +112,8 @@ function ReportsPage({user}) {
     }, []);
 
     const officeReports = (reports || []).filter(r => {
-        const statusMatch = String(r.status || '').toLowerCase() === 'accepted' || 
-                           String(r.status || '').toLowerCase() === 'in_progress';
+        const statusMatch = String(r.status || '').toLowerCase() === 'assigned' || 
+                   String(r.status || '').toLowerCase() === 'in_progress';
         const officeMatch = r.category?.officeId === user?.officeId;
         return statusMatch && officeMatch;
     });

@@ -95,11 +95,11 @@ export class ReportRepository {
 			const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
 			const conversation = await convRepo.findOne({ where: { report: { id: report.id } } });
 			if (conversation) {
-				const sysMsg = await createSystemMessage(conversation.id, `Report status change to: Rejected${explanation ? ' - ' + explanation : ''}`);
+				const sysMsg = await createSystemMessage(conversation.id, `Report status change to: Rejected.${explanation ? ' Explanation:' + explanation : ''}`);
 				await broadcastToConversation(conversation.id, sysMsg);
 			}
 		} else if (action === 'accept') {
-			report.status = 'accepted';
+			report.status = 'assigned';
 			report.reject_explanation = '';
 			if (categoryId) report.categoryId = Number(categoryId);
 			// Messaggio automatico per accettazione
@@ -109,7 +109,7 @@ export class ReportRepository {
 			const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
 			const conversation = await convRepo.findOne({ where: { report: { id: report.id } } });
 			if (conversation) {
-				const sysMsg = await createSystemMessage(conversation.id, 'Report status change to: Accepted');
+				const sysMsg = await createSystemMessage(conversation.id, 'Report status change to: Assigned');
 				await broadcastToConversation(conversation.id, sysMsg);
 			}
 		}
