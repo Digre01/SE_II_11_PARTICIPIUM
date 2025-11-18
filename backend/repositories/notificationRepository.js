@@ -17,14 +17,12 @@ export async function getUnreadNotifications(userId) {
 
 export async function markNotificationsAsReadForConversation(userId, conversationId) {
   const repo = AppDataSourcePostgres.getRepository(Notification);
-  const notifications = await repo.find({
-    where: qb => {
-      qb.where('Notification.read = false')
-        .andWhere('Notification.userId = :userId', { userId })
-        .andWhere('message.conversationId = :conversationId', { conversationId });
-    },
-    relations: ['message']
-  });
+  const notifications = await repo.createQueryBuilder('notification')
+    .leftJoinAndSelect('notification.message', 'message')
+    .where('notification.read = false')
+    .andWhere('notification.userId = :userId', { userId })
+    .andWhere('message.conversationId = :conversationId', { conversationId })
+    .getMany();
   for (const n of notifications) {
     n.read = true;
     await repo.save(n);

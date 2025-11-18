@@ -3,7 +3,7 @@ import {
 } from 'design-react-kit';
 import AuthHeader from './AuthHeader';
 
-function NavComponent({ user, loggedIn, isAdmin, handleLogout }) {
+function NavComponent({ user, loggedIn, isAdmin, handleLogout, notificationCount }) {
   return (
     <Headers sticky={true} className="app-header-wrapper">
       <AuthHeader 
@@ -11,7 +11,8 @@ function NavComponent({ user, loggedIn, isAdmin, handleLogout }) {
         loggedIn={loggedIn}
         isAdmin={isAdmin}
         handleLogout={handleLogout}
-         />
+        notificationCount={notificationCount}
+      />
     </Headers>
   );
 }

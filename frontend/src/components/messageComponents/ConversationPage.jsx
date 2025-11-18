@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import API from "../../API/API.mjs";
 import { isSameDay, format, parseISO } from "date-fns";
 
-const ConversationPage = ({ user }) => {
+const ConversationPage = ({ user, handleNotificationsUpdate }) => {
   const { conversationId } = useParams();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,6 +16,9 @@ const ConversationPage = ({ user }) => {
       try {
         // Segna le notifiche come lette all'apertura della conversazione
         await API.markNotificationsAsRead(conversationId);
+        if (typeof handleNotificationsUpdate === 'function') {
+          handleNotificationsUpdate();
+        }
         const msgs = await API.fetchMessages(conversationId);
         setMessages(msgs);
         if (msgs.length > 0 && msgs[0].conversation && msgs[0].conversation.report) {
@@ -32,7 +35,7 @@ const ConversationPage = ({ user }) => {
       }
     }
     fetchData();
-  }, [conversationId]);
+  }, [conversationId, handleNotificationsUpdate]);
 
   useEffect(() => {
     if (scrollContainerRef.current) {

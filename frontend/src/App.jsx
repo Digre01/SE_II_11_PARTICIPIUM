@@ -18,13 +18,29 @@ import ConversationPage from './components/messageComponents/ConversationPage.js
 
 
 
+
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [user, setUser] = useState(undefined);
   const [loading, setLoading] = useState(true);
+  const [notificationCount, setNotificationCount] = useState(0);
 
   const isAdmin = String(user?.userType || '').toLowerCase() === 'admin';
   const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
+
+  // Aggiorna il conteggio notifiche
+  const updateNotificationCount = async () => {
+    if (loggedIn && (isCitizen || isStaff) && user) {
+      try {
+        const notifications = await API.fetchNotifications();
+        setNotificationCount(notifications.length);
+      } catch {
+        setNotificationCount(0);
+      }
+    } else {
+      setNotificationCount(0);
+    }
+  };
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -50,10 +66,16 @@ function App() {
     fetchCurrentUser();
   }, []);
 
+  useEffect(() => {
+    updateNotificationCount();
+    // eslint-disable-next-line
+  }, [loggedIn, user]);
+
   const handleLogin = async (credentials) => {
     const user = await API.logIn(credentials); 
     setUser(user);
     setLoggedIn(true);
+    updateNotificationCount();
     return { user, isAdmin: user?.userType === 'admin' }; 
   };
 
@@ -61,12 +83,19 @@ function App() {
     await API.logOut();
     setLoggedIn(false);
     setUser(undefined);
+    setNotificationCount(0);
   };
 
   const handleSignUp = async (data) => {
     const user = await API.signUp(data);
     setUser(user);
     setLoggedIn(true);
+    updateNotificationCount();
+  };
+
+  // Funzione da passare ai figli per aggiornare le notifiche
+  const handleNotificationsUpdate = () => {
+    updateNotificationCount();
   };
 
   if (loading) {
@@ -81,7 +110,7 @@ function App() {
 
   return (
     <Routes>
-      <Route element={<DefaultLayout user={user} loggedIn={loggedIn} isAdmin={isAdmin} handleLogout={handleLogout}/> }>
+      <Route element={<DefaultLayout user={user} loggedIn={loggedIn} isAdmin={isAdmin} handleLogout={handleLogout} notificationCount={notificationCount}/> }>
         <Route path='/' element={<HomePage user={user} loggedIn={loggedIn} isAdmin={isAdmin} />}/>
         <Route path='/login' element={
           loggedIn ? <Navigate to='/' replace /> : <LoginForm handleLogin={handleLogin}/>
@@ -116,12 +145,12 @@ function App() {
         <Route path='/conversations' element={
           (!loggedIn)
             ? <Navigate to="/login" replace />
-            : <ConversationsPage user={user} loggedIn={loggedIn} />
+            : <ConversationsPage user={user} loggedIn={loggedIn} handleNotificationsUpdate={handleNotificationsUpdate} />
         } />
         <Route path='/conversations/:conversationId' element={
           (!loggedIn)
             ? <Navigate to="/login" replace />
-            : <ConversationPage user={user} loggedIn={loggedIn} />
+            : <ConversationPage user={user} loggedIn={loggedIn} handleNotificationsUpdate={handleNotificationsUpdate} />
         } />
       </Route>
     </Routes>
