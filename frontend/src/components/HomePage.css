@@ -3,6 +3,11 @@
   
 }
 
+.selected-pin-red {
+  filter: hue-rotate(-170deg) saturate(3) brightness(0.95);
+  
+}
+
 button {
   font-weight: 700;
   text-align: center;

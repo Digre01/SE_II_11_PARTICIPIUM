@@ -99,6 +99,13 @@ const fetchReports = async () => {
   throw await response.text();
 };
 
+// GET /api/v1/reports/accepted (public map)
+const fetchAcceptedReports = async () => {
+  const response = await fetch(SERVER_URL + '/api/v1/reports/accepted');
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+
 // GET /api/v1/reports/:id
 const fetchReport = async (id) => {
   const response = await fetch(SERVER_URL + `/api/v1/reports/${id}`, { credentials: 'include' });
@@ -178,5 +185,5 @@ export async function fetchOffices() {
 }
 
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture };
+const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchReports, fetchAcceptedReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture };
 export default API;

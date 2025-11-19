@@ -8,26 +8,6 @@ import fs from 'fs';
 
 const router = Router();
 
-// GET /api/v1/reports
-router.get('/', async (req, res, next) => {
-  try {
-    const reports = await getAllReports();
-    // DTO semplice
-    const dto = reports.map(r => ({
-      id: r.id,
-      title: r.title,
-      latitude: r.latitude,
-      longitude: r.longitude,
-      status: r.status,
-      categoryId: r.categoryId,
-      photo: r.photos?.[0]?.link || null
-    }));
-    res.status(200).json(dto);
-  } catch (err) {
-    next(err);
-  }
-});
-
 // POST /api/v1/reports
 router.post('/',
   authorizeUserType(['citizen']),
@@ -90,11 +70,11 @@ router.get('/:id', authorizeUserType(['staff']), authorizeRole('Municipal Public
   } catch (err) { next(err); }
 });
 
-// GET /api/v1/reports/approved
+// GET /api/v1/reports/accepted
 //Get approved reports to show on the public map
-router.get('/approved', async (req, res, next) => {
+router.get('/accepted', async (req, res, next) => {
   try {
-    const reports = await getApprovedReports();
+    const reports = await getAcceptedReports();
     res.json(reports);
   } catch (err) { next(err); }
 });

@@ -3,7 +3,9 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import './HomePage.css';
-// Simple reverse geocode via Nominatim without extra deps
+import API from '../API/API.mjs';
+
+
 async function reverseGeocode({ lat, lon, signal }) {
   const url = new URL('https://nominatim.openstreetmap.org/reverse');
   url.searchParams.set('format', 'jsonv2');
@@ -94,6 +96,15 @@ export default function Map({ user, loggedIn, onPointChange }) {
   const center = [45.0703, 7.6869];
   const initialZoom = 12; // start wider
   const targetZoom = 15;  // animate to this
+  const [reports, setReports] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    API.fetchAcceptedReports()
+      .then(list => { if (mounted) setReports(list); })
+      .catch(() => { if (mounted) setReports([]); });
+    return () => { mounted = false; };
+  }, []);
 
   function IntroZoom() {
     const map = useMap();
@@ -123,6 +134,14 @@ export default function Map({ user, loggedIn, onPointChange }) {
       <Marker position={{ lat: 45.0703, lng: 7.6869 }}>
         <Popup>Turin Center</Popup>
       </Marker>
+      {reports.map(r => (
+        <Marker key={r.id} position={{ lat: r.latitude, lng: r.longitude }}>
+          <Popup>
+            <strong>{r.title}</strong><br />
+            {r.photo ? <img src={SERVER_URL + r.photo} alt={r.title} style={{ maxWidth: '120px', marginTop: '6px' }} /> : null}
+          </Popup>
+        </Marker>
+      ))}
       <SingleClickMarker user={user} loggedIn={loggedIn} onPointChange={onPointChange} />
     </MapContainer>
   );
