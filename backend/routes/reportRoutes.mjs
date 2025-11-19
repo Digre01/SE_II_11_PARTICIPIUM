@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createReport, getAllReports, getReport, reviewReport } from "../controllers/reportController.mjs";
+import { createReport, getAllReports, getReport, reviewReport, getAcceptedReports } from "../controllers/reportController.mjs";
 import upload from '../middlewares/uploadMiddleware.js';
 import { authorizeUserType, authorizeRole } from '../middlewares/userAuthorization.js';
 import { BadRequestError } from '../errors/BadRequestError.js';
@@ -61,21 +61,30 @@ router.get('/', authorizeUserType(['staff']), authorizeRole('Municipal Public Re
   } catch (err) { next(err); }
 });
 
-// GET /api/v1/reports/:id
+// GET /api/v1/reports/accepted (public) - must be before /:id
+router.get('/accepted', async (req, res, next) => {
+  try {
+    const reports = await getAcceptedReports();
+    // Minimal DTO
+    const dto = reports.map(r => ({
+      id: r.id,
+      title: r.title,
+      latitude: r.latitude,
+      longitude: r.longitude,
+      status: r.status,
+      categoryId: r.categoryId,
+      photos: r.photos?.map(p => ({ link: p.link })) || []
+    }));
+    res.json(dto);
+  } catch (err) { next(err); }
+});
+
+// GET /api/v1/reports/:id (staff only)
 router.get('/:id', authorizeUserType(['staff']), authorizeRole('Municipal Public Relations Officer'), async (req, res, next) => {
   try {
     const report = await getReport(req.params.id);
     if (!report) return next(new NotFoundError('Not found'));
     res.json(report);
-  } catch (err) { next(err); }
-});
-
-// GET /api/v1/reports/accepted
-//Get approved reports to show on the public map
-router.get('/accepted', async (req, res, next) => {
-  try {
-    const reports = await getAcceptedReports();
-    res.json(reports);
   } catch (err) { next(err); }
 });
 

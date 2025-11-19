@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import './HomePage.css';
-import API from '../API/API.mjs';
+import API, { SERVER_URL } from '../API/API.mjs';
 
 
 async function reverseGeocode({ lat, lon, signal }) {
@@ -28,8 +28,8 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
   const navigate = useNavigate();
   const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
 
-  const selectedPinIcon = useMemo(() => new L.Icon.Default({ className: 'selected-pin-red' }), []);
-
+  const selectedPinIcon = useMemo(() => new L.Icon.Default({ className: 'selected-pin-green' }), []);
+  
   useMapEvents({
     click(e) {
       setSelectedPoint(e.latlng);
@@ -97,6 +97,7 @@ export default function Map({ user, loggedIn, onPointChange }) {
   const initialZoom = 12; // start wider
   const targetZoom = 15;  // animate to this
   const [reports, setReports] = useState([]);
+  const reportsPinIcon = useMemo(() => new L.Icon.Default({ className: 'reports-pin-orange' }), []);
 
   useEffect(() => {
     let mounted = true;
@@ -135,10 +136,13 @@ export default function Map({ user, loggedIn, onPointChange }) {
         <Popup>Turin Center</Popup>
       </Marker>
       {reports.map(r => (
-        <Marker key={r.id} position={{ lat: r.latitude, lng: r.longitude }}>
+        <Marker key={r.id} position={{ lat: r.latitude, lng: r.longitude }} icon={reportsPinIcon}>
           <Popup>
             <strong>{r.title}</strong><br />
-            {r.photo ? <img src={SERVER_URL + r.photo} alt={r.title} style={{ maxWidth: '120px', marginTop: '6px' }} /> : null}
+            {r.photos && r.photos[0] && r.photos[0].link ? (
+              <img src={SERVER_URL + r.photos[0].link} alt={r.title} style={{ maxWidth: '120px', marginTop: '6px' }} />
+            ) : null}
+            <div style={{ fontSize: '0.7rem', marginTop: '4px', color: '#555' }}></div>
           </Popup>
         </Marker>
       ))}

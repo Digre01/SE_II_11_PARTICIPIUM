@@ -1,9 +1,9 @@
-.selected-pin-red {
+.selected-pin-green {
   filter: hue-rotate(-100deg) saturate(3) brightness(0.95);
   
 }
 
-.selected-pin-red {
+.reports-pin-orange {
   filter: hue-rotate(-170deg) saturate(3) brightness(0.95);
   
 }
