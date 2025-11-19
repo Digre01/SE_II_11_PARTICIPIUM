@@ -5,7 +5,14 @@ export async function createReport(reportData) {
   return report;
 }
 
-export async function getApprovedReports() {
-  const reports = await reportRepository.getAllReports();
-  return reports;
+export async function getAllReports() {
+  return await reportRepository.getAllReports();
+}
+
+export async function getReport(id) {
+  return await reportRepository.getReportById(id);
+}
+
+export async function reviewReport(reviewData) {
+  return await reportRepository.reviewReport(reviewData);
 }

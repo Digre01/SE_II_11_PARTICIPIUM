@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { getAllReports, createReport } from "../controllers/reportController.mjs";
+import { createReport, getAllReports, getReport, reviewReport } from "../controllers/reportController.mjs";
 import upload from '../middlewares/uploadMiddleware.js';
-import { authorizeUserType } from '../middlewares/userAuthorization.js';
-import reportController from '../controllers/reportController.mjs';
+import { authorizeUserType, authorizeRole } from '../middlewares/userAuthorization.js';
+import { BadRequestError } from '../errors/BadRequestError.js';
+import { NotFoundError } from '../errors/NotFoundError.js';
 import fs from 'fs';
 
 const router = Router();
@@ -55,11 +56,11 @@ router.post('/',
     // Validation
     if (!title || !description || !categoryId || !userId || !latitude || !longitude) {
       deleteUploadedFiles();
-      return res.status(400).json({ error: 'All fields are required.' });
+      return next(new BadRequestError('All fields are required.'));
     }
     if (photos.length < 1 || photos.length > 3) {
       deleteUploadedFiles();
-      return res.status(400).json({ error: 'You must upload between 1 and 3 photos.' });
+      return next(new BadRequestError('You must upload between 1 and 3 photos.'));
     }
 
     const report = await createReport({ title, description, categoryId, userId, latitude, longitude, photos });
@@ -69,6 +70,37 @@ router.post('/',
     deleteUploadedFiles();
     next(error);
   }
+});
+
+// GET /api/v1/reports (list)
+// Only staff members with the 'Municipal Public Relations Officer' role can access
+router.get('/', authorizeUserType(['staff']), authorizeRole('Municipal Public Relations Officer'), async (req, res, next) => {
+  try {
+    const reports = await getAllReports();
+    res.json(reports);
+  } catch (err) { next(err); }
+});
+
+// GET /api/v1/reports/:id
+router.get('/:id', authorizeUserType(['staff']), authorizeRole('Municipal Public Relations Officer'), async (req, res, next) => {
+  try {
+    const report = await getReport(req.params.id);
+    if (!report) return next(new NotFoundError('Not found'));
+    res.json(report);
+  } catch (err) { next(err); }
+});
+
+// PATCH /api/v1/reports/:id/review
+router.patch('/:id/review', authorizeUserType(['staff']), authorizeRole('Municipal Public Relations Officer'), async (req, res, next) => {
+  try {
+    const { action, explanation, categoryId } = req.body;
+    if (!action || !['accept','reject'].includes(action)) {
+      return next(new BadRequestError('Invalid action'));
+    }
+    const updated = await reviewReport({ reportId: req.params.id, action, explanation, categoryId });
+    if (!updated) return next(new NotFoundError('Not found'));
+    res.json(updated);
+  } catch (err) { next(err); }
 });
 
 export default router;
