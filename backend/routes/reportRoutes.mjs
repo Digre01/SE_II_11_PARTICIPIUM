@@ -14,46 +14,38 @@ router.post('/',
   upload.array('photos', 3),
   async (req, res, next) => {
 
-  // Function to delete uploaded files in case of error
-  const deleteUploadedFiles = () => {
-    if (req.files && req.files.length > 0) {
-      req.files.forEach(file => {
-        try {
-          fs.unlinkSync(file.path);
-        } catch (err) {
-          // log error but don't stop
-          console.error('Deleting files error:', file.path, err);
-        }
-      });
-    }
-  };
+    const deleteUploadedFiles = () => {
+      if (req.files && req.files.length > 0) {
+        req.files.forEach(file => {
+          try { fs.unlinkSync(file.path); } catch (err) { console.error('Deleting files error:', file.path, err); }
+        });
+      }
+    };
 
-  try {
-    const { title, description, categoryId, latitude, longitude } = req.body;
-    const userId = req.user?.id;
-    const photos = req.files ? req.files.map(file => `/public/${file.filename}`) : [];
+    try {
+      const { title, description, categoryId, latitude, longitude } = req.body;
+      const userId = req.user?.id;
+      const photos = req.files ? req.files.map(file => `/public/${file.filename}`) : [];
 
-    // Validation
-    if (!title || !description || !categoryId || !userId || !latitude || !longitude) {
+      if (!title || !description || !categoryId || !userId || !latitude || !longitude) {
+        deleteUploadedFiles();
+        return next(new BadRequestError('All fields are required.'));
+      }
+      if (photos.length < 1 || photos.length > 3) {
+        deleteUploadedFiles();
+        return next(new BadRequestError('You must upload between 1 and 3 photos.'));
+      }
+
+      await createReport({ title, description, categoryId, userId, latitude, longitude, photos });
+      res.status(201).json({ message: 'Report created successfully', photos });
+    } catch (error) {
       deleteUploadedFiles();
-      return next(new BadRequestError('All fields are required.'));
+      next(error);
     }
-    if (photos.length < 1 || photos.length > 3) {
-      deleteUploadedFiles();
-      return next(new BadRequestError('You must upload between 1 and 3 photos.'));
-    }
-
-    const report = await createReport({ title, description, categoryId, userId, latitude, longitude, photos });
-
-    res.status(201).json({ message: 'Report created successfully', photos });
-  } catch (error) {
-    deleteUploadedFiles();
-    next(error);
   }
-});
+);
 
-// GET /api/v1/reports (list)
-// Only staff members with the 'Municipal Public Relations Officer' role can access
+// GET /api/v1/reports (staff list)
 router.get('/', authorizeUserType(['staff']), authorizeRole('Municipal Public Relations Officer'), async (req, res, next) => {
   try {
     const reports = await getAllReports();
@@ -61,11 +53,10 @@ router.get('/', authorizeUserType(['staff']), authorizeRole('Municipal Public Re
   } catch (err) { next(err); }
 });
 
-// GET /api/v1/reports/accepted (public) - must be before /:id
-router.get('/accepted', async (req, res, next) => {
+// GET /api/v1/reports/accepted (public map layer)
+router.get('/accepted', authorizeUserType(['citizen']), async (req, res, next) => {
   try {
     const reports = await getAcceptedReports();
-    // Minimal DTO
     const dto = reports.map(r => ({
       id: r.id,
       title: r.title,
@@ -73,13 +64,15 @@ router.get('/accepted', async (req, res, next) => {
       longitude: r.longitude,
       status: r.status,
       categoryId: r.categoryId,
+      authorUsername: r.user?.username || null,
+      authorName: r.user ? `${r.user.name} ${r.user.surname}` : null,
       photos: r.photos?.map(p => ({ link: p.link })) || []
     }));
     res.json(dto);
   } catch (err) { next(err); }
 });
 
-// GET /api/v1/reports/:id (staff only)
+// GET /api/v1/reports/:id (staff detail)
 router.get('/:id', authorizeUserType(['staff']), authorizeRole('Municipal Public Relations Officer'), async (req, res, next) => {
   try {
     const report = await getReport(req.params.id);

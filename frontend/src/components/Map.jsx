@@ -123,6 +123,7 @@ export default function Map({ user, loggedIn, onPointChange }) {
       data-testid="map-container"
       center={center}
       zoom={initialZoom}
+      minZoom={11}
       maxBounds={[[45.0027, 7.5703], [45.144, 7.7783]]}
       maxBoundsViscosity={1.0}
       style={{ height: '90vh', width: '100%' }}
@@ -139,10 +140,11 @@ export default function Map({ user, loggedIn, onPointChange }) {
         <Marker key={r.id} position={{ lat: r.latitude, lng: r.longitude }} icon={reportsPinIcon}>
           <Popup>
             <strong>{r.title}</strong><br />
+            {r.authorName && <span style={{ fontSize: '0.75rem' }}>by {r.authorName}</span>}<br />
             {r.photos && r.photos[0] && r.photos[0].link ? (
               <img src={SERVER_URL + r.photos[0].link} alt={r.title} style={{ maxWidth: '120px', marginTop: '6px' }} />
             ) : null}
-            <div style={{ fontSize: '0.7rem', marginTop: '4px', color: '#555' }}></div>
+            <div style={{ fontSize: '0.65rem', marginTop: '4px', color: '#555' }}></div>
           </Popup>
         </Marker>
       ))}

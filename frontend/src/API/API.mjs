@@ -101,7 +101,7 @@ const fetchReports = async () => {
 
 // GET /api/v1/reports/accepted (public map)
 const fetchAcceptedReports = async () => {
-  const response = await fetch(SERVER_URL + '/api/v1/reports/accepted');
+  const response = await fetch(SERVER_URL + `/api/v1/reports/accepted`, { credentials: 'include' });
   if (response.ok) return await response.json();
   throw await response.text();
 };
