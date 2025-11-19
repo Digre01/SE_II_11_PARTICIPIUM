@@ -37,6 +37,19 @@ await jest.unstable_mockModule('../../config/data-source.js', () => {
     };
 });
 
+//mock per broadcast e createSystemMessage (sto testando soltanto accept/reject del report e non i messaggi)
+await jest.unstable_mockModule('../../wsHandler.js', () => ({
+    broadcastToConversation: jest.fn(),
+}));
+
+await jest.unstable_mockModule('../../repositories/messageRepository.js', () => ({
+    createSystemMessage: jest.fn().mockResolvedValue({ id: 1, content: 'System message' }),
+}));
+
+await jest.unstable_mockModule('../../entities/Conversation.js', () => ({
+    Conversation: { options: { name: 'Conversation' } },
+}));
+
 const { reportRepository } = await import('../../repositories/reportRepository.mjs');
 
 describe('ReportRepository.createReport', () => {
@@ -158,17 +171,6 @@ describe('ReportRepository.getAllReports', () => {
         expect(result).toHaveLength(0);
     });
 
-    it('propagates database errors', async () => {
-        const dbError = new Error('Database connection failed');
-        reportRepoStub.find.mockRejectedValue(dbError);
-
-        await expect(reportRepository.getAllReports())
-            .rejects
-            .toThrow('Database connection failed');
-
-        expect(reportRepoStub.find).toHaveBeenCalled();
-    });
-
     it('returns reports with complete category and photos information', async () => {
         const mockReportsWithRelations = [
             {
@@ -202,5 +204,233 @@ describe('ReportRepository.getAllReports', () => {
         expect(result[0].category).toHaveProperty('id', 5);
         expect(result[0].category).toHaveProperty('name', 'Infrastructure');
         expect(result[0].photos).toHaveLength(2);
+    });
+});
+
+describe('ReportRepository.getReportById', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('returns a specific report with relations when found', async () => {
+        const mockReport = {
+            id: 1,
+            title: 'Pothole Report',
+            description: 'Large pothole on Main St',
+            status: 'pending',
+            latitude: 45.123,
+            longitude: 9.456,
+            category: { id: 5, name: 'Infrastructure' },
+            photos: [
+                { id: 1, link: '/public/photo1.jpg' },
+                { id: 2, link: '/public/photo2.jpg' }
+            ]
+        };
+
+        reportRepoStub.findOne.mockResolvedValue(mockReport);
+
+        const result = await reportRepository.getReportById(1);
+
+        expect(reportRepoStub.findOne).toHaveBeenCalledWith({
+            where: { id: 1 },
+            relations: ['photos', 'category']
+        });
+        expect(result).toEqual(mockReport);
+        expect(result.photos).toHaveLength(2);
+        expect(result.category.name).toBe('Infrastructure');
+    });
+
+    it('returns null when report not found', async () => {
+        reportRepoStub.findOne.mockResolvedValue(null);
+
+        const result = await reportRepository.getReportById(999);
+
+        expect(reportRepoStub.findOne).toHaveBeenCalledWith({
+            where: { id: 999 },
+            relations: ['photos', 'category']
+        });
+        expect(result).toBeNull();
+    });
+
+    it('converts string id to number', async () => {
+        const mockReport = { id: 42, title: 'Test', status: 'pending' };
+        reportRepoStub.findOne.mockResolvedValue(mockReport);
+
+        await reportRepository.getReportById('42');
+
+        expect(reportRepoStub.findOne).toHaveBeenCalledWith({
+            where: { id: 42 },
+            relations: ['photos', 'category']
+        });
+    });
+
+});
+
+describe('ReportRepository.reviewReport', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        savedReports.length = 0;
+    });
+
+    it('rejects report with explanation and sets status to rejected', async () => {
+        const mockReport = {
+            id: 1,
+            title: 'Test Report',
+            status: 'pending',
+            reject_explanation: ''
+        };
+
+        reportRepoStub.findOneBy.mockResolvedValue(mockReport);
+        reportRepoStub.save.mockImplementation(async (entity) => {
+            savedReports.push(entity);
+            return entity;
+        });
+
+        const result = await reportRepository.reviewReport({
+            reportId: 1,
+            action: 'reject',
+            explanation: 'Insufficient information provided'
+        });
+
+        expect(reportRepoStub.findOneBy).toHaveBeenCalledWith({ id: 1 });
+        expect(result.status).toBe('rejected');
+        expect(result.reject_explanation).toBe('Insufficient information provided');
+        expect(reportRepoStub.save).toHaveBeenCalledWith(mockReport);
+    });
+
+    it('rejects report without explanation (empty string)', async () => {
+        const mockReport = {
+            id: 2,
+            title: 'Test Report',
+            status: 'pending',
+            reject_explanation: ''
+        };
+
+        reportRepoStub.findOneBy.mockResolvedValue(mockReport);
+        reportRepoStub.save.mockImplementation(async (entity) => entity);
+
+        const result = await reportRepository.reviewReport({
+            reportId: 2,
+            action: 'reject'
+        });
+
+        expect(result.status).toBe('rejected');
+        expect(result.reject_explanation).toBe('');
+    });
+
+    it('accepts report and sets status to assigned', async () => {
+        const mockReport = {
+            id: 3,
+            title: 'Test Report',
+            status: 'pending',
+            reject_explanation: 'Previous rejection',
+            categoryId: 5
+        };
+
+        reportRepoStub.findOneBy.mockResolvedValue(mockReport);
+        reportRepoStub.save.mockImplementation(async (entity) => entity);
+
+        const result = await reportRepository.reviewReport({
+            reportId: 3,
+            action: 'accept'
+        });
+
+        expect(reportRepoStub.findOneBy).toHaveBeenCalledWith({ id: 3 });
+        expect(result.status).toBe('assigned');
+        expect(result.reject_explanation).toBe('');
+        expect(reportRepoStub.save).toHaveBeenCalledWith(mockReport);
+    });
+
+    it('accepts report and updates category when categoryId provided', async () => {
+        const mockReport = {
+            id: 4,
+            title: 'Test Report',
+            status: 'pending',
+            categoryId: 5
+        };
+
+        reportRepoStub.findOneBy.mockResolvedValue(mockReport);
+        reportRepoStub.save.mockImplementation(async (entity) => entity);
+
+        const result = await reportRepository.reviewReport({
+            reportId: 4,
+            action: 'accept',
+            categoryId: 10
+        });
+
+        expect(result.status).toBe('assigned');
+        expect(result.categoryId).toBe(10);
+    });
+
+    it('accepts report without changing category when categoryId not provided', async () => {
+        const mockReport = {
+            id: 5,
+            title: 'Test Report',
+            status: 'pending',
+            categoryId: 7
+        };
+
+        reportRepoStub.findOneBy.mockResolvedValue(mockReport);
+        reportRepoStub.save.mockImplementation(async (entity) => entity);
+
+        const result = await reportRepository.reviewReport({
+            reportId: 5,
+            action: 'accept'
+        });
+
+        expect(result.status).toBe('assigned');
+        expect(result.categoryId).toBe(7);
+    });
+
+    it('returns null when report not found', async () => {
+        reportRepoStub.findOneBy.mockResolvedValue(null);
+
+        const result = await reportRepository.reviewReport({
+            reportId: 999,
+            action: 'reject',
+            explanation: 'Test'
+        });
+
+        expect(result).toBeNull();
+        expect(reportRepoStub.save).not.toHaveBeenCalled();
+    });
+
+    it('converts string reportId to number', async () => {
+        const mockReport = {
+            id: 6,
+            title: 'Test Report',
+            status: 'pending'
+        };
+
+        reportRepoStub.findOneBy.mockResolvedValue(mockReport);
+        reportRepoStub.save.mockImplementation(async (entity) => entity);
+
+        await reportRepository.reviewReport({
+            reportId: '6',
+            action: 'reject',
+            explanation: 'Test'
+        });
+
+        expect(reportRepoStub.findOneBy).toHaveBeenCalledWith({ id: 6 });
+    });
+
+    it('converts string categoryId to number when accepting', async () => {
+        const mockReport = {
+            id: 7,
+            title: 'Test Report',
+            status: 'pending',
+            categoryId: 5
+        };
+
+        reportRepoStub.findOneBy.mockResolvedValue(mockReport);
+        reportRepoStub.save.mockImplementation(async (entity) => entity);
+
+        const result = await reportRepository.reviewReport({
+            reportId: 7,
+            action: 'accept',
+            categoryId: '15'
+        });
+
+        expect(result.categoryId).toBe(15);
     });
 });

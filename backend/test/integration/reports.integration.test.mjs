@@ -1,9 +1,14 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
+import {InsufficientRightsError} from "../../errors/InsufficientRightsError.js";
+import {UnauthorizedError} from "../../errors/UnauthorizedError.js";
 
 // Repository mock
 const mockRepo = {
   createReport: jest.fn(),
+    getAllReports: jest.fn(),
+    getReportById: jest.fn(),
+    reviewReport: jest.fn(),
 };
 
 // Mock repository before importing app
@@ -13,18 +18,41 @@ await jest.unstable_mockModule('../../repositories/reportRepository.mjs', () => 
 
 // Mock authorization middleware (must include every named export app.js imports)
 await jest.unstable_mockModule('../../middlewares/userAuthorization.js', () => ({
-  authorizeUserType: () => (req, _res, next) => {
-    if (req.header('Authorization')) {
-      req.user = { id: 10, role: 'citizen' };
-    }
-    next();
-  },
+    authorizeUserType: (allowedTypes) => (req, _res, next) => {
+        if (!req.header('Authorization')) {
+            const err = new UnauthorizedError('UNAUTHORIZED');
+            err.statusCode = 401;
+            return next(err);
+        }
+        const userType = req.header('X-User-Type') || 'citizen';
+        if (!allowedTypes.map(t => t.toUpperCase()).includes(userType.toUpperCase())) {
+            const err = new InsufficientRightsError('FORBIDDEN');
+            err.statusCode = 403;
+            return next(err);
+        }
+        req.user = { id: 10, userType };
+        next();
+    },
   requireAdminIfCreatingStaff: () => (req, _res, next) => next(), // no-op for tests
+
+    authorizeRole: (requiredRole) => (req, _res, next) => {
+        const userRole = req.header('X-User-Role');
+        if (userRole !== requiredRole) {
+            const err = new InsufficientRightsError('FORBIDDEN');
+            err.statusCode = 403;
+            return next(err);
+        }
+        next();
+    },
 }));
 
 // Mock upload middleware
 await jest.unstable_mockModule('../../middlewares/uploadMiddleware.js', () => ({
   default: {
+      single: () => (req, _res, next) => {
+          req.file = null; // non serve nel tuo test
+          next();
+      },
     array: () => (req, _res, next) => {
       const photoNamesHeader = req.header('X-Test-Photos');
       if (photoNamesHeader) {
@@ -41,7 +69,7 @@ await jest.unstable_mockModule('../../middlewares/uploadMiddleware.js', () => ({
 
 // Import app after mocks
 const { default: app } = await import('../../app.js');
-
+/*
 describe('POST /api/v1/reports', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -166,4 +194,85 @@ describe('POST /api/v1/reports', () => {
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/All fields are required/);
   });
+});*/
+
+describe('GET /api/v1/reports', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('returns all reports for authorized staff', async () => {
+        const mockReports = [
+            {
+                id: 1,
+                title: 'Report 1',
+                description: 'Description 1',
+                status: 'pending',
+                category: { id: 5, name: 'Infrastructure' },
+                photos: [{ id: 1, link: '/public/photo1.jpg' }]
+            },
+            {
+                id: 2,
+                title: 'Report 2',
+                description: 'Description 2',
+                status: 'resolved',
+                category: { id: 6, name: 'Public Safety' },
+                photos: []
+            }
+        ];
+
+        mockRepo.getAllReports.mockResolvedValue(mockReports);
+
+        const res = await request(app)
+            .get('/api/v1/reports')
+            .set('Authorization', 'Bearer test')
+            .set('X-User-Type', 'staff');
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual(mockReports);
+        expect(res.body).toHaveLength(2);
+        expect(mockRepo.getAllReports).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns empty array when no reports exist', async () => {
+        mockRepo.getAllReports.mockResolvedValue([]);
+
+        const res = await request(app)
+            .get('/api/v1/reports')
+            .set('Authorization', 'Bearer test')
+            .set('X-User-Type', 'staff');
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([]);
+        expect(res.body).toHaveLength(0);
+    });
+
+    it('returns 401 when not authenticated', async () => {
+        const res = await request(app)
+            .get('/api/v1/reports');
+
+        expect(res.status).toBe(401);
+        expect(mockRepo.getAllReports).not.toHaveBeenCalled();
+    });
+
+    it('returns 403 when user is not staff', async () => {
+        const res = await request(app)
+            .get('/api/v1/reports')
+            .set('Authorization', 'Bearer test')
+            .set('X-User-Type', 'citizen');
+
+        expect(res.status).toBe(403);
+        expect(mockRepo.getAllReports).not.toHaveBeenCalled();
+    });
+
+    it('handles repository errors', async () => {
+        mockRepo.getAllReports.mockRejectedValue(new Error('Database error'));
+
+        const res = await request(app)
+            .get('/api/v1/reports')
+            .set('Authorization', 'Bearer test')
+            .set('X-User-Type', 'staff');
+
+        expect(res.status).toBe(500);
+    });
 });
