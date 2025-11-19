@@ -13,6 +13,10 @@ export async function getReport(id) {
   return await reportRepository.getReportById(id);
 }
 
+export async function getApprovedReports(){
+  return await reportRepository.getApprovedReports();
+}
+
 export async function reviewReport(reviewData) {
   return await reportRepository.reviewReport(reviewData);
 }

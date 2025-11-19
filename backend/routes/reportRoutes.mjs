@@ -90,6 +90,15 @@ router.get('/:id', authorizeUserType(['staff']), authorizeRole('Municipal Public
   } catch (err) { next(err); }
 });
 
+// GET /api/v1/reports/approved
+//Get approved reports to show on the public map
+router.get('/approved', async (req, res, next) => {
+  try {
+    const reports = await getApprovedReports();
+    res.json(reports);
+  } catch (err) { next(err); }
+});
+
 // PATCH /api/v1/reports/:id/review
 router.patch('/:id/review', authorizeUserType(['staff']), authorizeRole('Municipal Public Relations Officer'), async (req, res, next) => {
   try {
