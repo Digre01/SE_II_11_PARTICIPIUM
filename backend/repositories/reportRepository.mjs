@@ -48,6 +48,14 @@ export class ReportRepository {
 
 		return savedReport;
 	}
+
+	async getApprovedReports() {
+		const reports = await this.repo.find({
+			where: { status: 'approved' },
+			relations: ['photos', 'user', 'category']
+		});
+		return reports;
+	}
 }
 
 export const reportRepository = new ReportRepository();

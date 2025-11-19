@@ -1,10 +1,31 @@
 import { Router } from "express";
-import { createReport } from "../controllers/reportController.mjs";
+import { getAllReports, createReport } from "../controllers/reportController.mjs";
 import upload from '../middlewares/uploadMiddleware.js';
 import { authorizeUserType } from '../middlewares/userAuthorization.js';
+import reportController from '../controllers/reportController.mjs';
 import fs from 'fs';
 
 const router = Router();
+
+// GET /api/v1/reports
+router.get('/', async (req, res, next) => {
+  try {
+    const reports = await getAllReports();
+    // DTO semplice
+    const dto = reports.map(r => ({
+      id: r.id,
+      title: r.title,
+      latitude: r.latitude,
+      longitude: r.longitude,
+      status: r.status,
+      categoryId: r.categoryId,
+      photo: r.photos?.[0]?.link || null
+    }));
+    res.status(200).json(dto);
+  } catch (err) {
+    next(err);
+  }
+});
 
 // POST /api/v1/reports
 router.post('/',
