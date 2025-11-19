@@ -13,8 +13,8 @@ export async function getReport(id) {
   return await reportRepository.getReportById(id);
 }
 
-export async function getApprovedReports(){
-  return await reportRepository.getApprovedReports();
+export async function getAcceptedReports(){
+  return await reportRepository.getAcceptedReports();
 }
 
 export async function reviewReport(reviewData) {

@@ -58,7 +58,7 @@ export class ReportRepository {
 		return await this.repo.findOne({ where: { id: Number(id) }, relations: ['photos', 'category'] });
 	}
 
-	async getApprovedReports() {
+	async getAcceptedReports() {
 		return await this.repo.find({ where: { status: 'accepted' }, relations: ['photos', 'category'] });
 	}
 
