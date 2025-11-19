@@ -3,7 +3,11 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import './HomePage.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import 'leaflet.markercluster';
 import API, { SERVER_URL } from '../API/API.mjs';
+
 
 
 async function reverseGeocode({ lat, lon, signal }) {
@@ -92,13 +96,37 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
   );
 }
 
+function ClusteredReports({ reports, reportsPinIcon }) {
+  const map = useMap();
+  // Simple HTML escape
+  const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+  useEffect(() => {
+    if (!map) return;
+    const clusterGroup = L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 40, spiderfyOnMaxZoom: true });
+    reports.forEach(r => {
+      const marker = L.marker([r.latitude, r.longitude], { icon: reportsPinIcon });
+      const imgHtml = (r.photos && r.photos[0] && r.photos[0].link)
+        ? `<img src='${esc(SERVER_URL + r.photos[0].link)}' alt='${esc(r.title)}' style='max-width:120px;margin-top:6px'/>`
+        : '';
+      const author = r.authorName ? `<span style='font-size:0.75rem'>by ${esc(r.authorName)}</span><br/>` : '';
+      marker.bindPopup(`<strong>${esc(r.title)}</strong><br/>${author}${imgHtml}`);
+      clusterGroup.addLayer(marker);
+    });
+    map.addLayer(clusterGroup);
+    return () => { map.removeLayer(clusterGroup); };
+  }, [map, reports, reportsPinIcon]);
+  return null;
+}
+
 export default function Map({ user, loggedIn, onPointChange }) {
   const center = [45.0703, 7.6869];
   const initialZoom = 12; // start wider
   const targetZoom = 15;  // animate to this
   const [reports, setReports] = useState([]);
   const reportsPinIcon = useMemo(() => new L.Icon.Default({ className: 'reports-pin-orange' }), []);
+  
 
+  // Fetch accepted reports on mount
   useEffect(() => {
     let mounted = true;
     API.fetchAcceptedReports()
@@ -107,6 +135,7 @@ export default function Map({ user, loggedIn, onPointChange }) {
     return () => { mounted = false; };
   }, []);
 
+  // Component to handle intro zoom animation
   function IntroZoom() {
     const map = useMap();
     useEffect(() => {
@@ -136,18 +165,7 @@ export default function Map({ user, loggedIn, onPointChange }) {
       <Marker position={{ lat: 45.0703, lng: 7.6869 }}>
         <Popup>Turin Center</Popup>
       </Marker>
-      {reports.map(r => (
-        <Marker key={r.id} position={{ lat: r.latitude, lng: r.longitude }} icon={reportsPinIcon}>
-          <Popup>
-            <strong>{r.title}</strong><br />
-            {r.authorName && <span style={{ fontSize: '0.75rem' }}>by {r.authorName}</span>}<br />
-            {r.photos && r.photos[0] && r.photos[0].link ? (
-              <img src={SERVER_URL + r.photos[0].link} alt={r.title} style={{ maxWidth: '120px', marginTop: '6px' }} />
-            ) : null}
-            <div style={{ fontSize: '0.65rem', marginTop: '4px', color: '#555' }}></div>
-          </Popup>
-        </Marker>
-      ))}
+      <ClusteredReports reports={reports} reportsPinIcon={reportsPinIcon} />
       <SingleClickMarker user={user} loggedIn={loggedIn} onPointChange={onPointChange} />
     </MapContainer>
   );
