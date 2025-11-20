@@ -10,6 +10,13 @@ export default {
     '**/test/**/*.test.js',
     '**/test/**/*.spec.js'
     ],
+    coveragePathIgnorePatterns: [
+        "node_modules",
+        "test-config",
+        "<rootDir>/src/app/app.js",
+        "\\.mock\\.js",
+        "seeder.js"
+    ],
     collectCoverage: true,
     //collectCoverageFrom: ["backend/**/*.{js,mjs}", "!backend/{config, database, entities, DTOs, errors, public}",],
     coverageReporters: ["text", "html", "lcov"],
