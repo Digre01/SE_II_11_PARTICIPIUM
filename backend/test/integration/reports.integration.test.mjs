@@ -69,7 +69,7 @@ await jest.unstable_mockModule('../../middlewares/uploadMiddleware.js', () => ({
 
 // Import app after mocks
 const { default: app } = await import('../../app.js');
-/*
+
 describe('POST /api/v1/reports', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -194,7 +194,7 @@ describe('POST /api/v1/reports', () => {
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/All fields are required/);
   });
-});*/
+});
 
 describe('GET /api/v1/reports', () => {
     beforeEach(() => {
