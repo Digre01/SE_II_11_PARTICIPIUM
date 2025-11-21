@@ -1,18 +1,22 @@
-import { createNotification } from './notificationRepository.js';
 import { UnauthorizedError } from '../errors/UnauthorizedError.js';
 import { NotFoundError } from '../errors/NotFoundError.js';
 import { AppDataSourcePostgres } from '../config/data-source.js';
 import { Message } from '../entities/Message.js';
 import { Conversation } from '../entities/Conversation.js';
 import { InsufficientRightsError } from '../errors/InsufficientRightsError.js';
+import { BadRequestError } from '../errors/BadRequestError.js';
 
 export async function sendStaffMessage(conversationId, userId, content) {
-
   const convRepo = AppDataSourcePostgres.getRepository(Conversation);
-  const conversation = await convRepo.findOne({ where: { id: conversationId }, relations: ['participants'] });
+  const conversation = await convRepo.findOne({ where: { id: conversationId }, relations: ['participants', 'report'] });
   if (!conversation) throw new NotFoundError('Conversation not found');
   const isParticipant = conversation.participants.some(p => String(p.id) === String(userId));
   if (!isParticipant) throw new UnauthorizedError('Forbidden: user not in conversation');
+
+  // Controlla se il report è resolved oppure rejected
+  if (conversation.report && conversation.report.status && (conversation.report.status.toLowerCase() === 'resolved' || conversation.report.status.toLowerCase() === 'rejected')) {
+    throw new BadRequestError('Cannot send messages: report is closed');
+  }
 
   // Salva il messaggio
   const repo = AppDataSourcePostgres.getRepository(Message);
