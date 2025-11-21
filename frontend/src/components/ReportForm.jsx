@@ -31,6 +31,9 @@ const ReportForm = ({ user, loggedIn }) => {
   const location = useLocation();
   const passedLat = (location?.state && typeof location.state.lat === 'number') ? location.state.lat : null;
   const passedLon = (location?.state && typeof location.state.lng === 'number') ? location.state.lng : null;
+  const passedAddress = (location?.state && typeof location.state.address === 'string' && location.state.address.length > 0)
+    ? location.state.address
+    : null;
   // Fallback se si arriva direttamente alla pagina senza selezionare punto sulla mappa
   const defaultLat = 45.0703; // Torino centro (esempio)
   const defaultLon = 7.6869;
@@ -164,6 +167,14 @@ const ReportForm = ({ user, loggedIn }) => {
                 ))}
               </UploadList>
             </div>
+          </FormGroup>
+          <FormGroup className="mb-3">
+            <Input
+              id="address"
+              label="Address"
+              value={passedAddress ?? "Address not available"}
+              readOnly
+            />
           </FormGroup>
           <div className="row">
             <div className="col-6">

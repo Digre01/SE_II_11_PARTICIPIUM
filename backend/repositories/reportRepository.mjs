@@ -81,6 +81,10 @@ export class ReportRepository {
 		return await this.repo.findOne({ where: { id: Number(id) }, relations: ['photos', 'category'] });
 	}
 
+	async getAcceptedReports() {
+		return await this.repo.find({ where: { status: 'accepted' }, relations: ['photos', 'category', 'user'] });
+	}
+
 	async reviewReport({ reportId, action, explanation, categoryId }) {
 		const report = await this.repo.findOneBy({ id: Number(reportId) });
 		if (!report) return null;
