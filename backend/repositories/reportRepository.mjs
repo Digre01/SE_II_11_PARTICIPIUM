@@ -82,7 +82,7 @@ export class ReportRepository {
 	}
 
 	async getAcceptedReports() {
-		return await this.repo.find({ where: { status: 'accepted' }, relations: ['photos', 'category', 'user'] });
+		return await this.repo.find({ where: { status: 'assigned' }, relations: ['photos', 'category', 'user'] });
 	}
 
 	async reviewReport({ reportId, action, explanation, categoryId }) {

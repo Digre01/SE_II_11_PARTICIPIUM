@@ -77,7 +77,7 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
       {selectedPoint && (
         <Marker
           position={selectedPoint}
-          icon={selectedPinIcon}
+          //icon={selectedPinIcon}
           eventHandlers={{ add: ev => ev.target.openPopup() }}
         >
           {isCitizen && (
@@ -129,7 +129,7 @@ export default function Map({ user, loggedIn, onPointChange }) {
   // Fetch accepted reports on mount
   useEffect(() => {
     let mounted = true;
-    API.fetchAcceptedReports()
+    API.fetchAssignedReports()
       .then(list => { if (mounted) setReports(list); })
       .catch(() => { if (mounted) setReports([]); });
     return () => { mounted = false; };
@@ -152,7 +152,7 @@ export default function Map({ user, loggedIn, onPointChange }) {
       data-testid="map-container"
       center={center}
       zoom={initialZoom}
-      minZoom={11}
+      minZoom={13}
       maxBounds={[[45.0027, 7.5703], [45.144, 7.7783]]}
       maxBoundsViscosity={1.0}
       style={{ height: '90vh', width: '100%' }}
@@ -162,9 +162,6 @@ export default function Map({ user, loggedIn, onPointChange }) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      <Marker position={{ lat: 45.0703, lng: 7.6869 }}>
-        <Popup>Turin Center</Popup>
-      </Marker>
       <ClusteredReports reports={reports} reportsPinIcon={reportsPinIcon} />
       <SingleClickMarker user={user} loggedIn={loggedIn} onPointChange={onPointChange} />
     </MapContainer>

@@ -99,9 +99,9 @@ const fetchReports = async () => {
   throw await response.text();
 };
 
-// GET /api/v1/reports/accepted (public map)
-const fetchAcceptedReports = async () => {
-  const response = await fetch(SERVER_URL + `/api/v1/reports/accepted`, { credentials: 'include' });
+// GET /api/v1/reports/assigned (public map)
+const fetchAssignedReports = async () => {
+  const response = await fetch(SERVER_URL + `/api/v1/reports/assigned`, { credentials: 'include' });
   if (response.ok) return await response.json();
   throw await response.text();
 };
@@ -274,5 +274,5 @@ const fetchNotificationCounts = async () => {
   }
 };
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAcceptedReports, fetchConversations, fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport };
+const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport };
 export default API;

@@ -54,8 +54,8 @@ router.get('/', authorizeUserType(['staff']), async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// GET /api/v1/reports/accepted (public map layer)
-router.get('/accepted', authorizeUserType(['citizen']), async (req, res, next) => {
+// GET /api/v1/reports/assigned (public map layer)
+router.get('/assigned', authorizeUserType(['citizen']), async (req, res, next) => {
   try {
     const reports = await getAcceptedReports();
     const dto = reports.map(r => ({
