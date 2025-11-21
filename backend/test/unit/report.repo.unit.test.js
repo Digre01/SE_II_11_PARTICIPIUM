@@ -37,6 +37,23 @@ await jest.unstable_mockModule('../../config/data-source.js', () => {
     };
 });
 
+describe('ReportRepository.getAcceptedReports', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('returns assigned reports with relations', async () => {
+        const mock = [{ id: 1, status: 'assigned', photos: [], category: {}, user: {} }];
+        reportRepoStub.find.mockResolvedValue(mock);
+
+        const res = await reportRepository.getAcceptedReports();
+
+        expect(reportRepoStub.find).toHaveBeenCalledWith({ where: { status: 'assigned' }, relations: ['photos', 'category', 'user'] });
+        expect(res).toEqual(mock);
+    });
+});
+
+
 //mock per broadcast e createSystemMessage (sto testando soltanto accept/reject del report e non i messaggi)
 await jest.unstable_mockModule('../../wsHandler.js', () => ({
     broadcastToConversation: jest.fn(),
