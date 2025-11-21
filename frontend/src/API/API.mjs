@@ -274,5 +274,17 @@ const fetchNotificationCounts = async () => {
   }
 };
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport };
+// POST /api/v1/conversations/:conversationId/messages
+const sendMessage = async (conversationId, content) => {
+  const response = await fetch(`${SERVER_URL}/api/v1/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content })
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+
+const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, sendMessage };
 export default API;

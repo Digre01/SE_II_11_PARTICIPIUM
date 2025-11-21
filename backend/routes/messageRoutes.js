@@ -4,6 +4,6 @@ const router = express.Router();
 import { authorizeUserType } from '../middlewares/userAuthorization.js';
 
 router.get('/:conversationId/messages', authorizeUserType(['citizen', 'STAFF']), getMessages);
-router.post('/:conversationId/messages', authorizeUserType(['citizen', 'STAFF']), sendMessage);
+router.post('/:conversationId/messages', authorizeUserType(['STAFF']), sendMessage);
 
 export default router;

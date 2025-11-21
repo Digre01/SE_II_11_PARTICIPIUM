@@ -1,8 +1,34 @@
+import { createNotification } from './notificationRepository.js';
+import { UnauthorizedError } from '../errors/UnauthorizedError.js';
+import { NotFoundError } from '../errors/NotFoundError.js';
 import { AppDataSourcePostgres } from '../config/data-source.js';
 import { Message } from '../entities/Message.js';
 import { Conversation } from '../entities/Conversation.js';
-import { NotFoundError } from '../errors/NotFoundError.js';
 import { InsufficientRightsError } from '../errors/InsufficientRightsError.js';
+
+export async function sendStaffMessage(conversationId, userId, content) {
+
+  const convRepo = AppDataSourcePostgres.getRepository(Conversation);
+  const conversation = await convRepo.findOne({ where: { id: conversationId }, relations: ['participants'] });
+  if (!conversation) throw new NotFoundError('Conversation not found');
+  const isParticipant = conversation.participants.some(p => String(p.id) === String(userId));
+  if (!isParticipant) throw new UnauthorizedError('Forbidden: user not in conversation');
+
+  // Salva il messaggio
+  const repo = AppDataSourcePostgres.getRepository(Message);
+  const message = repo.create({ conversation: { id: conversationId }, sender: { id: userId }, content });
+  await repo.save(message);
+
+  // Trasmetti il messaggio in tempo reale
+  try {
+    const { broadcastToConversation } = await import('../wsHandler.js');
+    await broadcastToConversation(conversationId, message);
+  } catch (e) {
+    console.error('WebSocket broadcast error:', e);
+  }
+
+  return message;
+}
 
 export async function getMessagesForConversation(conversationId, userId) {
   const repo = AppDataSourcePostgres.getRepository(Message);

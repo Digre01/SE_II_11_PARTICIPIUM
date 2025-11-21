@@ -1,4 +1,5 @@
-import { getMessagesForConversation, createMessage } from '../repositories/messageRepository.js';
+import { UnauthorizedError } from '../errors/UnauthorizedError.js';
+import { getMessagesForConversation, sendStaffMessage } from '../repositories/messageRepository.js';
 
 export async function getMessages(req, res, next) {
   try {
@@ -12,9 +13,11 @@ export async function getMessages(req, res, next) {
 
 export async function sendMessage(req, res, next) {
   try {
+    
     const { conversationId } = req.params;
     const { content } = req.body;
-    const message = await createMessage(conversationId, req.user.id, content);
+
+    const message = await sendStaffMessage(conversationId, req.user.id, content);
     res.status(201).json(message);
   } catch (err) {
     next(err);

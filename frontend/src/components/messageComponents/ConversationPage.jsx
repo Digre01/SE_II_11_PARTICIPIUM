@@ -10,6 +10,9 @@ const ConversationPage = ({ user, handleNotificationsUpdate, wsMessage }) => {
   const [error, setError] = useState("");
   const [reportTitle, setReportTitle] = useState("");
   const scrollContainerRef = useRef(null);
+  const [newMessage, setNewMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
 
   useEffect(() => {
     async function fetchData() {
@@ -146,7 +149,34 @@ const ConversationPage = ({ user, handleNotificationsUpdate, wsMessage }) => {
     });
     return rendered.length ? rendered : <div className="text-center text-muted">No messages yet</div>;
   };
-  
+
+  // Solo staff member può inviare messaggi
+  const canSend = String(user?.userType || "").toLowerCase() === "staff";
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    setSendError("");
+    if (!newMessage.trim()) return;
+    setSending(true);
+    try {
+      await API.sendMessage(conversationId, newMessage);
+      setNewMessage("");
+      // Aggiorna la lista
+      const msgs = await API.fetchMessages(conversationId);
+      setMessages(
+        [...msgs].sort((a, b) => {
+          const da = a.createdAt ? new Date(a.createdAt) : 0;
+          const db = b.createdAt ? new Date(b.createdAt) : 0;
+          return da - db;
+        })
+      );
+    } catch (err) {
+      setSendError("Unable to send message.");
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <div className="container mt-4" style={{ maxWidth: 1200 }}>
       <h2 className="mb-3 text-center">{reportTitle || "Messages"}</h2>
@@ -162,6 +192,23 @@ const ConversationPage = ({ user, handleNotificationsUpdate, wsMessage }) => {
       >
         {renderMessages()}
       </div>
+      {canSend && (
+        <form className="mt-3 d-flex gap-2" onSubmit={handleSend}>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Type your message..."
+            value={newMessage}
+            onChange={e => setNewMessage(e.target.value)}
+            disabled={sending}
+            maxLength={500}
+          />
+          <button type="submit" className="btn btn-primary" disabled={sending || !newMessage.trim()}>
+            Send
+          </button>
+        </form>
+      )}
+      {sendError && <div className="alert alert-danger mt-2">{sendError}</div>}
     </div>
   );
 };
