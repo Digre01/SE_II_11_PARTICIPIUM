@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import API from "../../API/API.mjs";
 import { isSameDay, format, parseISO } from "date-fns";
-
+import { FaPaperPlane } from "react-icons/fa";
 const ConversationPage = ({ user, handleNotificationsUpdate, wsMessage }) => {
   const { conversationId } = useParams();
   const [messages, setMessages] = useState([]);
@@ -203,8 +203,8 @@ const ConversationPage = ({ user, handleNotificationsUpdate, wsMessage }) => {
             disabled={sending}
             maxLength={500}
           />
-          <button type="submit" className="btn btn-primary" disabled={sending || !newMessage.trim()}>
-            Send
+          <button type="submit" className="btn btn-primary" disabled={sending || !newMessage.trim()} aria-label="Send">
+            <FaPaperPlane />
           </button>
         </form>
       )}
