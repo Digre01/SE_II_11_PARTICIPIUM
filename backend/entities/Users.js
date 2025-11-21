@@ -67,6 +67,11 @@ export const Users = new EntitySchema({
       type: 'one-to-one',
       target: 'UserOffice',
       inverseSide: 'user'
+    },
+    conversations: {
+      type: 'many-to-many',
+      target: 'Conversation',
+      inverseSide: 'participants'
     }
   }
 });

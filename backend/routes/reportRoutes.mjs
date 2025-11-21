@@ -45,8 +45,9 @@ router.post('/',
   }
 );
 
-// GET /api/v1/reports (staff list)
-router.get('/', authorizeUserType(['staff']), authorizeRole('Municipal Public Relations Officer'), async (req, res, next) => {
+// GET /api/v1/reports (list)
+// Only staff members with the 'Municipal Public Relations Officer' role can access
+router.get('/', authorizeUserType(['staff']), async (req, res, next) => {
   try {
     const reports = await getAllReports();
     res.json(reports);
@@ -89,6 +90,46 @@ router.patch('/:id/review', authorizeUserType(['staff']), authorizeRole('Municip
       return next(new BadRequestError('Invalid action'));
     }
     const updated = await reviewReport({ reportId: req.params.id, action, explanation, categoryId });
+    if (!updated) return next(new NotFoundError('Not found'));
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+// PATCH /api/v1/reports/:id/start
+router.patch('/:id/start', authorizeUserType(['staff']), async (req, res, next) => {
+  try {
+    const technicianId = req.user?.id;
+    const updated = await import('../controllers/reportController.mjs').then(mod => mod.startReport({ reportId: req.params.id, technicianId }));
+    if (!updated) return next(new NotFoundError('Not found'));
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+// PATCH /api/v1/reports/:id/finish
+router.patch('/:id/finish', authorizeUserType(['staff']), async (req, res, next) => {
+  try {
+    const technicianId = req.user?.id;
+    const updated = await import('../controllers/reportController.mjs').then(mod => mod.finishReport({ reportId: req.params.id, technicianId }));
+    if (!updated) return next(new NotFoundError('Not found'));
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+// PATCH /api/v1/reports/:id/suspend
+router.patch('/:id/suspend', authorizeUserType(['staff']), async (req, res, next) => {
+  try {
+    const technicianId = req.user?.id;
+    const updated = await import('../controllers/reportController.mjs').then(mod => mod.suspendReport({ reportId: req.params.id, technicianId }));
+    if (!updated) return next(new NotFoundError('Not found'));
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+// PATCH /api/v1/reports/:id/resume
+router.patch('/:id/resume', authorizeUserType(['staff']), async (req, res, next) => {
+  try {
+    const technicianId = req.user?.id;
+    const updated = await import('../controllers/reportController.mjs').then(mod => mod.resumeReport({ reportId: req.params.id, technicianId }));
     if (!updated) return next(new NotFoundError('Not found'));
     res.json(updated);
   } catch (err) { next(err); }

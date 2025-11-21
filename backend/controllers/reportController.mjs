@@ -20,3 +20,19 @@ export async function getAcceptedReports(){
 export async function reviewReport(reviewData) {
   return await reportRepository.reviewReport(reviewData);
 }
+
+export async function suspendReport({ reportId, technicianId }) {
+  return await reportRepository.suspendReport({ reportId, technicianId });
+}
+
+export async function resumeReport({ reportId, technicianId }) {
+  return await reportRepository.resumeReport({ reportId, technicianId });
+}
+
+export async function startReport({ reportId, technicianId }) {
+  return await reportRepository.startReport({ reportId, technicianId });
+}
+
+export async function finishReport({ reportId, technicianId }) {
+  return await reportRepository.finishReport({ reportId, technicianId });
+}

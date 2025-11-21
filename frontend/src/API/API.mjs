@@ -136,6 +136,26 @@ const fetchCategories = async () => {
   }
 };
 
+// GET /api/v1/conversations
+const fetchConversations = async () => {
+  const response = await fetch(SERVER_URL + '/api/v1/conversations', { credentials: 'include' });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+};
+
+// GET /api/v1/conversations/:conversationId/messages
+const fetchMessages = async (conversationId) => {
+  const response = await fetch(SERVER_URL + `/api/v1/conversations/${conversationId}/messages`, { credentials: 'include' });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+};
+
 // PATCH /api/sessions/:id/role
 export async function assignRole(userId, roleId) {
   const response = await fetch(`${SERVER_URL}/api/v1/sessions/${userId}/role`, {
@@ -184,6 +204,75 @@ export async function fetchOffices() {
   throw await response.text();
 }
 
+// PATCH /api/v1/reports/:id/suspend
+const suspendReport = async (id) => {
+  const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/suspend`, {
+    method: 'PATCH',
+    credentials: 'include'
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchReports, fetchAcceptedReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture };
+// PATCH /api/v1/reports/:id/resume
+const resumeReport = async (id) => {
+  const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/resume`, {
+    method: 'PATCH',
+    credentials: 'include'
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+// PATCH /api/v1/reports/:id/start
+const startReport = async (id) => {
+  const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/start`, {
+    method: 'PATCH',
+    credentials: 'include'
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+
+// PATCH /api/v1/reports/:id/finish
+const finishReport = async (id) => {
+  const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/finish`, {
+    method: 'PATCH',
+    credentials: 'include'
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+// POST /api/v1/notifications/:conversationId/read
+const markNotificationsAsRead = async (conversationId) => {
+  const response = await fetch(SERVER_URL + `/api/v1/notifications/${conversationId}/read`, {
+    method: 'POST',
+    credentials: 'include'
+  });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+};
+// GET /api/v1/notifications
+const fetchNotifications = async () => {
+  const response = await fetch(SERVER_URL + '/api/v1/notifications', { credentials: 'include' });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+};
+
+// GET /api/v1/notifications/counts
+const fetchNotificationCounts = async () => {
+  const response = await fetch(SERVER_URL + '/api/v1/notifications/counts', { credentials: 'include' });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+};
+
+const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAcceptedReports, fetchConversations, fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport };
 export default API;
