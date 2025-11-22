@@ -1,41 +1,15 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import {
+    reportRepoStub,
+    userRepoStub,
+    categoryRepoStub,
+    photoRepoStub,
+    conversationRepoStub,
+    savedReports,
+    photoEntities
+} from '../mocks/reports.mock.js';
 
-const savedReports = [];
-const photoEntities = [];
-
-const repoStub = (name) => {
-    return {
-        findOneBy: jest.fn(),
-        findOne: jest.fn(),
-        create: jest.fn(),
-        save: jest.fn(),
-        find: jest.fn(),
-    };
-};
-
-// Create individual stubs we'll control inside tests
-const reportRepoStub = repoStub('Report');
-const userRepoStub = repoStub('Users');
-const categoryRepoStub = repoStub('Categories');
-const photoRepoStub = repoStub('Photos');
-
-// Mock data-source BEFORE importing repository
-await jest.unstable_mockModule('../../config/data-source.js', () => {
-    return {
-        AppDataSourcePostgres: {
-            getRepository: jest.fn((entity) => {
-                if (entity?.options?.name === 'Report') return reportRepoStub;
-                if (entity?.options?.name === 'Users') return userRepoStub;
-                if (entity?.options?.name === 'Categories') return categoryRepoStub;
-                if (entity?.options?.name === 'Photos') return photoRepoStub;
-                // fallback (could be actual class reference). We'll rely on name property defined in entity classes.
-                    // Fallisce esplicitamente per scoprire subito l’entity “sconosciuta”
-				
-				return reportRepoStub;
-            }),
-        },
-    };
-});
+const { reportRepository } = await import('../../../repositories/reportRepository.mjs');
 
 describe('ReportRepository.getAcceptedReports', () => {
     beforeEach(() => {
@@ -48,36 +22,23 @@ describe('ReportRepository.getAcceptedReports', () => {
 
         const res = await reportRepository.getAcceptedReports();
 
-        expect(reportRepoStub.find).toHaveBeenCalledWith({ where: { status: 'assigned' }, relations: ['photos', 'category', 'user'] });
+        expect(reportRepoStub.find).toHaveBeenCalledWith({
+            where: { status: 'assigned' },
+            relations: ['photos', 'category', 'user'] });
         expect(res).toEqual(mock);
     });
 });
-
-
-//mock per broadcast e createSystemMessage (sto testando soltanto accept/reject del report e non i messaggi)
-await jest.unstable_mockModule('../../wsHandler.js', () => ({
-    broadcastToConversation: jest.fn(),
-}));
-
-await jest.unstable_mockModule('../../repositories/messageRepository.js', () => ({
-    createSystemMessage: jest.fn().mockResolvedValue({ id: 1, content: 'System message' }),
-}));
-
-await jest.unstable_mockModule('../../entities/Conversation.js', () => ({
-    Conversation: { options: { name: 'Conversation' } },
-}));
-
-const { reportRepository } = await import('../../repositories/reportRepository.mjs');
 
 describe('ReportRepository.createReport', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         savedReports.length = 0;
         photoEntities.length = 0;
+
         // Default: user & category exist
         userRepoStub.findOneBy.mockResolvedValue({ id: 10 });
         categoryRepoStub.findOneBy.mockResolvedValue({ id: 5 });
-        
+
         // Mock staff members query for notification system
         userRepoStub.find.mockResolvedValue([
             {
@@ -90,19 +51,35 @@ describe('ReportRepository.createReport', () => {
                 }
             }
         ]);
-        
+
         // Report create/save behavior
         reportRepoStub.create.mockImplementation((data) => ({ ...data, id: 123 }));
-        reportRepoStub.save.mockImplementation(async (entity) => { savedReports.push(entity); return entity; });
-        
+        reportRepoStub.save.mockImplementation(async (entity) => {
+            savedReports.push(entity);
+            return entity; });
+
         // Photos create/save
-        photoRepoStub.create.mockImplementation((data) => ({ ...data, id: photoEntities.length + 1 }));
-        photoRepoStub.save.mockImplementation(async (entity) => { photoEntities.push(entity); return entity; });
+        photoRepoStub.create.mockImplementation((data) => ({
+            ...data,
+            id: photoEntities.length + 1 }));
+        photoRepoStub.save.mockImplementation(async (entity) => {
+            photoEntities.push(entity);
+            return entity; });
     });
 
     it('creates report and associated photos (success path)', async () => {
-        const input = { title: 'Title', description: 'Desc', categoryId: 5, userId: 10, latitude: 45.2, longitude: 9.19, photos: ['/public/a.jpg', '/public/b.jpg'] };
+        const input = {
+            title: 'Title',
+            description: 'Desc',
+            categoryId: 5,
+            userId: 10,
+            latitude: 45.2,
+            longitude: 9.19,
+            photos: ['/public/a.jpg', '/public/b.jpg']
+        };
+
         const result = await reportRepository.createReport(input);
+
         expect(userRepoStub.findOneBy).toHaveBeenCalledWith({ id: 10 });
         expect(categoryRepoStub.findOneBy).toHaveBeenCalledWith({ id: 5 });
         expect(reportRepoStub.create).toHaveBeenCalledWith({
@@ -122,7 +99,15 @@ describe('ReportRepository.createReport', () => {
 
     it('throws NotFoundError when user not found', async () => {
         userRepoStub.findOneBy.mockResolvedValue(null);
-        const input = { title: 'T', description: 'D', categoryId: 5, userId: 99, latitude: 0, longitude: 0, photos: [] };
+        const input = {
+            title: 'T',
+            description: 'D',
+            categoryId: 5,
+            userId: 99,
+            latitude: 0,
+            longitude: 0,
+            photos: []
+        };
         await expect(reportRepository.createReport(input)).rejects.toThrow(/userId '99' not found/);
         expect(reportRepoStub.create).not.toHaveBeenCalled();
     });
@@ -159,7 +144,7 @@ describe('ReportRepository.getAllReports', () => {
             },
             {
                 id: 2,
-                title: 'Report 2', 
+                title: 'Report 2',
                 description: 'Description 2',
                 status: 'resolved',
                 category: { id: 6, name: 'Public Safety' },

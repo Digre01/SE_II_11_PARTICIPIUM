@@ -8,7 +8,8 @@ export default {
     '**/test/**/*.test.mjs',
     '**/test/**/*.spec.mjs',
     '**/test/**/*.test.js',
-    '**/test/**/*.spec.js'
+    '**/test/**/*.spec.js',
+        '**/test/**/**/*.test.js',
     ],
     collectCoverage: true,
     //collectCoverageFrom: ["backend/**/*.{js,mjs}", "!backend/{config, database, entities, DTOs, errors, public}",],
