@@ -23,8 +23,7 @@
         - generic [ref=e25]:
           - generic [ref=e26]: Password
           - textbox "Insert a password" [ref=e27]
-      - alert [ref=e28]: Wrong username or password.
-      - generic [ref=e29]:
-        - button "Cancel" [ref=e31] [cursor=pointer]
-        - button "Confirm" [ref=e33] [cursor=pointer]
+      - generic [ref=e28]:
+        - button "Cancel" [ref=e30] [cursor=pointer]
+        - button "Confirm" [ref=e32] [cursor=pointer]
 ```

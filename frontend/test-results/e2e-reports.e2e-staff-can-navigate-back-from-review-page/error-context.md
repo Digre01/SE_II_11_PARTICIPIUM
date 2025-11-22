@@ -15,15 +15,15 @@
         - img [ref=e15]
         - text: Sign Up
   - main [ref=e18]:
-    - generic [ref=e19]:
-      - button "Marker" [ref=e20] [cursor=pointer]
+    - generic [ref=e20]:
       - generic [ref=e21]:
-        - link "Leaflet" [ref=e22] [cursor=pointer]:
-          - /url: https://leafletjs.com
-          - img [ref=e23]
-          - text: Leaflet
-        - text: "| ©"
-        - link "OpenStreetMap" [ref=e27] [cursor=pointer]:
-          - /url: https://www.openstreetmap.org/copyright
-        - text: contributors
+        - generic [ref=e22]:
+          - generic [ref=e23]: Username
+          - textbox "Insert username" [ref=e24]
+        - generic [ref=e25]:
+          - generic [ref=e26]: Password
+          - textbox "Insert a password" [ref=e27]
+      - generic [ref=e28]:
+        - button "Cancel" [ref=e30] [cursor=pointer]
+        - button "Confirm" [ref=e32] [cursor=pointer]
 ```
