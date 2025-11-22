@@ -7,6 +7,7 @@ import { UnauthorizedError } from '../../errors/UnauthorizedError.js';
 const mockRepo = {
   createReport: jest.fn(),
   getAcceptedReports: jest.fn(),
+  getReportById: jest.fn(),
 };
 
 // Mock repository before importing app
@@ -17,11 +18,14 @@ await jest.unstable_mockModule('../../repositories/reportRepository.mjs', () => 
 // Mock authorization middleware with role enforcement based on X-Role header
 await jest.unstable_mockModule('../../middlewares/userAuthorization.js', () => ({
   authorizeUserType: (allowed) => (req, _res, next) => {
+    const userTypeHdr = req.header('X-Test-User-Type');
     const roleHdr = req.header('X-Test-Role');
-    if (roleHdr) {
-      req.user = { id: 10, userType: roleHdr };
+    const effectiveUserType = userTypeHdr || roleHdr;
+
+    if (effectiveUserType) {
+      req.user = { id: 10, userType: effectiveUserType };
       const normalized = (allowed || []).map(a => String(a).toUpperCase());
-      const caller = String(roleHdr).toUpperCase();
+      const caller = String(effectiveUserType).toUpperCase();
       if (!normalized.includes(caller)) {
         return next(new InsufficientRightsError('Forbidden'));
       }
@@ -30,6 +34,10 @@ await jest.unstable_mockModule('../../middlewares/userAuthorization.js', () => (
 
     if (req.header('Authorization')) {
       req.user = { id: 10, userType: 'citizen' };
+      const normalized = (allowed || []).map(a => String(a).toUpperCase());
+      if (!normalized.includes('CITIZEN')) {
+        return next(new InsufficientRightsError('Forbidden'));
+      }
       return next();
     }
 
@@ -383,5 +391,66 @@ describe('GET /api/v1/reports (staff)', () => {
     expect(res.body).toHaveLength(2);
     expect(res.body.some(r => r.id === 101)).toBe(true);
     expect(mockRepo.getAllReports).toHaveBeenCalledTimes(1);
+  });
+});
+
+// --- Staff / report details integration tests for GET /api/v1/reports/:id
+describe('GET /api/v1/reports/:id', () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('returns report details for authorized staff with correct role', async () => {
+    const report = {
+      id: 1,
+      title: 'Detail Report',
+      description: 'Full details',
+      latitude: 45.0,
+      longitude: 9.0,
+      status: 'pending',
+      categoryId: 1,
+      user: { username: 'citizen1', name: 'C', surname: 'Z' },
+      photos: []
+    };
+    mockRepo.getReportById.mockResolvedValueOnce(report);
+
+    const res = await request(app)
+      .get('/api/v1/reports/1')
+      .set('X-Test-User-Type', 'staff')
+      .set('X-Test-Role', 'Municipal Public Relations Officer');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(report);
+    expect(mockRepo.getReportById).toHaveBeenCalledWith('1');
+  });
+
+  it('returns 404 when report not found', async () => {
+    mockRepo.getReportById.mockResolvedValueOnce(null);
+
+    const res = await request(app)
+      .get('/api/v1/reports/999')
+      .set('X-Test-User-Type', 'staff')
+      .set('X-Test-Role', 'Municipal Public Relations Officer');
+
+    expect(res.status).toBe(404);
+  });
+
+  it('returns 403 for staff with wrong role', async () => {
+    const res = await request(app)
+      .get('/api/v1/reports/1')
+      .set('X-Test-User-Type', 'staff')
+      .set('X-Test-Role', 'Technician'); // Wrong role
+
+    expect(res.status).toBe(403);
+    expect(mockRepo.getReportById).not.toHaveBeenCalled();
+  });
+
+  it('returns 403 for citizen (unauthorized user type)', async () => {
+    const res = await request(app)
+      .get('/api/v1/reports/1')
+      .set('Authorization', 'Bearer test'); // Citizen
+
+    expect(res.status).toBe(403);
+    expect(mockRepo.getReportById).not.toHaveBeenCalled();
   });
 });
