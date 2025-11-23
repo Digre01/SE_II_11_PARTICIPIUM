@@ -12,6 +12,14 @@ export default {
         '**/test/**/**/*.test.js',
     ],
     collectCoverage: true,
-    //collectCoverageFrom: ["backend/**/*.{js,mjs}", "!backend/{config, database, entities, DTOs, errors, public}",],
+    rootDir: ".",
+    collectCoverageFrom: [
+        "<rootDir>/controllers/**/*.{js,mjs}",
+        "<rootDir>/mappers/**/*.{js,mjs}",
+        "<rootDir>/middlewares/**/*.{js,mjs}",
+        "<rootDir>/repositories/**/*.{js,mjs}",
+        "<rootDir>/routes/**/*.{js,mjs}",
+        "<rootDir>/services/**/*.{js,mjs}",
+    ],
     coverageReporters: ["text", "html", "lcov"],
 };
