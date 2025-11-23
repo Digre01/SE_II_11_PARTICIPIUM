@@ -1,5 +1,7 @@
 services:
   db:
+    image: matteodigregorio/team-11-participium:db
+
     build:
       context: ./docker/db
       dockerfile: Dockerfile
@@ -21,6 +23,7 @@ services:
 
   # Frontend
   frontend:
+    image: matteodigregorio/team-11-participium:frontend
     build:
       context: ./frontend
       dockerfile: ../docker/frontend/Dockerfile
@@ -32,6 +35,7 @@ services:
         condition: service_healthy
         
   backend:
+    image: matteodigregorio/team-11-participium:backend
     build: 
       context: ./backend
       dockerfile: ../docker/backend/Dockerfile
@@ -46,5 +50,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+volumes:
+  db_data:
    
 
