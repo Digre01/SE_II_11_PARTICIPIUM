@@ -2,9 +2,6 @@ services:
   db:
     image: matteodigregorio/team-11-participium:db
 
-    build:
-      context: ./docker/db
-      dockerfile: Dockerfile
     container_name: se_ii_postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -24,9 +21,6 @@ services:
   # Frontend
   frontend:
     image: matteodigregorio/team-11-participium:frontend
-    build:
-      context: ./frontend
-      dockerfile: ../docker/frontend/Dockerfile
     container_name: frontend
     ports:
       - "5173:5173"
@@ -36,9 +30,6 @@ services:
         
   backend:
     image: matteodigregorio/team-11-participium:backend
-    build: 
-      context: ./backend
-      dockerfile: ../docker/backend/Dockerfile
     ports:
       - "3000:3000"
     environment:
