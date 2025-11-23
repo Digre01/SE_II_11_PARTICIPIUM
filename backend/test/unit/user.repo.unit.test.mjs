@@ -49,7 +49,6 @@ describe("Role assignment: user repository", () => {
         });
     });
 
-
     it("Success: existing userOffice mapping", async () => {
         rolesRepoStub.findOneBy.mockResolvedValue({ id: 1, officeId: 1 });
         const existingMapping = { userId: 1 };

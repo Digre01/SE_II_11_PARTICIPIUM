@@ -1,4 +1,3 @@
-
 import { AppDataSourcePostgres } from "../config/data-source.js";
 import { Report } from "../entities/Reports.js";
 import { Photos } from "../entities/Photos.js";
@@ -12,7 +11,6 @@ export class ReportRepository {
 	}
 
 	async createReport({ title, description, categoryId, userId, latitude, longitude, photos }) {
-		
 		const userRepo = AppDataSourcePostgres.getRepository(Users);
 		const userExists = await userRepo.findOneBy({ id: Number(userId) });
 		if (!userExists) {
@@ -46,6 +44,165 @@ export class ReportRepository {
 			}
 		}
 
+		// Trova tutti gli staff member con ruolo 'Municipal Public Relations Officer' tramite join
+		const staffRepo = AppDataSourcePostgres.getRepository(Users);
+		const staffMembers = await staffRepo.find({
+			where: { userType: 'STAFF' },
+			relations: ['userOffice', 'userOffice.role']
+		});
+		const municipalStaff = staffMembers.filter(u =>
+			u.userOffice &&
+			u.userOffice.role &&
+			u.userOffice.role.name === 'Municipal Public Relations Officer'
+		);
+
+		// Conversation creation
+		const { createConversation } = await import('./conversationRepository.js');
+		const participants = municipalStaff.length > 0 ? [userExists, ...municipalStaff] : [userExists];
+		const savedConversation = await createConversation({ report: savedReport, participants });
+
+		// First message
+		const { createSystemMessage } = await import('./messageRepository.js');
+		const systemMsg = await createSystemMessage(savedConversation.id, 'Report status change to: Pending Approval');
+
+		// Broadcast del messaggio autogenerato
+		const { broadcastToConversation } = await import('../wsHandler.js');
+		await broadcastToConversation(savedConversation.id, systemMsg);
+
+		return savedReport;
+	}
+
+
+	async getAllReports() {
+		return await this.repo.find({ relations: ['photos', 'category'] });
+	}
+
+	async getReportById(id) {
+		return await this.repo.findOne({ where: { id: Number(id) }, relations: ['photos', 'category'] });
+	}
+
+	async getAcceptedReports() {
+		return await this.repo.find({ where: { status: 'assigned' }, relations: ['photos', 'category', 'user'] });
+	}
+
+	async reviewReport({ reportId, action, explanation, categoryId }) {
+		const report = await this.repo.findOneBy({ id: Number(reportId) });
+		if (!report) return null;
+
+		if (action === 'reject') {
+			report.status = 'rejected';
+			report.reject_explanation = explanation || '';
+			// Messaggio automatico per rifiuto
+			const { createSystemMessage } = await import('./messageRepository.js');
+			const { broadcastToConversation } = await import('../wsHandler.js');
+			// Trova la conversazione associata al report
+			const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
+			const conversation = await convRepo.findOne({ where: { report: { id: report.id } } });
+			if (conversation) {
+				const sysMsg = await createSystemMessage(conversation.id, `Report status change to: Rejected.${explanation ? ' Explanation:' + explanation : ''}`);
+				await broadcastToConversation(conversation.id, sysMsg);
+			}
+		} else if (action === 'accept') {
+			report.status = 'assigned';
+			report.reject_explanation = '';
+			if (categoryId) report.categoryId = Number(categoryId);
+			// Messaggio automatico per accettazione
+			const { createSystemMessage } = await import('./messageRepository.js');
+			const { broadcastToConversation } = await import('../wsHandler.js');
+			// Trova la conversazione associata al report
+			const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
+			const conversation = await convRepo.findOne({ where: { report: { id: report.id } } });
+			if (conversation) {
+				const sysMsg = await createSystemMessage(conversation.id, 'Report status change to: Assigned');
+				await broadcastToConversation(conversation.id, sysMsg);
+			}
+		}
+
+		return await this.repo.save(report);
+	}
+
+	async startReport({ reportId, technicianId }) {
+		const report = await this.repo.findOneBy({ id: Number(reportId) });
+		if (!report) return null;
+		report.status = 'in_progress';
+		report.technicianId = Number(technicianId);
+		const savedReport = await this.repo.save(report);
+
+		// Trova la conversazione associata al report
+		const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
+		const conversation = await convRepo.findOne({ where: { report: { id: report.id } }, relations: ['participants'] });
+		if (conversation) {
+			// Aggiungi il tecnico ai partecipanti
+			const { addParticipantToConversation } = await import('./conversationRepository.js');
+			await addParticipantToConversation(conversation.id, technicianId);
+
+			// Messaggio automatico per cambio stato
+			const { createSystemMessage } = await import('./messageRepository.js');
+			const { broadcastToConversation } = await import('../wsHandler.js');
+			const sysMsg = await createSystemMessage(conversation.id, `Report status change to: In Progress`);
+			await broadcastToConversation(conversation.id, sysMsg);
+		}
+		return savedReport;
+	}
+
+	async finishReport({ reportId, technicianId }) {
+		const report = await this.repo.findOneBy({ id: Number(reportId) });
+		if (!report || report.technicianId !== Number(technicianId)) return null;
+		report.status = 'resolved';
+		const savedReport = await this.repo.save(report);
+
+		// Trova la conversazione associata al report
+		const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
+		const conversation = await convRepo.findOne({ where: { report: { id: report.id } } });
+		if (conversation) {
+			// Messaggio automatico per cambio stato
+			const { createSystemMessage } = await import('./messageRepository.js');
+			const { broadcastToConversation } = await import('../wsHandler.js');
+			const sysMsg = await createSystemMessage(conversation.id, `Report status change to: Resolved`);
+			await broadcastToConversation(conversation.id, sysMsg);
+		}
+		return savedReport;
+	}
+
+		async suspendReport({ reportId, technicianId }) {
+		const report = await this.repo.findOneBy({ id: Number(reportId) });
+		if (!report) return null;
+		report.status = 'suspended';
+		// Se il report era in_progress, mantiene technicianId, altrimenti rimane null
+		const savedReport = await this.repo.save(report);
+
+		// Messaggio automatico
+		const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
+		const conversation = await convRepo.findOne({ where: { report: { id: report.id } } });
+		if (conversation) {
+			const { createSystemMessage } = await import('./messageRepository.js');
+			const { broadcastToConversation } = await import('../wsHandler.js');
+			const sysMsg = await createSystemMessage(conversation.id, `Report status change to: Suspended`);
+			await broadcastToConversation(conversation.id, sysMsg);
+		}
+		return savedReport;
+	}
+
+	async resumeReport({ reportId, technicianId }) {
+		const report = await this.repo.findOneBy({ id: Number(reportId) });
+		if (!report) return null;
+		// Se technicianId è valorizzato, torna in_progress, altrimenti torna assigned
+		if (report.technicianId) {
+			report.status = 'in_progress';
+		} else {
+			report.status = 'assigned';
+		}
+		const savedReport = await this.repo.save(report);
+
+		// Messaggio automatico
+		const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
+		const conversation = await convRepo.findOne({ where: { report: { id: report.id } } });
+		if (conversation) {
+			const { createSystemMessage } = await import('./messageRepository.js');
+			const { broadcastToConversation } = await import('../wsHandler.js');
+			const sysMsg = await createSystemMessage(conversation.id, `Report status change to: ${report.status === 'in_progress' ? 'In Progress (Resumed)' : 'Assigned (Resumed)'}`);
+			await broadcastToConversation(conversation.id, sysMsg);
+		}
 		return savedReport;
 	}
 }

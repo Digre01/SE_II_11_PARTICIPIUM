@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import API from '../../API/API.mjs';
 import './AuthHeader.css';
 import {
   Header,
@@ -19,9 +20,10 @@ import {
 import { Link } from 'react-router-dom';
 import { LogoutButton } from '../authComponents/loginForm';
 
-function AuthHeader({ user, loggedIn, isAdmin, handleLogout }) {
+function AuthHeader({ user, loggedIn, isAdmin, isReportsAllowed, handleLogout, notificationCount }) {
   const [isOpen, setIsOpen] = useState(false);
   const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
+  const isStaff = String(user?.userType || '').toLowerCase() === 'staff';
 
   return (
     <Header theme="dark" type="slim" className="shadow-sm app-header">
@@ -43,6 +45,31 @@ function AuthHeader({ user, loggedIn, isAdmin, handleLogout }) {
           </NavItem>
         </Collapse>
         <HeaderRightZone>
+          {loggedIn && user && (isCitizen || isStaff) && (
+            <TabNavLink tag={Link} to="/conversations" className="me-2" title="Conversazioni" style={{ position: 'relative' }}>
+              <Icon icon="it-mail" size="sm" className="me-1" />
+              <span className="align-middle">Notifications</span>
+              {notificationCount > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: 6,
+                  right: -1,
+                  minWidth: 18,
+                  height: 18,
+                  background: '#28a745',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '2px solid #fff',
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: '0.75rem',
+                  zIndex: 2
+                }}>{notificationCount}</span>
+              )}
+            </TabNavLink>
+          )}
           {loggedIn && user ? (
             <Dropdown direction="down">
               <DropdownToggle tag="a">
@@ -51,6 +78,18 @@ function AuthHeader({ user, loggedIn, isAdmin, handleLogout }) {
               </DropdownToggle>
               <DropdownMenu className="dropdown-offset-y">
                 <LinkList>
+                  {isReportsAllowed && (
+                    <LinkListItem inDropdown tag={Link} to="/reports">
+                      <Icon icon="it-list" size="sm" className="me-1" />
+                      <span>Reports</span>
+                    </LinkListItem>
+                  )}
+                  {!isReportsAllowed && isStaff && (
+                    <LinkListItem inDropdown tag={Link} to="/officeReports">
+                      <Icon icon="it-list" size="sm" className="me-1" />
+                      <span>Office Reports</span>
+                    </LinkListItem>
+                  )}
                   {isCitizen && (
                     <LinkListItem inDropdown tag={Link} to="/setting">
                       <Icon icon="it-settings" size="sm" className="me-1" />

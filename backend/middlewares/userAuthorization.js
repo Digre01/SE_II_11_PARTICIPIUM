@@ -1,5 +1,7 @@
 import {UnauthorizedError} from "../errors/UnauthorizedError.js";
 import {InsufficientRightsError} from "../errors/InsufficientRightsError.js";
+import { AppDataSourcePostgres } from '../config/data-source.js';
+import { UserOffice } from '../entities/UserOffice.js';
 
 export function authorizeUserType(allowedTypes) {
     return async function (req, res, next) {
@@ -44,4 +46,32 @@ export function requireAdminIfCreatingStaff(req, res, next) {
     } catch (e) {
         return next(e);
     }
+}
+
+export function authorizeRole(roleName) {
+    return async function (req, res, next) {
+        try {
+            if (!req.isAuthenticated || !req.isAuthenticated()) {
+                return next(new UnauthorizedError('UNAUTHORIZED'));
+            }
+
+            const userId = req.user?.id;
+            if (!userId) return next(new UnauthorizedError('UNAUTHORIZED'));
+
+            const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);
+            const userOffice = await userOfficeRepo.findOne({ where: { userId: Number(userId) }, relations: ['role'] });
+            if (!userOffice || !userOffice.role || !userOffice.role.name) {
+                return next(new InsufficientRightsError('FORBIDDEN'));
+            }
+
+            const actual = String(userOffice.role.name || '').toLowerCase();
+            if (actual !== String(roleName || '').toLowerCase()) {
+                return next(new InsufficientRightsError('FORBIDDEN'));
+            }
+
+            return next();
+        } catch (e) {
+            return next(e);
+        }
+    };
 }

@@ -8,7 +8,8 @@ export default {
     '**/test/**/*.test.mjs',
     '**/test/**/*.spec.mjs',
     '**/test/**/*.test.js',
-    '**/test/**/*.spec.js'
+    '**/test/**/*.spec.js',
+        '**/test/**/**/*.test.js',
     ],
     coveragePathIgnorePatterns: [
         "node_modules",
@@ -18,6 +19,14 @@ export default {
         "seeder.js"
     ],
     collectCoverage: true,
-    //collectCoverageFrom: ["backend/**/*.{js,mjs}", "!backend/{config, database, entities, DTOs, errors, public}",],
+    rootDir: ".",
+    collectCoverageFrom: [
+        "<rootDir>/controllers/**/*.{js,mjs}",
+        "<rootDir>/mappers/**/*.{js,mjs}",
+        "<rootDir>/middlewares/**/*.{js,mjs}",
+        "<rootDir>/repositories/**/*.{js,mjs}",
+        "<rootDir>/routes/**/*.{js,mjs}",
+        "<rootDir>/services/**/*.{js,mjs}",
+    ],
     coverageReporters: ["text", "html", "lcov"],
 };

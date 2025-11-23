@@ -92,6 +92,39 @@ const createReport = async (formData) => {
   }
 };
 
+// GET /api/v1/reports (staff)
+const fetchReports = async () => {
+  const response = await fetch(SERVER_URL + '/api/v1/reports', { credentials: 'include' });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+
+// GET /api/v1/reports/assigned (public map)
+const fetchAssignedReports = async () => {
+  const response = await fetch(SERVER_URL + `/api/v1/reports/assigned`, { credentials: 'include' });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+
+// GET /api/v1/reports/:id
+const fetchReport = async (id) => {
+  const response = await fetch(SERVER_URL + `/api/v1/reports/${id}`, { credentials: 'include' });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+
+// PATCH /api/v1/reports/:id/review
+const reviewReport = async (id, payload) => {
+  const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/review`, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+
 // GET /api/v1/categories
 const fetchCategories = async () => {
   const response = await fetch(SERVER_URL + '/api/v1/categories', { credentials: 'include' });
@@ -100,6 +133,26 @@ const fetchCategories = async () => {
   } else {
     const errDetails = await response.text();
     throw errDetails;
+  }
+};
+
+// GET /api/v1/conversations
+const fetchConversations = async () => {
+  const response = await fetch(SERVER_URL + '/api/v1/conversations', { credentials: 'include' });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+};
+
+// GET /api/v1/conversations/:conversationId/messages
+const fetchMessages = async (conversationId) => {
+  const response = await fetch(SERVER_URL + `/api/v1/conversations/${conversationId}/messages`, { credentials: 'include' });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
   }
 };
 
@@ -151,6 +204,87 @@ export async function fetchOffices() {
   throw await response.text();
 }
 
+// PATCH /api/v1/reports/:id/suspend
+const suspendReport = async (id) => {
+  const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/suspend`, {
+    method: 'PATCH',
+    credentials: 'include'
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture };
+// PATCH /api/v1/reports/:id/resume
+const resumeReport = async (id) => {
+  const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/resume`, {
+    method: 'PATCH',
+    credentials: 'include'
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+// PATCH /api/v1/reports/:id/start
+const startReport = async (id) => {
+  const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/start`, {
+    method: 'PATCH',
+    credentials: 'include'
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+
+// PATCH /api/v1/reports/:id/finish
+const finishReport = async (id) => {
+  const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/finish`, {
+    method: 'PATCH',
+    credentials: 'include'
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+// POST /api/v1/notifications/:conversationId/read
+const markNotificationsAsRead = async (conversationId) => {
+  const response = await fetch(SERVER_URL + `/api/v1/notifications/${conversationId}/read`, {
+    method: 'POST',
+    credentials: 'include'
+  });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+};
+// GET /api/v1/notifications
+const fetchNotifications = async () => {
+  const response = await fetch(SERVER_URL + '/api/v1/notifications', { credentials: 'include' });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+};
+
+// GET /api/v1/notifications/counts
+const fetchNotificationCounts = async () => {
+  const response = await fetch(SERVER_URL + '/api/v1/notifications/counts', { credentials: 'include' });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+};
+
+// POST /api/v1/conversations/:conversationId/messages
+const sendMessage = async (conversationId, content) => {
+  const response = await fetch(`${SERVER_URL}/api/v1/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content })
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+
+const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, sendMessage };
 export default API;

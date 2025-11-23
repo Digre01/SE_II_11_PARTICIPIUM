@@ -4,3 +4,35 @@ export async function createReport(reportData) {
   const report = await reportRepository.createReport(reportData);
   return report;
 }
+
+export async function getAllReports() {
+  return await reportRepository.getAllReports();
+}
+
+export async function getReport(id) {
+  return await reportRepository.getReportById(id);
+}
+
+export async function getAcceptedReports(){
+  return await reportRepository.getAcceptedReports();
+}
+
+export async function reviewReport(reviewData) {
+  return await reportRepository.reviewReport(reviewData);
+}
+
+export async function suspendReport({ reportId, technicianId }) {
+  return await reportRepository.suspendReport({ reportId, technicianId });
+}
+
+export async function resumeReport({ reportId, technicianId }) {
+  return await reportRepository.resumeReport({ reportId, technicianId });
+}
+
+export async function startReport({ reportId, technicianId }) {
+  return await reportRepository.startReport({ reportId, technicianId });
+}
+
+export async function finishReport({ reportId, technicianId }) {
+  return await reportRepository.finishReport({ reportId, technicianId });
+}
