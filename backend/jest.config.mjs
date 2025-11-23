@@ -11,6 +11,13 @@ export default {
     '**/test/**/*.spec.js',
         '**/test/**/**/*.test.js',
     ],
+    coveragePathIgnorePatterns: [
+        "node_modules",
+        "test-config",
+        "<rootDir>/src/app/app.js",
+        "\\.mock\\.js",
+        "seeder.js"
+    ],
     collectCoverage: true,
     rootDir: ".",
     collectCoverageFrom: [

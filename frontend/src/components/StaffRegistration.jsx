@@ -1,10 +1,12 @@
 import { Input, Row, Col, Button, Alert, Form } from "design-react-kit"
 import { useState } from "react";
 import { signUp } from "../API/API.mjs";
+import { useNavigate } from "react-router";
 
 
 
 function StaffRegistration(){
+    const navigate = useNavigate();
     const [form, setForm] = useState({
         name: "",
         surname: "",
@@ -60,6 +62,7 @@ function StaffRegistration(){
                         text: result.message || 'Registration completed successfully',
                     });
                 reset();
+                navigate("/");
             }
         }
          catch (err) {

@@ -8,6 +8,8 @@ import {
     UploadList,
     UploadListItem,
     Row,
+    Icon,
+    AvatarIcon,
     Col
 } from 'design-react-kit';
 import API, { SERVER_URL } from "../API/API.mjs";
@@ -192,23 +194,25 @@ export default function AccountConfig({ user, loggedIn }) {
 
     const telegramHelp = 'Your Telegram username (without @).';
 
+    const activePhoto = photoPreview || photoDataUrl || currentPhotoUrl;
+
     return (
         <div className="container mt-5">
-            {(photoPreview || photoDataUrl || currentPhotoUrl) && (
-                <div className="d-flex justify-content-center mb-4">
-                    <img
-                        src={photoPreview || photoDataUrl || currentPhotoUrl}
-                        alt="Profile photo preview"
-                        style={{
-                            width: 'clamp(96px, 35vw, 128px)',
-                            height: 'clamp(96px, 35vw, 128px)',
-                            borderRadius: '60%',
-                            objectFit: 'cover',
-                            border: '2px solid #e0e0e0'
-                        }}
-                    />
-                </div>
-            )}
+            <div className='d-flex justify-content-center mb-4'>
+                {activePhoto && (
+                    <AvatarIcon size="xxl">
+                        <img
+                            alt="Profile photo preview"
+                            src={activePhoto}
+                        />
+                    </AvatarIcon>
+                )}
+                {!activePhoto && (
+                    <AvatarIcon size="xxl">
+                        <Icon icon="it-user" />
+                    </AvatarIcon>
+                )}
+            </div>
 
             <Form onSubmit={handleSave} className="mb-4">
                 <Row className="gy-2">

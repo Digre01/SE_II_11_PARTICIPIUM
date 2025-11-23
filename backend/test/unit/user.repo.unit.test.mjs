@@ -50,15 +50,19 @@ describe("Role assignment: user repository", () => {
     });
 
     it("Success: existing userOffice mapping", async () => {
-        userOfficeRepoStub.findOneBy.mockResolvedValue({userId: 1});
+        rolesRepoStub.findOneBy.mockResolvedValue({ id: 1, officeId: 1 });
+        const existingMapping = { userId: 1 };
+        userOfficeRepoStub.findOneBy.mockResolvedValue(existingMapping);
 
-        const result = await userRepository.assignRoleToUser(1, 1, 1);
+        const result = await userRepository.assignRoleToUser(1, 1);
 
         expect(userRepoStub.findOneBy).toHaveBeenCalledWith({ id: 1 });
-        expect(officesRepoStub.findOneBy).toHaveBeenCalledWith({ id: 1 });
         expect(rolesRepoStub.findOneBy).toHaveBeenCalledWith({ id: 1 });
+        expect(officesRepoStub.findOneBy).toHaveBeenCalledWith({ id: 1 });
+        expect(userOfficeRepoStub.save).toHaveBeenCalledWith(
+            expect.objectContaining({ userId: 1, roleId: 1, officeId: 1 })
+        );
 
-        expect(userOfficeRepoStub.save).toHaveBeenCalled();
         expect(result).toEqual({
             userId: 1,
             office: { id: 1 },
@@ -67,19 +71,22 @@ describe("Role assignment: user repository", () => {
     });
 
     it("Success: created userOffice mapping", async () => {
+        rolesRepoStub.findOneBy.mockResolvedValue({ id: 1, officeId: 1 });
         userOfficeRepoStub.findOneBy.mockResolvedValue(null);
 
-        const result = await userRepository.assignRoleToUser(1, 1, 1);
+        const result = await userRepository.assignRoleToUser(1, 1);
 
         expect(userRepoStub.findOneBy).toHaveBeenCalledWith({ id: 1 });
-        expect(officesRepoStub.findOneBy).toHaveBeenCalledWith({ id: 1 });
         expect(rolesRepoStub.findOneBy).toHaveBeenCalledWith({ id: 1 });
+        expect(officesRepoStub.findOneBy).toHaveBeenCalledWith({ id: 1 });
+
         expect(userOfficeRepoStub.create).toHaveBeenCalledWith({
             userId: 1,
             officeId: 1,
             roleId: 1,
         });
         expect(userOfficeRepoStub.save).toHaveBeenCalled();
+
         expect(result).toEqual({
             userId: 1,
             office: { id: 1 },
@@ -90,30 +97,32 @@ describe("Role assignment: user repository", () => {
     it("throws NotFoundError when user not found", async () => {
         const missingUserId = 999
         userRepoStub.findOneBy.mockResolvedValue(null);
-        await expect(userRepository.assignRoleToUser(missingUserId, 1, 1)).rejects.toThrow(
+        await expect(userRepository.assignRoleToUser(missingUserId, 1)).rejects.toThrow(
             `User with id '${missingUserId}' not found`)
 
     });
 
     it("throws NotFoundError when office not found", async () => {
-        const missingOfficeId = 999
+        const missingOfficeId = 999;
+        rolesRepoStub.findOneBy.mockResolvedValue({ id: 1, officeId: missingOfficeId });
         officesRepoStub.findOneBy.mockResolvedValue(null);
-        await expect(userRepository.assignRoleToUser(1, 1, missingOfficeId)).rejects.toThrow(
-            `Office with id '${missingOfficeId}' not found`)
 
-    })
+        await expect(userRepository.assignRoleToUser(1, 1)).rejects.toThrow(
+            `Office with id '${missingOfficeId}' not found`
+        );
+    });
 
     it("throws NotFoundError when role not found", async () => {
         const missingRoleId = 999
         rolesRepoStub.findOneBy.mockResolvedValue(null);
-        await expect(userRepository.assignRoleToUser(1, missingRoleId, 1)).rejects.toThrow(
+        await expect(userRepository.assignRoleToUser(1, missingRoleId)).rejects.toThrow(
             `Role with id '${missingRoleId}' not found`)
 
     })
 
     it("throws InsufficientRightsError when assigning to roles that are not STAFF", async () => {
         userRepoStub.findOneBy.mockResolvedValue({id: 1, userType: "citizen"});
-        await expect(userRepository.assignRoleToUser(1, 1, 1)).rejects.toThrow(
+        await expect(userRepository.assignRoleToUser(1, 1)).rejects.toThrow(
             'Only staff accounts can be assigned a role')
 
     })

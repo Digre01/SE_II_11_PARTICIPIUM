@@ -13,7 +13,7 @@ await jest.unstable_mockModule('../../middlewares/userAuthorization.js', () => (
             const err = new UnauthorizedError('Unauthorized');
             return next(err); // blocca la richiesta
         }
-        req.user = { id: 1, userType: 'ADMIN' };
+        req.user = { id: 1, userType: 'admin' };
         next();
     },
     requireAdminIfCreatingStaff: () => (req, _res, next) => next(), // no-op for tests
@@ -68,15 +68,13 @@ describe('PATCH /api/v1/sessions/:id/role', () => {
         expect(mockController.assignRole).not.toHaveBeenCalled();
     });
 
-    it('fails when officeId is missing', async () => {
+    it('success when officeId is missing (not needed)', async () => {
         const res = await request(app)
             .patch('/api/v1/sessions/5/role')
             .set('Authorization', 'Bearer admin')
             .send({ roleId: 3 });
 
-        expect(res.status).toBe(400);
-        expect(res.body.message).toMatch(/officeId is required/i);
-        expect(mockController.assignRole).not.toHaveBeenCalled();
+        expect(res.status).toBe(200);
     });
 
     it('propagates controller errors (500)', async () => {
