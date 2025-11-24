@@ -17,6 +17,7 @@ import SignUpForm from "./components/authComponents/signUpForm.jsx";
 import ConversationsPage from './components/messageComponents/ConversationsPage.jsx';
 import ConversationPage from './components/messageComponents/ConversationPage.jsx';
 import ReportsPage from './components/ReportsPage.jsx';
+import NotFoundPage from './components/NotFoundPage.jsx';
 
 
 
@@ -226,6 +227,8 @@ function App() {
             ? <Navigate to="/login" replace />
             : <ConversationPage user={user} loggedIn={loggedIn} handleNotificationsUpdate={handleNotificationsUpdate} wsMessage={wsMessage} />
         } />
+        
+        <Route path='*' element={<NotFoundPage/>} />
       </Route>
     </Routes>
   );

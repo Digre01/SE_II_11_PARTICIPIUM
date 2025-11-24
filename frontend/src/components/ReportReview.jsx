@@ -69,7 +69,6 @@ export default function ReportReview({ user, loggedIn }) {
         <div className="mb-3">
           <label className="form-label">Category</label>
           <select className="form-select" value={categoryId} onChange={e => setCategoryId(e.target.value)}>
-            <option value="">-- Select category --</option>
             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
