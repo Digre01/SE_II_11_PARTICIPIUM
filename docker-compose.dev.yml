@@ -3,7 +3,7 @@ services:
     build:
       context: ./docker/db
       dockerfile: Dockerfile
-    container_name: se_ii_postgres
+    container_name: se_ii_postgres_dev
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
@@ -24,7 +24,7 @@ services:
     build:
       context: ./frontend
       dockerfile: ../docker/frontend/Dockerfile
-    container_name: frontend
+    container_name: frontend_dev
     ports:
       - "5173:5173"
     volumes:
@@ -40,6 +40,7 @@ services:
     build: 
       context: ./backend
       dockerfile: ../docker/backend/Dockerfile
+    container_name: backend_dev
     ports:
       - "3000:3000"
     volumes:
