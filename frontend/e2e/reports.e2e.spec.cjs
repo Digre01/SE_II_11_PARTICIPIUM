@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const {logIn, createReport, logOut, SERVER_URL} = require("../src/API/API.mjs");
 
 const BASE_URL = 'http://localhost:5173';
 
@@ -224,3 +225,91 @@ test('report photos are displayed correctly', async ({ page }) => {
         expect(style).toContain('max-width');
     }
 });
+
+test.describe("Testing report status update", () =>  {
+    test.describe("report starting, finishing, suspending and resuming", () => {
+
+        test.beforeEach(async ({page}) => {
+
+            await page.goto(`${BASE_URL}/login`);
+            await page.fill('input[name="username"]', 'staff2');
+            await page.fill('input[name="password"]', 'staff2');
+            await page.click('button:has-text("Confirm")');
+
+            await page.waitForTimeout(2000);
+
+            await page.goto(`${BASE_URL}/officeReports`);
+
+            await page.waitForLoadState('networkidle');
+            await page.waitForTimeout(1000);
+
+            await page.waitForSelector('text=Reports assigned to your office');
+        })
+
+        test('pressing START button changes report status to IN PROGRESS', async ({ page }) => {
+            const inProgressBefore = await page.locator('span:has-text("IN PROGRESS")').count();
+
+            await page.locator('button:has-text("START")').first().click();
+            await page.waitForTimeout(1500);
+
+            const inProgressAfter = await page.locator('span:has-text("IN PROGRESS")').count();
+
+            expect(inProgressAfter).toBeGreaterThan(inProgressBefore);
+        });
+
+        test('pressing SUSPEND changes report status to SUSPENDED', async ({ page }) => {
+            const suspendedBefore = await page.locator('span:has-text("SUSPENDED")').count();
+
+            await page.locator('button:has-text("SUSPEND")').first().click();
+            await page.waitForTimeout(1500);
+
+            const suspendedAfter = await page.locator('span:has-text("SUSPENDED")').count();
+
+            expect(suspendedBefore).toBeLessThan(suspendedAfter);
+        })
+
+        test('pressing RESUME changes report status to RESUMED', async ({ page }) => {
+            const suspendedBefore = await page.locator('span:has-text("SUSPENDED")').count();
+
+            await page.locator('button:has-text("RESUME")').first().click();
+            await page.waitForTimeout(1500);
+
+            const suspendedAfter = await page.locator('span:has-text("SUSPENDED")').count();
+
+            expect(suspendedAfter).toBeLessThan(suspendedBefore);
+        })
+
+        test('pressing FINISH button changes report status to IN PROGRESS', async ({ page }) => {
+            const inProgressBefore = await page.locator('span:has-text("IN PROGRESS")').count();
+
+            await page.locator('button:has-text("FINISH")').first().click();
+            await page.waitForTimeout(1500);
+
+            const inProgressAfter = await page.locator('span:has-text("IN PROGRESS")').count();
+
+            expect(inProgressAfter).toBeLessThan(inProgressBefore);
+        });
+
+
+    })
+
+    test.describe("logging exceptions", () => {
+        test('logging in as NOT STAFF gets redirected to /', async ({page}) => {
+            await page.goto(`${BASE_URL}/login`);
+            await page.fill('input[name="username"]', 'citizen');
+            await page.fill('input[name="password"]', 'citizen');
+            await page.click('button:has-text("Confirm")');
+
+            await page.waitForTimeout(2000);
+
+            await page.goto(`${BASE_URL}/officeReports`);
+
+            await page.waitForLoadState('networkidle');
+            await page.waitForTimeout(1000);
+
+            await page.waitForURL('/');
+        })
+    })
+})
+
+
