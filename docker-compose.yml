@@ -1,6 +1,6 @@
 services:
   db:
-    image: matteodigregorio/team-11-participium:db
+    image: postgres:16-alpine
 
     container_name: se_ii_postgres
     environment:
@@ -30,6 +30,7 @@ services:
         
   backend:
     image: matteodigregorio/team-11-participium:backend
+    container_name: backend
     ports:
       - "3000:3000"
     environment:
@@ -41,7 +42,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-
+  
 volumes:
   db_data:
    
