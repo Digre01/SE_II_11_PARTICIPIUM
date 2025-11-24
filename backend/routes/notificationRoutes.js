@@ -5,10 +5,9 @@ import { authorizeUserType } from '../middlewares/userAuthorization.js';
 const router = express.Router();
 
 // Restituisce tutte le notifiche non lette dell'utente
-router.get('/', authorizeUserType(['citizen', 'STAFF']), getUserNotifications);
+router.get('/', authorizeUserType(['citizen', 'staff']), getUserNotifications);
 // Restituisce il conteggio delle notifiche non lette per conversazione
-router.get('/counts', authorizeUserType(['citizen', 'STAFF']), getUnreadCounts);
+router.get('/counts', authorizeUserType(['citizen', 'staff']), getUnreadCounts);
 // Segna come lette tutte le notifiche di una conversazione
-router.post('/:conversationId/read', authorizeUserType(['citizen', 'STAFF']), markAsRead);
-
+router.post('/:conversationId/read', authorizeUserType(['citizen', 'staff']), markAsRead);
 export default router;

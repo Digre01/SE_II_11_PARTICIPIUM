@@ -47,7 +47,7 @@ export class ReportRepository {
 		// Trova tutti gli staff member con ruolo 'Municipal Public Relations Officer' tramite join
 		const staffRepo = AppDataSourcePostgres.getRepository(Users);
 		const staffMembers = await staffRepo.find({
-			where: { userType: 'STAFF' },
+			where: { userType: 'staff' },
 			relations: ['userOffice', 'userOffice.role']
 		});
 		const municipalStaff = staffMembers.filter(u =>
