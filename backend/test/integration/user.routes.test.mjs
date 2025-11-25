@@ -17,6 +17,8 @@ await jest.unstable_mockModule('../../middlewares/userAuthorization.js', () => (
         next();
     },
     requireAdminIfCreatingStaff: () => (req, _res, next) => next(), // no-op for tests
+    
+    authorizeRole: () => (req, _res, next) => next(),
 }));
 
 // Mock del controller prima di importare app
@@ -54,7 +56,7 @@ describe('PATCH /api/v1/sessions/:id/role', () => {
             office: { id: 2, name: 'Municipality Office' },
         });
 
-        expect(mockController.assignRole).toHaveBeenCalledWith('5', 3, 2);
+        expect(mockController.assignRole).toHaveBeenCalledWith('5', 3);
     });
 
     it('fails when roleId is missing', async () => {

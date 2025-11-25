@@ -1,4 +1,4 @@
-FROM postgres:15-alpine
+FROM postgres:16-alpine
 
 # sensible defaults (override at runtime)
 ENV POSTGRES_USER=postgres

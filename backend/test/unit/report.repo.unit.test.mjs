@@ -6,6 +6,8 @@ const photoEntities = [];
 const repoStub = (name) => {
     return {
         findOneBy: jest.fn(),
+        find: jest.fn(),
+        findOne: jest.fn(),
         create: jest.fn(),
         save: jest.fn(),
     };
@@ -45,6 +47,17 @@ describe('ReportRepository.createReport', () => {
         // Default: user & category exist
         userRepoStub.findOneBy.mockResolvedValue({ id: 10 });
         categoryRepoStub.findOneBy.mockResolvedValue({ id: 5 });
+        
+        // Mock staff members for notification
+        userRepoStub.find.mockResolvedValue([
+            {
+                id: 99,
+                userType: 'staff',
+                userOffice: {
+                    role: { name: 'Municipal Public Relations Officer' }
+                }
+            }
+        ]);
         
         // Report create/save behavior
         reportRepoStub.create.mockImplementation((data) => ({ ...data, id: 123 }));

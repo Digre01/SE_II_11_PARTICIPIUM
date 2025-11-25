@@ -29,6 +29,7 @@ await jest.unstable_mockModule('../../middlewares/userAuthorization.js', () => (
     next();
   },
   requireAdminIfCreatingStaff: () => (req, _res, next) => next(), // no-op for tests
+  authorizeRole: () => (req, _res, next) => next(),
 }));
 
 // Mock upload middleware
@@ -112,7 +113,7 @@ describe('POST /api/v1/reports', () => {
       .set('Authorization', 'Bearer test')
       .send({ title: 'Only title' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/All fields are required/);
+    expect(res.body.message).toMatch(/All fields are required/);
     expect(mockRepo.createReport).not.toHaveBeenCalled();
   });
 
@@ -133,7 +134,7 @@ describe('POST /api/v1/reports', () => {
       .set('Authorization', 'Bearer test')
       .send(body);
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/upload between 1 and 3 photos/);
+    expect(res.body.message).toMatch(/upload between 1 and 3 photos/);
     expect(mockRepo.createReport).not.toHaveBeenCalled();
   });
 
@@ -145,7 +146,7 @@ describe('POST /api/v1/reports', () => {
       .set('X-Test-Photos', 'a.jpg,b.jpg,c.jpg,d.jpg')
       .send(body);
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/upload between 1 and 3 photos/);
+    expect(res.body.message).toMatch(/upload between 1 and 3 photos/);
     expect(mockRepo.createReport).not.toHaveBeenCalled();
   });
 
@@ -188,6 +189,6 @@ describe('POST /api/v1/reports', () => {
       .set('X-Test-Photos', 'a.jpg')
       .send(body);
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/All fields are required/);
+    expect(res.body.message).toMatch(/All fields are required/);
   });
 });

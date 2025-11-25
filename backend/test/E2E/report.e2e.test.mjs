@@ -49,7 +49,7 @@ beforeAll(async () => {
   await seedDatabase();
   cookie = await loginAndGetCookie();
   cookie_staff = await loginAndGetCookieStaff();
-});
+}, 30000);
 
 afterAll(async () => {
   await AppDataSourcePostgres.destroy();
@@ -235,15 +235,17 @@ describe('GET /api/v1/reports/:id (E2E)', () => {
     
     const { UserOffice } = await import('../../entities/UserOffice.js');
     const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);
-    const existingUO = await userOfficeRepo.findOne({ where: { userId: staffUser.id } });
+    let existingUO = await userOfficeRepo.findOne({ where: { userId: staffUser.id } });
     if (!existingUO) {
-      await userOfficeRepo.save({ userId: staffUser.id, roleId: mpRole.id });
+      existingUO = { userId: staffUser.id };
     }
+    existingUO.roleId = mpRole.id;
+    await userOfficeRepo.save(existingUO);
     
     cookieStaffWithRole = await loginAndGetCookieStaff();
     
     deleteReturnedPhotos(createRes.body.photos);
-  });
+  }, 30000);
 
   it('should fail without authentication (no cookie)', async () => {
     const res = await request(app)

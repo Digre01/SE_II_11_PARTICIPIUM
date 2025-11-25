@@ -3,6 +3,8 @@ import {describe, it, expect, beforeEach, jest } from "@jest/globals";
 
 const repoStub = {
     findOneBy: jest.fn(),
+    find: jest.fn(),
+    findOne: jest.fn(),
     save: jest.fn(),
 };
 

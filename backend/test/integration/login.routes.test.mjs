@@ -4,6 +4,7 @@ import request from "supertest";
 // Stub del repository TypeORM usato da userRepository
 const repoStub = {
     findOneBy: jest.fn(),
+    findOne: jest.fn(),
     save: jest.fn(),
 };
 
@@ -81,7 +82,7 @@ describe("Auth routes (integration, mocked DB)", () => {
         const hashed = await userService.hashPassword(plain, salt);
 
         // La strategia Local leggerà l'utente tramite username
-        repoStub.findOneBy.mockResolvedValueOnce({
+        repoStub.findOne.mockResolvedValueOnce({
             id: 10,
             username,
             email: "lucia@example.com",
@@ -114,7 +115,7 @@ describe("Auth routes (integration, mocked DB)", () => {
         const salt = "testsalt2";
         const hashed = await userService.hashPassword(correctPlain, salt);
         // Utente esistente
-        repoStub.findOneBy.mockResolvedValueOnce({
+        repoStub.findOne.mockResolvedValueOnce({
             id: 11,
             username,
             email: "francesco@example.com",
@@ -157,7 +158,7 @@ describe("Auth routes (integration, mocked DB)", () => {
         expect(cookie).toBeTruthy();
 
         // La middleware di sessione deserializza l'utente via id
-        repoStub.findOneBy.mockResolvedValueOnce({ id: 22, ...dto });
+        repoStub.findOne.mockResolvedValueOnce({ id: 22, ...dto });
         const res = await request(app).get("/api/v1/sessions/current").set("Cookie", cookie);
         expect(res.status).toBe(200);
         expect(res.body).toMatchObject({ id: 22, username: dto.username, email: dto.email });
@@ -184,12 +185,12 @@ describe("Auth routes (integration, mocked DB)", () => {
         expect(cookie).toBeTruthy();
 
         // La middleware di sessione deserializza l'utente via id
-        repoStub.findOneBy.mockResolvedValueOnce({ id: 22, ...dto });
+        repoStub.findOne.mockResolvedValueOnce({ id: 22, ...dto });
         const res1 = await request(app).get("/api/v1/sessions/current").set("Cookie", cookie);
         expect(res1.status).toBe(200);
         expect(res1.body).toMatchObject({ id: 22, username: dto.username, email: dto.email });
         // Ogni richiesta fa una nuova deserializeUser -> serve un'altra risposta mock
-        repoStub.findOneBy.mockResolvedValueOnce({ id: 22, ...dto });
+        repoStub.findOne.mockResolvedValueOnce({ id: 22, ...dto });
         const res2 = await request(app).get("/api/v1/sessions/current").set("Cookie", cookie);
         expect(res2.status).toBe(200);
         expect(res2.body).toMatchObject({ id: 22, username: dto.username, email: dto.email });

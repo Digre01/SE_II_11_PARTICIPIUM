@@ -32,6 +32,7 @@ await jest.unstable_mockModule('../../middlewares/userAuthorization.js', () => (
 		next();
 	},
 	authorizeUserType: () => (req, res, next) => next(),
+	authorizeRole: () => (req, _res, next) => next(),
 }));
 
 const { default: app } = await import('../../app.js');

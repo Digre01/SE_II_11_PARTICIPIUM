@@ -43,7 +43,7 @@ beforeAll(async () => {
   await seedDatabase();
   adminCookie = await loginAndGetCookie('admin', 'admin');
   citizenCookie = await loginAndGetCookie('citizen', 'citizen');
-});
+}, 30000);
 
 afterAll(async () => {
   await cleanupStaffUsers();

@@ -3,6 +3,7 @@ import {describe, it, expect, beforeEach, jest } from "@jest/globals";
 
 const repoStub = {
     findOneBy: jest.fn(),
+    findOne: jest.fn(),
     save: jest.fn(),
 };
 
@@ -70,9 +71,9 @@ describe("User Repository", () => {
     describe("getUserById", () => {
         it("should return user by ID", async () => {
             const user = { id: 1, username: "testuser" };
-            repoStub.findOneBy.mockResolvedValueOnce(user);
+            repoStub.findOne.mockResolvedValueOnce(user);
             const result = await userRepository.getUserById(1);
-            expect(repoStub.findOneBy).toHaveBeenCalledWith({ id: 1 });
+            expect(repoStub.findOne).toHaveBeenCalledWith({ where: { id: 1 }, relations: ['userOffice', 'userOffice.role'] });
             expect(result).toEqual(user);
         });
     });
@@ -80,9 +81,9 @@ describe("User Repository", () => {
     describe("getUserByUsername", () => {
         it("should return user by username", async () => {
             const user = { id: 1, username: "testuser" };
-            repoStub.findOneBy.mockResolvedValueOnce(user);
+            repoStub.findOne.mockResolvedValueOnce(user);
             const result = await userRepository.getUserByUsername("testuser");
-            expect(repoStub.findOneBy).toHaveBeenCalledWith({ username: "testuser" });
+            expect(repoStub.findOne).toHaveBeenCalledWith({ where: { username: "testuser" }, relations: ['userOffice', 'userOffice.role'] });
             expect(result).toEqual(user);
         });
     });
