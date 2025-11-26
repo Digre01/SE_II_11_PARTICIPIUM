@@ -1,14 +1,17 @@
 import { Link } from 'react-router-dom';
 import { Row, Col, Card, Button } from 'design-react-kit';
 import Map from './Map.jsx';
+import ReportsPage from './ReportsPage.jsx';
+import StaffReports from './StaffReports.jsx';
 
-
-export default function HomePage({ user, loggedIn, isAdmin }) {
+export default function HomePage({ user, loggedIn, isAdmin, isCitizen, isStaff, isReportsAllowed, wsMessage }) {
   
   
-  return !isAdmin ? (
-    <Map user={user} loggedIn={loggedIn} onPointChange={(point) => console.log('Selected point:', point)} />
-  ) : (
+  return isReportsAllowed ? (
+    <StaffReports wsMessage={wsMessage} />
+  ) : isStaff ? (
+    <ReportsPage user={user} />
+  ) : isAdmin? (
     <Row className="g-4">
       <Col md="6" xs="12">
         <Card image rounded shadow="sm">
@@ -46,6 +49,8 @@ export default function HomePage({ user, loggedIn, isAdmin }) {
         </Card>
       </Col>
     </Row>
+  ) : (
+    <Map user={user} loggedIn={loggedIn} onPointChange={(point) => console.log('Selected point:', point)} />
   );
 }
 

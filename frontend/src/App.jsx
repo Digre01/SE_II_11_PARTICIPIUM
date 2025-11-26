@@ -134,6 +134,7 @@ function App() {
     await API.logOut();
     setLoggedIn(false);
     setUser(undefined);
+    setIsReportsAllowed(false);
     setNotificationCount(0);
   };
 
@@ -163,7 +164,7 @@ function App() {
   return (
     <Routes>
       <Route element={<DefaultLayout user={user} loggedIn={loggedIn} isAdmin={isAdmin} isReportsAllowed={isReportsAllowed} handleLogout={handleLogout} notificationCount={notificationCount}/> }>
-        <Route path='/' element={<HomePage user={user} loggedIn={loggedIn} isAdmin={isAdmin} />}/>
+        <Route path='/' element={<HomePage user={user} loggedIn={loggedIn} isAdmin={isAdmin} isCitizen={isCitizen} isStaff={isStaff} isReportsAllowed={isReportsAllowed} wsMessage={wsMessage}/>}/>
         <Route path='/login' element={
           loggedIn ? <Navigate to='/' replace /> : <LoginForm handleLogin={handleLogin}/>
         }/>
