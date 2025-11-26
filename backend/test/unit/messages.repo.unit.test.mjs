@@ -108,5 +108,31 @@ describe('Unit: messageRepository', () => {
 			await expect(getMessagesForConversation(100, 42)).rejects.toThrow(InsufficientRightsError);
 		});
 	});
+
+	describe('createMessage & createSystemMessage', () => {
+		it('createMessage stores user message and returns saved row', async () => {
+			const created = { id: 99, content: 'Hello', sender: { id: 42 }, conversation: { id: 100 } };
+			msgRepo.create.mockReturnValueOnce(created);
+			msgRepo.save.mockResolvedValueOnce(created);
+
+			const result = await createMessage(100, 42, 'Hello');
+
+			expect(msgRepo.create).toHaveBeenCalledWith({ conversation: { id: 100 }, sender: { id: 42 }, content: 'Hello' });
+			expect(msgRepo.save).toHaveBeenCalledWith(created);
+			expect(result).toBe(created);
+		});
+
+		it('createSystemMessage stores system message with isSystem=true and null sender', async () => {
+			const created = { id: 101, content: 'System', sender: null, isSystem: true, conversation: { id: 100 } };
+			msgRepo.create.mockReturnValueOnce(created);
+			msgRepo.save.mockResolvedValueOnce(created);
+
+			const result = await createSystemMessage(100, 'System');
+
+			expect(msgRepo.create).toHaveBeenCalledWith({ conversation: { id: 100 }, sender: null, content: 'System', isSystem: true });
+			expect(msgRepo.save).toHaveBeenCalledWith(created);
+			expect(result).toBe(created);
+		});
+	});
 });
 
