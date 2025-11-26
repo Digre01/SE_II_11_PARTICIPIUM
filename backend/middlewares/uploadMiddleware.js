@@ -4,7 +4,9 @@ import path from 'path';
 // Multer storage configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, new URL('../public', import.meta.url).pathname);
+    // Use a stable absolute path to backend/public compatible with Windows
+    const dest = path.resolve(process.cwd(), 'public');
+    cb(null, dest);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
