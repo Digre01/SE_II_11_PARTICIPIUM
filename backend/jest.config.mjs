@@ -16,7 +16,8 @@ export default {
         "test-config",
         "<rootDir>/src/app/app.js",
         "\\.mock\\.js",
-        "seeder.js"
+        "seeder.js",
+        "multerErrorHandler.js"
     ],
     collectCoverage: true,
     rootDir: ".",
