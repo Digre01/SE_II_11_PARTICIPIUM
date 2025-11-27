@@ -1,4 +1,4 @@
-// backend/test/unit/conversationRepository.test.js
+// backend/test/unit/conversationRepository.unit.test.js
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
 const fakeConversation = Symbol('FakeConversation');

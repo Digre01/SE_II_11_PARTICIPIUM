@@ -1,4 +1,4 @@
-// backend/test/unit/conversationController.test.js
+// backend/test/unit/conversationController.unit.test.js
 import { describe, it, expect, jest } from "@jest/globals";
 
 // Mock prima di importare il controller!

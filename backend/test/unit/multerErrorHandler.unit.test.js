@@ -1,4 +1,4 @@
-// backend/test/unit/multerErrorHandler.test.js
+// backend/test/unit/multerErrorHandler.unit.test.js
 import { describe, it, expect, jest } from "@jest/globals";
 import multerErrorHandler from '../../middlewares/multerErrorHandler.js';
 
