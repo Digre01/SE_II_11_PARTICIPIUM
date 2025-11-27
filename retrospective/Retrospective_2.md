@@ -77,15 +77,27 @@ sections:
 ## ASSESSMENT
 
 - What did go wrong in the sprint? 
+  - We underestimated the number of story points for story 8.
+  - Story 11 was complex and led to some bugs during the testing phase.
+  - We underestimated the number of hours for story 11
 
-- What caused your errors in estimation (if any)? 
+- What caused your errors in estimation (if any)?
+  - We had some issues with understanding the product owner's requests for story 10 and 11.
+  - We estimated story 11 as last story, so we had to fit it in a limited amount of time budget
+    (it was more than the time budget available)
 
 - What lessons did you learn (both positive and negative) in this sprint?
-
+  - Negative lesson: we must check (and possibly update) tests every time we do some changes in the code
+  - Positive lesson: we achieved a better code quality thanks to code review tasks in every story
+  
 - Which improvement goals set in the previous retrospective were you able to achieve?
+    - We added code review for every story and reserved time for bug fixing
 
 - Which ones you were not able to achieve? Why?
+    - None
 
 - Improvement goals for the next sprint and how to achieve them (technical tasks, team coordination, etc.)
+  - We want to improve in estimating story points
 
 - One thing you are proud of as a Team!!
+  - We managed to complete story 11, which required a lot of effort. 
