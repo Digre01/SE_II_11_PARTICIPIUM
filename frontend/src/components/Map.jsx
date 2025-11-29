@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap, GeoJSON } from 'react-leaflet';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
@@ -7,6 +7,8 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet.markercluster';
 import API, { SERVER_URL } from '../API/API.mjs';
+
+import turinData from '../data/turin_boundaries.json';
 
 
 
@@ -28,6 +30,7 @@ async function reverseGeocode({ lat, lon, signal }) {
 function SingleClickMarker({ onPointChange, user, loggedIn }) {
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [isInTurin, setIsInTurin] = useState(false);
   const requestRef = useRef(null);
   const navigate = useNavigate();
   const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
@@ -54,18 +57,27 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
                 addr.state || ''
               ].filter(Boolean).join(', ');
               setSelectedAddress(formattedAddress);
+
+      
+              const cityLike = (addr.city || addr.town || addr.village || '').trim().toLowerCase();
+              setIsInTurin(cityLike === 'torino');
             } else {
               setSelectedAddress(null);
+              setIsInTurin(false);
             }
           })
           .catch((err) => {
-            if (err.name !== 'AbortError') setSelectedAddress(null);
+            if (err.name !== 'AbortError') {
+              setSelectedAddress(null);
+              setIsInTurin(false);
+            }
           })
           .finally(() => {
             requestRef.current = null;
           });
       } catch {
         setSelectedAddress('Address not available');
+        setIsInTurin(false);
       }
     }
   });
@@ -83,11 +95,13 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
           {isCitizen && (
             <Popup>
               {selectedAddress || `${selectedPoint.lat.toFixed(5)}, ${selectedPoint.lng.toFixed(5)}`}<br />
-              <button
-                onClick={() => navigate('/report', { state: { lat: selectedPoint.lat, lng: selectedPoint.lng, address: selectedAddress || null } })}
-              >
-                Create Report
-              </button>
+              {isInTurin && (
+                <button
+                  onClick={() => navigate('/report', { state: { lat: selectedPoint.lat, lng: selectedPoint.lng, address: selectedAddress || null } })}
+                >
+                  Create Report
+                </button>
+              )}
             </Popup>
           )}
         </Marker>
@@ -124,7 +138,53 @@ export default function Map({ user, loggedIn, onPointChange }) {
   const targetZoom = 15;  // animate to this
   const [reports, setReports] = useState([]);
   const reportsPinIcon = useMemo(() => new L.Icon.Default({ className: 'reports-pin-orange' }), []);
-  
+
+  const cityBoundary = useMemo(() => {
+    return turinData?.find(item => item.addresstype === 'city');
+  }, []);
+
+  const maskData = useMemo(() => {
+    if (!cityBoundary || !cityBoundary.geojson) return null;
+
+    // CORREZIONE: Usa [Longitudine, Latitudine] per il GeoJSON
+    // Torino è circa a Lat 45, Lon 7.
+    // Il box deve coprire un'area più ampia.
+    const outerCoords = [
+      [6.50, 46.60], // Top Left (Lon, Lat)
+      [9.30, 46.60], // Top Right
+      [9.30, 44.00], // Bottom Right
+      [6.50, 44.00], // Bottom Left
+      [6.50, 46.60]  // Chiudi il cerchio
+    ];
+
+    let cityCoords = [];
+    const geo = cityBoundary.geojson;
+
+    // Assumiamo che geo.coordinates siano già nel formato standard GeoJSON [Lon, Lat]
+    if (geo.type === 'Polygon') {
+      cityCoords = geo.coordinates[0];
+    } else if (geo.type === 'MultiPolygon') {
+      // Nota: Se Torino è un MultiPolygon (es. ha isole), questo prende solo la forma principale.
+      // Per una maschera perfetta servirebbe gestire tutti i poligoni, ma spesso basta il principale.
+      cityCoords = geo.coordinates[0][0];
+    }
+
+    return {
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        // In GeoJSON: primo array = forma esterna, array successivi = buchi interni
+        coordinates: [outerCoords, cityCoords]
+      }
+    };
+  }, [cityBoundary]);
+
+  const maskStyle = {
+    color: 'transparent', 
+    fillColor: '#001c50ff', 
+    fillOpacity: 0.2,   
+    interactive: false    
+  };
 
   // Fetch accepted reports on mount
   useEffect(() => {
@@ -147,6 +207,14 @@ export default function Map({ user, loggedIn, onPointChange }) {
     return null;
   }
 
+  // Load Turin boundaries and add to map
+  const boundaryStyle = {
+    color: '#001c50ff', 
+    weight: 3,       
+    opacity: 1,       // Opacity of the border line
+    fillOpacity: 0,   // IMPORTANT: 0 makes the inside transparent
+  };
+
   return (
     <MapContainer
       data-testid="map-container"
@@ -162,6 +230,25 @@ export default function Map({ user, loggedIn, onPointChange }) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
+
+      {/* External Mask */}
+      {maskData && (
+        <GeoJSON 
+          key="turin-mask"
+          data={maskData} 
+          style={maskStyle} 
+        />
+      )}
+      {/* City */}
+      {cityBoundary && (
+        <GeoJSON 
+          key={cityBoundary.osm_id} 
+          data={cityBoundary.geojson} 
+          style={boundaryStyle} 
+          interactive={false} 
+        />
+      )}
+
       <ClusteredReports reports={reports} reportsPinIcon={reportsPinIcon} />
       <SingleClickMarker user={user} loggedIn={loggedIn} onPointChange={onPointChange} />
     </MapContainer>
