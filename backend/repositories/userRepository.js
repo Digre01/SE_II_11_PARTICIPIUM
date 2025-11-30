@@ -21,6 +21,10 @@ class UserRepository {
         return await this.repo.findOne({ where: { username }, relations: ['userOffice', 'userOffice.role'] });
     }
 
+    async getUserByEmail(email) {
+        return await this.repo.findOne({ where: { email } });
+    }
+
     async createUser(username, email, name, surname, password, salt, userType){
 
         const existing_username = await this.repo.findOneBy({ username } );

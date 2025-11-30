@@ -5,8 +5,12 @@ import crypto from "crypto";
 import userService from "../services/userService.js";
 import {mapUserToDTO} from "../mappers/userMappers.js";
 
-async function getUserByUsername(username) {
-    return await userRepository.getUserByUsername(username);
+async function getUserByUsernameOrEmail(identifier) {
+    const isEmail = identifier.includes('@');
+
+    return isEmail ?
+        await userRepository.getUserByEmail(identifier)
+    : await userRepository.getUserByUsername(identifier);
 }
 
 async function getAvailableStaffForRoleAssignment() {
@@ -50,5 +54,5 @@ async function getPfpUrl(userId) {
     
 
 
-const userController = { getUserByUsername, createUser, assignRole, getAvailableStaffForRoleAssignment, getAllRoles, getAllOffices, configAccount, getPfpUrl };
+const userController = { getUserByUsernameOrEmail, createUser, assignRole, getAvailableStaffForRoleAssignment, getAllRoles, getAllOffices, configAccount, getPfpUrl};
 export default userController;

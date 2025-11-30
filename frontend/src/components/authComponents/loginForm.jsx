@@ -36,9 +36,9 @@ function LoginForm(props) {
                 <Form action={formAction} className="mb-4">
                     <Row className="gy-2">
                         <Input
-                            label="Username"
+                            label="Username or Email"
                             name="username"
-                            placeholder="Insert username"
+                            placeholder="Insert username or email"
                             type="text"
                             wrapperClassName="col col-md-4"
                             defaultValue={form.username}

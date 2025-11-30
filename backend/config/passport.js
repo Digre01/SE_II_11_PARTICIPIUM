@@ -5,8 +5,8 @@ import userService from "../services/userService.js";
 import {mapUserToDTO} from "../mappers/userMappers.js";
 import {userRepository} from "../repositories/userRepository.js";
 
-passport.use(new LocalStrategy(async function verify(username, password, cb) {
-    const user = await userController.getUserByUsername(username);
+passport.use(new LocalStrategy(async function verify(identifier, password, cb) {
+    const user = await userController.getUserByUsernameOrEmail(identifier);
 
     if (!user) {
         return cb(null, false, 'User not found');
