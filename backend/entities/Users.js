@@ -50,6 +50,18 @@ export const Users = new EntitySchema({
       type: String,
       nullable: false
     },
+    isVerified: { 
+      type: Boolean, 
+      default: false 
+    },
+    verificationCode: { 
+      type: String,
+      nullable: true
+    },
+    verificationCodeExpires: { 
+      type: Date,
+      nullable: true
+    },
     
   },
   relations: {

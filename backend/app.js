@@ -30,6 +30,7 @@ app.use(sessionMiddleware);
 app.use(passport.initialize());
 app.use(passport.authenticate('session'));
 
+
 // API routes
 
 app.use('/public', express.static(new URL('./public', import.meta.url).pathname));

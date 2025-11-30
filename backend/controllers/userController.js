@@ -32,7 +32,41 @@ async function createUser({username, email, name, surname, password, userType}){
     return mapUserToDTO(user);
 }
 
-async function assignRole(userId, roleId, officeId) {
+async function createEmailVerification(userId) {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 min
+    await userRepository.saveEmailVerificationCode(userId, code, expiresAt);
+    return { code, expiresAt };
+}
+
+async function verifyEmail(userId, code) {
+    const record = await userRepository.getEmailVerification(userId);
+    if (!record) throw new Error('Verification not found');
+    if (record.expiresAt && new Date(record.expiresAt).getTime() < Date.now()) {
+        userRepository.deleteUser(userId);
+        throw new Error('Verification code expired');
+    }
+    if (record.code !== code) throw new Error('Invalid verification code');
+
+    await userRepository.markEmailVerified(userId);
+    const user = await userRepository.getUserById(userId);
+    return mapUserToDTO(user);
+}
+
+async function isEmailVerified(userId) {
+    const user = await userRepository.getUserById(userId);
+    if (!user) throw new Error('User not found');
+    return { isVerified: Boolean(user.isVerified) };
+}
+
+//used for STAFF signup
+async function markEmailVerified(userId) {
+    await userRepository.markEmailVerified(userId);
+    const user = await userRepository.getUserById(userId);
+    return mapUserToDTO(user);
+}
+
+async function assignRole(userId, roleId) {
     const userOffice = await userRepository.assignRoleToUser(userId, roleId);
     return {
         userId: userOffice.userId,
@@ -54,5 +88,18 @@ async function getPfpUrl(userId) {
     
 
 
-const userController = { getUserByUsernameOrEmail, createUser, assignRole, getAvailableStaffForRoleAssignment, getAllRoles, getAllOffices, configAccount, getPfpUrl};
+const userController = { 
+    getUserByUsernameOrEmail, 
+    createUser, 
+    assignRole, 
+    getAvailableStaffForRoleAssignment, 
+    getAllRoles, 
+    getAllOffices, 
+    configAccount, 
+    getPfpUrl,
+    createEmailVerification,
+    verifyEmail,
+    isEmailVerified,
+    markEmailVerified
+};
 export default userController;

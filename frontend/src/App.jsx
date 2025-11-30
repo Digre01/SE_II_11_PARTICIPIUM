@@ -14,6 +14,7 @@ import API from "./API/API.mjs";
 import { useState, useEffect, useRef } from "react";
 import { LoginForm } from "./components/authComponents/loginForm.jsx";
 import SignUpForm from "./components/authComponents/signUpForm.jsx";
+import VerifyEmail from "./components/authComponents/VerifyEmail.jsx";
 import ConversationsPage from './components/messageComponents/ConversationsPage.jsx';
 import ConversationPage from './components/messageComponents/ConversationPage.jsx';
 import ReportsPage from './components/ReportsPage.jsx';
@@ -75,6 +76,30 @@ function App() {
     };
     fetchCurrentUser();
   }, []);
+
+  //Force refresh, we use it for redirect (Verify mail) that needs to update the "isVerified" >:)
+  const refreshCurrentUser = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/v1/sessions/current', {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+        const roleName = userData?.roleName || null;
+        setIsReportsAllowed(Boolean(roleName && String(roleName).toLowerCase() === 'municipal public relations officer'));
+        setLoggedIn(true);
+      } else {
+        setUser(undefined);
+        setLoggedIn(false);
+        setIsReportsAllowed(false);
+      }
+    } catch {
+      setUser(undefined);
+      setLoggedIn(false);
+      setIsReportsAllowed(false);
+    }
+  };
 
   useEffect(() => {
     updateNotificationCount();
@@ -169,6 +194,11 @@ function App() {
           loggedIn ? <Navigate to='/' replace /> : <LoginForm handleLogin={handleLogin}/>
         }/>
         <Route path='/signup' element={<SignUpForm handleSignUp={handleSignUp}/>}/>
+        <Route path='/verify_mail' element={
+          (!loggedIn)
+            ? <Navigate to='/login' replace />
+            : <VerifyEmail user={user} onVerified={refreshCurrentUser} />
+        }/>
         <Route path='/staff_signup' element={
           (!loggedIn)
             ? <Navigate to="/login" replace />

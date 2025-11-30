@@ -25,7 +25,7 @@ class UserRepository {
         return await this.repo.findOne({ where: { email } });
     }
 
-    async createUser(username, email, name, surname, password, salt, userType){
+    async createUser(username, email, name, surname, password, salt, userType, isVerified, verificationCode, verificationCodeExpires){
 
         const existing_username = await this.repo.findOneBy({ username } );
         if(existing_username) {
@@ -37,7 +37,7 @@ class UserRepository {
             throw new ConflictError(`User with email ${email} already exists`);
         }
 
-        return await this.repo.save({username, email, name, surname, password, salt, userType});
+        return await this.repo.save({username, email, name, surname, password, salt, userType, isVerified, verificationCode, verificationCodeExpires});
     }
 
     async getAvailableStaffForRoleAssignment() {
@@ -147,6 +147,71 @@ class UserRepository {
         return photo.link;
         
     }
+    // Delete a user and clean up related mappings
+    async deleteUser(userId) {
+        const userRepo = AppDataSourcePostgres.getRepository(Users);
+        const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);
+
+        const idNum = Number(userId);
+        const user = await userRepo.findOneBy({ id: idNum });
+        if (!user) {
+            throw new NotFoundError(`User with id '${userId}' not found`);
+        }
+
+        // Remove role/office mapping if present
+        const mapping = await userOfficeRepo.findOneBy({ userId: idNum });
+        if (mapping) {
+            await userOfficeRepo.delete({ userId: idNum });
+        }
+
+        // Finally delete the user
+        await userRepo.delete({ id: idNum });
+        return { id: idNum };
+    }
+
+
+    /*
+    
+    
+    EMAIL VERIFICATION
+
+
+    */
+    async saveEmailVerificationCode(userId, code, expiresAt) {
+        const userRepo = AppDataSourcePostgres.getRepository(Users);
+        const user = await userRepo.findOneBy({ id: Number(userId) });
+        if (!user) {
+            throw new NotFoundError(`User with id '${userId}' not found`);
+        }
+        user.verificationCode = code;
+        user.verificationCodeExpires = expiresAt;
+        await userRepo.save(user);
+    }
+
+    async getEmailVerification(userId) {
+        const userRepo = AppDataSourcePostgres.getRepository(Users);
+        const user = await userRepo.findOneBy({ id: Number(userId) });
+        if (!user) {
+            throw new NotFoundError(`User with id '${userId}' not found`);
+        }
+        return {
+            code: user.verificationCode || null,
+            expiresAt: user.verificationCodeExpires || null
+        };
+    }
+
+    async markEmailVerified(userId) {
+        const userRepo = AppDataSourcePostgres.getRepository(Users);
+        const user = await userRepo.findOneBy({ id: Number(userId) });
+        if (!user) {
+            throw new NotFoundError(`User with id '${userId}' not found`);
+        }
+        user.isVerified = true;
+        user.verificationCode = null;
+        user.verificationCodeExpires = null;
+        await userRepo.save(user);
+    }
+
 }
 
 export const userRepository = new UserRepository();

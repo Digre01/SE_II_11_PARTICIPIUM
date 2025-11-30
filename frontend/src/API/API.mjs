@@ -286,5 +286,27 @@ const sendMessage = async (conversationId, content) => {
   throw await response.text();
 };
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, sendMessage };
+// POST /api/v1/sessions/current/verify_email
+const verifyEmail = async (code) => {
+  const response = await fetch(SERVER_URL + `/api/v1/sessions/current/verify_email`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code })
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+
+// GET /api/v1/sessions/:id/email_verified
+const checkEmailVerified = async () => {
+  const response = await fetch(SERVER_URL + `/api/v1/sessions/current/email_verified`, {
+    method: 'GET',
+    credentials: 'include'
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+
+const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, sendMessage, verifyEmail, checkEmailVerified };
 export default API;

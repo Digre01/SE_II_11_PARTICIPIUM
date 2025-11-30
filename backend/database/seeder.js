@@ -51,11 +51,11 @@ export async function seedDatabase() {
   const usersExisting = await userRepo.find();
   if (usersExisting.length === 0) {
     await userRepo.save([
-      { username: 'admin', email: 'admin@participium.it', name: 'Admin', surname: 'User', telegramId: null, photoId: null, emailNotifications: false, password: 'e902e3818acc6c6f842f95698f2d0fb99eb273a1fd4ce5c1f9f9a8cac04ba0cf', salt: '2f834c309f5faa13ec6d9a3b2a5b5ba7', userType: 'admin' },
-      { username: 'citizen', email: 'anna.gialli@email.it', name: 'Anna', surname: 'Gialli', telegramId: null, photoId: null, emailNotifications: false, password: '8eb331671576a8691107e2f0aa9be4badc9c3eb4125bde6c19513a66b86c3e4b', salt: '79e7eefbafbdd24a94407e802bbb10d4', userType: 'citizen' },
-      { username: 'staff1', email: 'mario.rossi@participium.it', name: 'Mario', surname: 'Rossi', telegramId: null, photoId: null, emailNotifications: false, password: '545ce5de6a56c66b35a1e407a40c7c678eae373beea3883f2c4527664125166b', salt: '5bad9287ac7de649a5bc62ab91150931', userType: 'staff' },
-      { username: 'staff2', email: 'luigi.verdi@participium.it', name: 'Luigi', surname: 'Verdi', telegramId: null, photoId: null, emailNotifications: false, password: '3b20f4a45c87791030262371d32bff00f4ffc7846ffed500aeb7436f341c515b', salt: 'abadcde601267d1aa3a579002f0eb4f7', userType: 'staff' },
-      { username: 'staff3', email: 'giovanni.bianchi@participium.it', name: 'Giovanni', surname: 'Bianchi', telegramId: null, photoId: null, emailNotifications: false, password: '688a3ce4dcec36ca0bb3349217fae599fb9d6b060c0a6df3585a2ab8f2fe8dae', salt: 'e8ab52af1d00bb0b830e0c4c3b85b9b7', userType: 'staff' }
+      { username: 'admin', email: 'admin@participium.it', name: 'Admin', surname: 'User', telegramId: null, photoId: null, emailNotifications: false, password: 'e902e3818acc6c6f842f95698f2d0fb99eb273a1fd4ce5c1f9f9a8cac04ba0cf', salt: '2f834c309f5faa13ec6d9a3b2a5b5ba7', userType: 'admin', isVerified: true },
+      { username: 'citizen', email: 'anna.gialli@email.it', name: 'Anna', surname: 'Gialli', telegramId: null, photoId: null, emailNotifications: false, password: '8eb331671576a8691107e2f0aa9be4badc9c3eb4125bde6c19513a66b86c3e4b', salt: '79e7eefbafbdd24a94407e802bbb10d4', userType: 'citizen', isVerified: true },
+      { username: 'staff1', email: 'mario.rossi@participium.it', name: 'Mario', surname: 'Rossi', telegramId: null, photoId: null, emailNotifications: false, password: '545ce5de6a56c66b35a1e407a40c7c678eae373beea3883f2c4527664125166b', salt: '5bad9287ac7de649a5bc62ab91150931', userType: 'staff', isVerified: true },
+      { username: 'staff2', email: 'luigi.verdi@participium.it', name: 'Luigi', surname: 'Verdi', telegramId: null, photoId: null, emailNotifications: false, password: '3b20f4a45c87791030262371d32bff00f4ffc7846ffed500aeb7436f341c515b', salt: 'abadcde601267d1aa3a579002f0eb4f7', userType: 'staff', isVerified: true },
+      { username: 'staff3', email: 'giovanni.bianchi@participium.it', name: 'Giovanni', surname: 'Bianchi', telegramId: null, photoId: null, emailNotifications: false, password: '688a3ce4dcec36ca0bb3349217fae599fb9d6b060c0a6df3585a2ab8f2fe8dae', salt: 'e8ab52af1d00bb0b830e0c4c3b85b9b7', userType: 'staff', isVerified: true }
     ]);
     console.log("Added default Users");
   }
