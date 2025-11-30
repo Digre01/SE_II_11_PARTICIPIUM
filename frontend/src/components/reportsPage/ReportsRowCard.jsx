@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {Badge, Button, Card} from "react-bootstrap";
-import {getStatusVariant} from "./common.js";
+import {getActionButtons, getStatusVariant} from "./common.jsx";
 import {CardBody, Collapse} from "design-react-kit";
 
 export function ReportRow({ idx, report, user, onAction, onRowClick }) {
@@ -10,40 +10,7 @@ export function ReportRow({ idx, report, user, onAction, onRowClick }) {
         onRowClick(report);
     };
 
-    // Determina i bottoni da mostrare
-    let actionButtons = [];
-    const status = String(report.status).toLowerCase();
-
-    if (status === "assigned") {
-        actionButtons.push(
-            <Button key="start" variant="success" size="sm" className="me-2" onClick={() => onAction('start', report.id)}>START</Button>
-        );
-        actionButtons.push(
-            <Button key="suspend" variant="warning" size="sm" onClick={() => onAction('suspend', report.id)}>SUSPEND</Button>
-        );
-    } else if (status === "in_progress") {
-        if (report.technicianId === user?.id) {
-            actionButtons.push(
-                <Button key="finish" variant="danger" size="sm" className="me-2" onClick={() => onAction('finish', report.id)}>FINISH</Button>
-            );
-            actionButtons.push(
-                <Button key="suspend" variant="warning" size="sm" onClick={() => onAction('suspend', report.id)}>SUSPEND</Button>
-            );
-        }
-    } else if (status === "suspended") {
-        // Se il report è suspended prima di essere in_progress (technicianId null)
-        if (!report.technicianId) {
-            // Chiunque dell'ufficio può vedere RESUME
-            actionButtons.push(
-                <Button key="resume" variant="info" size="sm" onClick={() => onAction('resume', report.id)}>RESUME</Button>
-            );
-        } else if (report.technicianId === user?.id) {
-            // Se era in_progress e ora suspended, solo il tecnico assegnato può vedere RESUME
-            actionButtons.push(
-                <Button key="resume" variant="info" size="sm" onClick={() => onAction('resume', report.id)}>RESUME</Button>
-            );
-        }
-    }
+    const actionButtons = getActionButtons(report, user, onAction);
 
     return (
         <tr
@@ -67,11 +34,10 @@ export function ReportRow({ idx, report, user, onAction, onRowClick }) {
     );
 }
 
-// -------------------------
-// Componente per card mobile
-// -------------------------
-export function ReportCard({ report, onCardClick }) {
+export function ReportCard({ report, user, onAction, onCardClick }) {
     const [open, setOpen] = useState(false);
+
+    const actionButtons = getActionButtons(report, user, onAction);
 
     return (
         <Card className="mb-3 shadow-sm d-md-none">
@@ -93,13 +59,16 @@ export function ReportCard({ report, onCardClick }) {
                             {report.status.replace("_", " ").toUpperCase()}
                         </Badge>
                     </p>
-                    <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => onCardClick(report)}
-                    >
-                        View
-                    </Button>
+                    <div className="d-flex flex-column">
+                        {actionButtons.length > 0 && actionButtons.map(btn => btn)}
+                        <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={() => onCardClick(report)}
+                        >
+                            View
+                        </Button>
+                    </div>
                 </CardBody>
             </Collapse>
         </Card>

@@ -115,6 +115,8 @@ function ReportsPage({user}) {
                             <ReportCard
                                 key={r.id}
                                 report={r}
+                                user={user}
+                                onAction={handleAction}
                                 onCardClick={handleOpenModal}/>
                         ))}
                     </div>
@@ -164,6 +166,8 @@ function ReportsPage({user}) {
                             <ReportCard
                                 key={r.id}
                                 report={r}
+                                user={user}
+                                onAction={handleAction}
                                 onCardClick={handleOpenModal}/>
                         ))}
                     </div>

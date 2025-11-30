@@ -8,7 +8,7 @@ import {
     Row,
     Col,
 } from 'design-react-kit';
-import {getStatusVariant} from "./common.js";
+import {getStatusVariant} from "./common.jsx";
 
 function ReportDetailModal({ isOpen, toggle, report }) {
     if (!report) return null;
