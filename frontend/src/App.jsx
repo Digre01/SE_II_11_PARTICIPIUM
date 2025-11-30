@@ -16,7 +16,7 @@ import { LoginForm } from "./components/authComponents/loginForm.jsx";
 import SignUpForm from "./components/authComponents/signUpForm.jsx";
 import ConversationsPage from './components/messageComponents/ConversationsPage.jsx';
 import ConversationPage from './components/messageComponents/ConversationPage.jsx';
-import ReportsPage from './components/ReportsPage.jsx';
+import ReportsPage from './components/reportsPage/ReportsPage.jsx';
 import NotFoundPage from './components/NotFoundPage.jsx';
 
 
