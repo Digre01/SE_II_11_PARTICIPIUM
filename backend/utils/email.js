@@ -23,7 +23,7 @@ export const sendVerificationEmail = async (email, code) => {
   const mailOptions = {
     from: 'onboarding@resend.dev',
     to: email,
-    subject: 'Verify your account',
+    subject: 'PARTICIPIUM - Verify your account',
     text: `Your verification code: ${code}. This code will expire in 30 minutes.`,
   };
 
