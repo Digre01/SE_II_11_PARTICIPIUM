@@ -44,6 +44,14 @@ export function ReportCard({ report, user, onAction, onCardClick }) {
             <div
                 className="card-header d-flex justify-content-between align-items-center"
                 onClick={() => setOpen(!open)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+                        e.preventDefault();
+                        setOpen(o => !o);
+                    }
+                }}
+                tabIndex={0}
+                role="button"
                 style={{ cursor: "pointer" }}
             >
                 <span className="fw-semibold">{report.title}</span>
