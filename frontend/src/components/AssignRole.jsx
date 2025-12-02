@@ -1,5 +1,5 @@
-import { Form, FormGroup, Select, Button, Alert, Input, Label } from "design-react-kit";
-import { useState, useEffect } from "react";
+import { Form, FormGroup, Select, Button, Alert, Input, Label, UncontrolledTooltip } from "design-react-kit";
+import { useState, useEffect, useRef } from "react";
 import API from "../API/API.mjs";
 
 function AssignRole() {
@@ -9,16 +9,27 @@ function AssignRole() {
     const [staffOptions, setStaffOptions] = useState([]);
     const [roleOptions, setRoleOptions] = useState([]);
     const [alertOpen, setAlertOpen] = useState(true);
+    const refTooltip = useRef(null);
 
     const onChange = (field) => (e) => {
         setForm(f => ({ ...f, [field]: e.target.value }));
     };
 
+    // Se isExternal è true, consenti solo un ruolo di Technical Offices
     const toggleRoleSelection = (roleId) => {
         setForm(f => {
-            const current = new Set(f.roleIds || []);
-            if (current.has(roleId)) current.delete(roleId); else current.add(roleId);
-            return { ...f, roleIds: Array.from(current) };
+            if (f.isExternal) {
+                // Se già selezionato, deseleziona
+                if (f.roleIds.includes(roleId)) {
+                    return { ...f, roleIds: [] };
+                } else {
+                    return { ...f, roleIds: [roleId] };
+                }
+            } else {
+                const current = new Set(f.roleIds || []);
+                if (current.has(roleId)) current.delete(roleId); else current.add(roleId);
+                return { ...f, roleIds: Array.from(current) };
+            }
         });
     };
 
@@ -71,6 +82,8 @@ function AssignRole() {
     // Mutual exclusion logic
     const hasOrgOfficeSelected = form.roleIds.some(id => orgOfficeRoles.some(r => r.id === id));
     const hasTechOfficeSelected = form.roleIds.some(id => techOfficeRoles.some(r => r.id === id));
+    // Per external: solo un ruolo tecnico selezionabile, organization office disabilitati
+    const selectedTechRoleId = form.isExternal ? form.roleIds[0] : null;
 
     return (
         <div style={{ maxWidth: 700, margin: '2rem auto' }}>
@@ -106,7 +119,7 @@ function AssignRole() {
                                         type="checkbox"
                                         checked={(form.roleIds || []).includes(r.id)}
                                         onChange={() => toggleRoleSelection(r.id)}
-                                        disabled={hasTechOfficeSelected && !form.roleIds.includes(r.id)}
+                                        disabled={form.isExternal || (hasTechOfficeSelected && !form.roleIds.includes(r.id))}
                                     />
                                     <Label check for={`role-${r.id}`}>
                                         {r.name}
@@ -124,7 +137,9 @@ function AssignRole() {
                                         type="checkbox"
                                         checked={(form.roleIds || []).includes(r.id)}
                                         onChange={() => toggleRoleSelection(r.id)}
-                                        disabled={hasOrgOfficeSelected && !form.roleIds.includes(r.id)}
+                                        disabled={form.isExternal
+                                            ? (selectedTechRoleId !== undefined && selectedTechRoleId !== r.id)
+                                            : (hasOrgOfficeSelected && !form.roleIds.includes(r.id))}
                                     />
                                     <Label check for={`role-${r.id}`}>
                                         {r.name}
@@ -132,15 +147,21 @@ function AssignRole() {
                                 </FormGroup>
                             ))}
                             <FormGroup className="mb-2">
-                                <Input
-                                    type="checkbox"
-                                    id="isExternal"
-                                    checked={form.isExternal}
-                                    onChange={e => setForm(f => ({ ...f, isExternal: e.target.checked }))}
-                                />
-                                <Label for="isExternal" check className="ms-2">
-                                    Assign as External Maintainer
-                                </Label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: '1vw' }}>
+                                    <Input
+                                        type="checkbox"
+                                        id="isExternal"
+                                        checked={form.isExternal}
+                                        onChange={e => setForm(f => ({ ...f, isExternal: e.target.checked, roleIds: e.target.checked ? [] : f.roleIds }))}
+                                        disabled={hasOrgOfficeSelected}
+                                        style={{ margin: 0 }}
+                                    />
+                                    <Label for="isExternal" check style={{ margin: 0, padding: 0 } }>
+                                        <Button innerRef={refTooltip} style={{ padding: '0 6px', fontWeight: 400, fontSize: '1rem', lineHeight: 1 }}>
+                                            Assign as External Maintainer
+                                        </Button>
+                                    </Label>
+                                </div>
                             </FormGroup>
                         </fieldset>
                     </FormGroup>
@@ -159,6 +180,10 @@ function AssignRole() {
                             Assign Role
                         </Button>
                     </div>
+
+                    <UncontrolledTooltip placement='right' target={refTooltip}>
+                        You can assign only one technical role to external maintainer.
+                    </UncontrolledTooltip>
                 </Form>
             </div>
         </div>
