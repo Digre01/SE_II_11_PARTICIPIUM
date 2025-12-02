@@ -1,9 +1,9 @@
-import { Form, FormGroup, Select, Button, Alert } from "design-react-kit";
+import { Form, FormGroup, Select, Button, Alert, Input, Label } from "design-react-kit";
 import { useState, useEffect } from "react";
 import API from "../API/API.mjs";
 
 function AssignRole() {
-    const [form, setForm] = useState({ userId: '', roleIds: []});
+    const [form, setForm] = useState({ userId: '', roleIds: [], isExternal: false });
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState(null);
     const [staffOptions, setStaffOptions] = useState([]);
@@ -22,7 +22,7 @@ function AssignRole() {
         });
     };
 
-    const reset = () => setForm({ userId: '', roleIds: []});
+    const reset = () => setForm({ userId: '', roleIds: [], isExternal: false });
 
     useEffect(() => {
         let mounted = true;
@@ -50,8 +50,8 @@ function AssignRole() {
 
         setSubmitting(true);
         try {
-            // pass array of role ids (numbers)
-            await API.assignRole(Number(form.userId), form.roleIds.map(Number));
+            // pass array of role ids (numbers) e isExternal
+            await API.assignRole(Number(form.userId), form.roleIds.map(Number), form.isExternal);
             setMessage({ type: 'success', text: 'Roles assigned successfully' });
             reset();
             const staff = await API.fetchAvailableStaff();
@@ -63,6 +63,14 @@ function AssignRole() {
             setSubmitting(false);
         }
     };
+
+    // Divide roles by officeId
+    const orgOfficeRoles = roleOptions.filter(r => r.officeId === 1);
+    const techOfficeRoles = roleOptions.filter(r => r.officeId !== 1);
+
+    // Mutual exclusion logic
+    const hasOrgOfficeSelected = form.roleIds.some(id => orgOfficeRoles.some(r => r.id === id));
+    const hasTechOfficeSelected = form.roleIds.some(id => techOfficeRoles.some(r => r.id === id));
 
     return (
         <div style={{ maxWidth: 700, margin: '2rem auto' }}>
@@ -88,25 +96,53 @@ function AssignRole() {
                     </FormGroup>
 
                     <FormGroup className="mb-4">
-                        <div>
-                            <label className="form-label">Role</label>
-                            <div>
-                                {roleOptions.map(r => (
-                                    <div className="form-check" key={r.id}>
-                                        <input
-                                            className="form-check-input"
-                                            type="checkbox"
-                                            id={`role-${r.id}`}
-                                            checked={(form.roleIds || []).includes(r.id)}
-                                            onChange={() => toggleRoleSelection(r.id)}
-                                        />
-                                        <label className="form-check-label" htmlFor={`role-${r.id}`}>
-                                            {r.name}
-                                        </label>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        <fieldset>
+                            <legend>Organization Office</legend>
+                            {orgOfficeRoles.length === 0 && <div className="text-muted">No roles available</div>}
+                            {orgOfficeRoles.map(r => (
+                                <FormGroup check key={r.id}>
+                                    <Input
+                                        id={`role-${r.id}`}
+                                        type="checkbox"
+                                        checked={(form.roleIds || []).includes(r.id)}
+                                        onChange={() => toggleRoleSelection(r.id)}
+                                        disabled={hasTechOfficeSelected && !form.roleIds.includes(r.id)}
+                                    />
+                                    <Label check for={`role-${r.id}`}>
+                                        {r.name}
+                                    </Label>
+                                </FormGroup>
+                            ))}
+                        </fieldset>
+                        <fieldset className="mt-3">
+                            <legend>Technical offices</legend>
+                            {techOfficeRoles.length === 0 && <div className="text-muted">No roles available</div>}
+                            {techOfficeRoles.map(r => (
+                                <FormGroup check key={r.id}>
+                                    <Input
+                                        id={`role-${r.id}`}
+                                        type="checkbox"
+                                        checked={(form.roleIds || []).includes(r.id)}
+                                        onChange={() => toggleRoleSelection(r.id)}
+                                        disabled={hasOrgOfficeSelected && !form.roleIds.includes(r.id)}
+                                    />
+                                    <Label check for={`role-${r.id}`}>
+                                        {r.name}
+                                    </Label>
+                                </FormGroup>
+                            ))}
+                            <FormGroup className="mb-2">
+                                <Input
+                                    type="checkbox"
+                                    id="isExternal"
+                                    checked={form.isExternal}
+                                    onChange={e => setForm(f => ({ ...f, isExternal: e.target.checked }))}
+                                />
+                                <Label for="isExternal" check className="ms-2">
+                                    Assign as External Maintainer
+                                </Label>
+                            </FormGroup>
+                        </fieldset>
                     </FormGroup>
 
                     {message && (

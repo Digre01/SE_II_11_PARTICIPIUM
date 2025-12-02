@@ -4,6 +4,7 @@ import {officeRepository} from "../repositories/officeRepository.js";
 import crypto from "crypto";
 import userService from "../services/userService.js";
 import {mapUserToDTO} from "../mappers/userMappers.js";
+import { BadRequestError } from "../errors/BadRequestError.js";
 
 async function getUserByUsernameOrEmail(identifier) {
     const isEmail = identifier.includes('@');
@@ -32,12 +33,17 @@ async function createUser({username, email, name, surname, password, userType}){
     return mapUserToDTO(user);
 }
 
-async function assignRole(userId, roleId, officeId) {
+async function assignRole(userId, roleId, isExternal) {
+    // Se isExternal è true, accetta solo un ruolo
+    if (isExternal && Array.isArray(roleId) && roleId.length > 1) {
+        throw new BadRequestError('An external maintainer can only have one role');
+    }
+
     // Support assigning a single roleId or multiple roleIds (array)
     if (Array.isArray(roleId)) {
         const results = [];
         for (const r of roleId) {
-            const userOffice = await userRepository.assignRoleToUser(userId, r);
+            const userOffice = await userRepository.assignRoleToUser(userId, r, isExternal);
             results.push({
                 userId: userOffice.userId,
                 officeId: userOffice.officeId ?? null,
@@ -48,7 +54,7 @@ async function assignRole(userId, roleId, officeId) {
         }
         return results;
     } else {
-        const userOffice = await userRepository.assignRoleToUser(userId, roleId);
+        const userOffice = await userRepository.assignRoleToUser(userId, roleId, isExternal);
         return {
             userId: userOffice.userId,
             officeId: userOffice.officeId ?? null,

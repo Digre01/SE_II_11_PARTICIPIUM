@@ -14,7 +14,7 @@ export const UserOffice = new EntitySchema({
     },
     roleId: {
       type: Number,
-      nullable: true
+      primary: true
     }
   },
   relations: {

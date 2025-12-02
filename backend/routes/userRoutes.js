@@ -15,32 +15,13 @@ router.post('/login', passport.authenticate('local'), function(
         res.status(201).json(req.user);
 });
 
-// Assign role to a user (ADMIN only)
-router.patch('/:id/role', authorizeUserType(['ADMIN']),
-    async function(req, res, next) {
-        try {
-            const body = req.body || {};
-            if (!Object.prototype.hasOwnProperty.call(body, 'roleId')) {
-                const err = new BadRequestError('roleId is required');
-                return next(err);
-            }
-            const updated = await userController.assignRole(req.params.id, body.roleId);
-            return res.status(200).json(updated);
-        } catch (err) {
-            next(err);
-        }
-    }
-);
-
-
-
-
 // PATCH /api/v1/sessions/:id/role - Assign role to staff (ADMIN only)
 router.patch('/:id/role', authorizeUserType(['ADMIN']), async function(req, res, next) {
     try {
         const userId = Number(req.params.id);
-        const { roleId } = req.body;
-        const result = await userController.assignRole(userId, roleId);
+        const roleId = req.body.roleId;
+        const isExternal = req.body.isExternal || false;
+        const result = await userController.assignRole(userId, roleId, isExternal);
         res.status(200).json(result);
     } catch (err) { next(err); }
 });

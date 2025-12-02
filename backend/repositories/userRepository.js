@@ -53,28 +53,33 @@ class UserRepository {
     }
 
 
-    async assignRoleToUser(userId, roleId) {
+    async assignRoleToUser(userId, roleId, isExternal) {
         const userRepo = AppDataSourcePostgres.getRepository(Users);
         const user = await userRepo.findOneBy({ id: Number(userId) });
         if (!user) {
             throw new NotFoundError(`User with id '${userId}' not found`);
         }
 
-        // Only users of type STAFF can be assigned roles
+        // Only users of type STAFF possono essere assegnati
         const userType = String(user.userType || '').toUpperCase();
         if (userType !== 'STAFF') {
             throw new InsufficientRightsError('Only staff accounts can be assigned a role');
         }
 
-        // Validate role exists and get officeId from role
+        // Prendi il ruolo e l'ufficio corretto
         const roleRepo = AppDataSourcePostgres.getRepository(Roles);
         const role = await roleRepo.findOneBy({ id: Number(roleId) });
         if (!role) {
             throw new NotFoundError(`Role with id '${roleId}' not found`);
         }
-        const officeId = role.officeId;
+        let officeId;
+        if (isExternal) {
+            officeId = role.officeIdExternal;
+        } else {
+            officeId = role.officeId;
+        }
         if (!officeId) {
-            throw new NotFoundError(`Role with id '${roleId}' does not have an associated office`);
+            throw new NotFoundError(`Role with id '${roleId}' does not have an associated office for ${isExternal ? 'external' : 'internal'} assignment`);
         }
 
         // Validate office exists
@@ -85,11 +90,10 @@ class UserRepository {
         }
 
         const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);
-        // With composite PK (userId + officeId) we find existing mapping by user and office
-        let userOffice = await userOfficeRepo.findOneBy({ userId: Number(userId), officeId: Number(officeId) });
+        // With composite PK (userId + officeId + roleId)
+        let userOffice = await userOfficeRepo.findOneBy({ userId: Number(userId), officeId: Number(officeId), roleId: Number(roleId) });
         if (userOffice) {
-            // update role if changed
-            userOffice.roleId = Number(roleId);
+            // update role if changed (in realtà la tripletta è unica)
             await userOfficeRepo.save(userOffice);
         } else {
             // create a new UserOffice mapping with role and office
@@ -97,7 +101,7 @@ class UserRepository {
             await userOfficeRepo.save(userOffice);
         }
 
-        return await userOfficeRepo.findOne({ where: { userId: Number(userId), officeId: Number(officeId) }, relations: ['role', 'office'] });
+        return await userOfficeRepo.findOne({ where: { userId: Number(userId), officeId: Number(officeId), roleId: Number(roleId) }, relations: ['role', 'office'] });
     }
 
     // Update user info for telegram, email notifications and profile photo URL
