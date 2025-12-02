@@ -10,7 +10,7 @@ export const UserOffice = new EntitySchema({
     },
     officeId: {
       type: Number,
-      nullable: true
+      primary: true
     },
     roleId: {
       type: Number,
@@ -19,7 +19,7 @@ export const UserOffice = new EntitySchema({
   },
   relations: {
     user: {
-      type: 'one-to-one',
+      type: 'many-to-one',
       target: 'Users',
       joinColumn: { name: 'userId' },
       inverseSide: 'userOffice'

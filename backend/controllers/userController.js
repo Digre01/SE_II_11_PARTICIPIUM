@@ -33,14 +33,30 @@ async function createUser({username, email, name, surname, password, userType}){
 }
 
 async function assignRole(userId, roleId, officeId) {
-    const userOffice = await userRepository.assignRoleToUser(userId, roleId);
-    return {
-        userId: userOffice.userId,
-        officeId: userOffice.officeId ?? null,
-        roleId: userOffice.roleId ?? null,
-        role: userOffice.role ? { id: userOffice.role.id, name: userOffice.role.name } : null,
-        office: userOffice.office ? { id: userOffice.office.id, name: userOffice.office.name } : null
-    };
+    // Support assigning a single roleId or multiple roleIds (array)
+    if (Array.isArray(roleId)) {
+        const results = [];
+        for (const r of roleId) {
+            const userOffice = await userRepository.assignRoleToUser(userId, r);
+            results.push({
+                userId: userOffice.userId,
+                officeId: userOffice.officeId ?? null,
+                roleId: userOffice.roleId ?? null,
+                role: userOffice.role ? { id: userOffice.role.id, name: userOffice.role.name } : null,
+                office: userOffice.office ? { id: userOffice.office.id, name: userOffice.office.name } : null
+            });
+        }
+        return results;
+    } else {
+        const userOffice = await userRepository.assignRoleToUser(userId, roleId);
+        return {
+            userId: userOffice.userId,
+            officeId: userOffice.officeId ?? null,
+            roleId: userOffice.roleId ?? null,
+            role: userOffice.role ? { id: userOffice.role.id, name: userOffice.role.name } : null,
+            office: userOffice.office ? { id: userOffice.office.id, name: userOffice.office.name } : null
+        };
+    }
 }
 
 async function configAccount(userId, telegramId, emailNotifications, photoUrl){

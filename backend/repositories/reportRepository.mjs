@@ -50,11 +50,11 @@ export class ReportRepository {
 			where: { userType: 'staff' },
 			relations: ['userOffice', 'userOffice.role']
 		});
-		const municipalStaff = staffMembers.filter(u =>
-			u.userOffice &&
-			u.userOffice.role &&
-			u.userOffice.role.name === 'Municipal Public Relations Officer'
-		);
+		const municipalStaff = staffMembers.filter(u => {
+			if (!u.userOffice) return false;
+			const uos = Array.isArray(u.userOffice) ? u.userOffice : [u.userOffice];
+			return uos.some(uo => uo && uo.role && uo.role.name === 'Municipal Public Relations Officer');
+		});
 
 		// Conversation creation
 		const { createConversation } = await import('./conversationRepository.js');

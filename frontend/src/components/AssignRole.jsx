@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import API from "../API/API.mjs";
 
 function AssignRole() {
-    const [form, setForm] = useState({ userId: '', roleId: ''});
+    const [form, setForm] = useState({ userId: '', roleIds: []});
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState(null);
     const [staffOptions, setStaffOptions] = useState([]);
@@ -14,7 +14,15 @@ function AssignRole() {
         setForm(f => ({ ...f, [field]: e.target.value }));
     };
 
-    const reset = () => setForm({ userId: '', roleId: ''});
+    const toggleRoleSelection = (roleId) => {
+        setForm(f => {
+            const current = new Set(f.roleIds || []);
+            if (current.has(roleId)) current.delete(roleId); else current.add(roleId);
+            return { ...f, roleIds: Array.from(current) };
+        });
+    };
+
+    const reset = () => setForm({ userId: '', roleIds: []});
 
     useEffect(() => {
         let mounted = true;
@@ -35,20 +43,21 @@ function AssignRole() {
         e.preventDefault();
         setMessage(null);
 
-        if (!form.userId || !form.roleId) {
-            setMessage({ type: 'danger', text: 'User and Role are required' });
+        if (!form.userId || !form.roleIds || form.roleIds.length === 0) {
+            setMessage({ type: 'danger', text: 'User and at least one Role are required' });
             return;
         }
 
         setSubmitting(true);
         try {
-            await API.assignRole(Number(form.userId), Number(form.roleId));
-            setMessage({ type: 'success', text: 'Role assigned successfully' });
+            // pass array of role ids (numbers)
+            await API.assignRole(Number(form.userId), form.roleIds.map(Number));
+            setMessage({ type: 'success', text: 'Roles assigned successfully' });
             reset();
             const staff = await API.fetchAvailableStaff();
             setStaffOptions(staff || []);
         } catch (err) {
-            const text = typeof err === 'string' ? err : (err?.error || 'Error assigning role');
+            const text = typeof err === 'string' ? err : (err?.error || 'Error assigning roles');
             setMessage({ type: 'danger', text });
         } finally {
             setSubmitting(false);
@@ -79,21 +88,25 @@ function AssignRole() {
                     </FormGroup>
 
                     <FormGroup className="mb-4">
-                        <Select
-                            name="roleId"
-                            id="roleId"
-                            value={form.roleId}
-                            onChange={(e) => {
-                                const v = e && e.target ? e.target.value : e;
-                                setForm(f => ({ ...f, roleId: v }));
-                            }}
-                            label="Role"
-                        >
-                            <option value="">Choose from the list</option>
-                            {roleOptions.map(r => (
-                                <option key={r.id} value={r.id}>{r.name}</option>
-                            ))}
-                        </Select>
+                        <div>
+                            <label className="form-label">Role</label>
+                            <div>
+                                {roleOptions.map(r => (
+                                    <div className="form-check" key={r.id}>
+                                        <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            id={`role-${r.id}`}
+                                            checked={(form.roleIds || []).includes(r.id)}
+                                            onChange={() => toggleRoleSelection(r.id)}
+                                        />
+                                        <label className="form-check-label" htmlFor={`role-${r.id}`}>
+                                            {r.name}
+                                        </label>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </FormGroup>
 
                     {message && (
@@ -106,7 +119,7 @@ function AssignRole() {
 
                     <div className="d-flex gap-2">
                         <Button color="secondary" type="button" onClick={reset} disabled={submitting}>Cancel</Button>
-                        <Button color="primary" type="submit" disabled={submitting || !form.userId || !form.roleId}>
+                        <Button color="primary" type="submit" disabled={submitting || !form.userId || !(form.roleIds && form.roleIds.length > 0)}>
                             Assign Role
                         </Button>
                     </div>

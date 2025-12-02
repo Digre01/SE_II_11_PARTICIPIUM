@@ -85,18 +85,19 @@ class UserRepository {
         }
 
         const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);
-        let userOffice = await userOfficeRepo.findOneBy({ userId: Number(userId) });
+        // With composite PK (userId + officeId) we find existing mapping by user and office
+        let userOffice = await userOfficeRepo.findOneBy({ userId: Number(userId), officeId: Number(officeId) });
         if (userOffice) {
+            // update role if changed
             userOffice.roleId = Number(roleId);
-            userOffice.officeId = officeId;
             await userOfficeRepo.save(userOffice);
         } else {
             // create a new UserOffice mapping with role and office
-            userOffice = userOfficeRepo.create({ userId: Number(userId), officeId, roleId: Number(roleId) });
+            userOffice = userOfficeRepo.create({ userId: Number(userId), officeId: Number(officeId), roleId: Number(roleId) });
             await userOfficeRepo.save(userOffice);
         }
 
-        return await userOfficeRepo.findOne({ where: { userId: Number(userId) }, relations: ['role', 'office'] });
+        return await userOfficeRepo.findOne({ where: { userId: Number(userId), officeId: Number(officeId) }, relations: ['role', 'office'] });
     }
 
     // Update user info for telegram, email notifications and profile photo URL
