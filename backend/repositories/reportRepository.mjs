@@ -47,7 +47,7 @@ export class ReportRepository {
 		// Trova tutti gli staff member con ruolo 'Municipal Public Relations Officer' tramite join
 		const staffRepo = AppDataSourcePostgres.getRepository(Users);
 		const staffMembers = await staffRepo.find({
-			where: { userType: 'staff' },
+			where: { userType: 'STAFF' },
 			relations: ['userOffice', 'userOffice.role']
 		});
 		const municipalStaff = staffMembers.filter(u =>
@@ -82,7 +82,14 @@ export class ReportRepository {
 	}
 
 	async getAcceptedReports() {
-		return await this.repo.find({ where: { status: 'assigned' }, relations: ['photos', 'category', 'user'] });
+		// Include both 'assigned' and 'suspended' statuses
+		return await this.repo.find({
+			where: [
+				{ status: 'assigned' },
+				{ status: 'suspended' }
+			],
+			relations: ['photos', 'category', 'user']
+		});
 	}
 
 	async reviewReport({ reportId, action, explanation, categoryId }) {

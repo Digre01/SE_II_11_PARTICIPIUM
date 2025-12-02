@@ -101,9 +101,14 @@ const fetchReports = async () => {
 
 // GET /api/v1/reports/assigned (public map)
 const fetchAssignedReports = async () => {
-  const response = await fetch(SERVER_URL + `/api/v1/reports/assigned`, { credentials: 'include' });
-  if (response.ok) return await response.json();
-  throw await response.text();
+  const [assignedReps, suspendedReps] = await Promise.all([
+    fetch(SERVER_URL + `/api/v1/reports/assigned`, {credentials: 'include'}),
+      fetch(SERVER_URL +  `/api/v1/reports/suspended`, { credentials: 'include' })
+  ]);
+  if (!assignedReps.ok) throw await assignedReps.text;
+  if (!suspendedReps.ok) throw await suspendedReps.text;
+  const [assigned, suspended] = await Promise.all([assignedReps.json(), suspendedReps.json()]);
+  return [...assigned, ...suspended];
 };
 
 // GET /api/v1/reports/:id

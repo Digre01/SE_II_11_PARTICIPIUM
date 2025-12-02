@@ -55,7 +55,7 @@ router.get('/', authorizeUserType(['staff']), async (req, res, next) => {
 });
 
 // GET /api/v1/reports/assigned (public map layer)
-router.get('/assigned', authorizeUserType(['citizen']), async (req, res, next) => {
+router.get('/assigned', '/suspended', authorizeUserType(['citizen']), async (req, res, next) => {
   try {
     const reports = await getAcceptedReports();
     const dto = reports.map(r => ({
