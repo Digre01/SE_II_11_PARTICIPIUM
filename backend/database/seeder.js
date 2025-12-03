@@ -354,7 +354,7 @@ export async function seedDatabase() {
       { link: "/public/Trash_upsidedown1.jpg", reportId: 9 },
       { link: "/public/Trash_upsidedown2.jpg", reportId: 9 },
       { link: "/public/Missing_trashbin.jpg", reportId: 10 },
-      { link: "/public/Smeared_trafficsign.jpg", reportId: 11 }
+      { link: "/public/Traffic_sign.jpg", reportId: 11 }
     ]);
     console.log("Added default Photos");
   }
