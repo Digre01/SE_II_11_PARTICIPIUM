@@ -8,6 +8,9 @@ function AssignRole() {
     const [message, setMessage] = useState(null);
     const [staffOptions, setStaffOptions] = useState([]);
     const [roleOptions, setRoleOptions] = useState([]);
+    const [officeOptions, setOfficeOptions] = useState([]);
+    const [selectedOfficeId, setSelectedOfficeId] = useState('');
+    const [loading, setLoading] = useState(true);
     const [alertOpen, setAlertOpen] = useState(true);
 
     const onChange = (field) => (e) => {
@@ -19,13 +22,22 @@ function AssignRole() {
     useEffect(() => {
         let mounted = true;
         (async () => {
+            setLoading(true);
             try {
-                const staff = await API.fetchAvailableStaff();
-                const roles = await API.fetchRoles();
+                const [staff, roles, offices] = await Promise.all([
+                    API.fetchAvailableStaff(),
+                    API.fetchRoles(),
+                    API.fetchOffices().catch(() => []) // offices optional
+                ]);
                 if (!mounted) return;
                 setStaffOptions(staff || []);
                 setRoleOptions(roles || []);
+                setOfficeOptions(offices || []);
             } catch (e) {
+                if (!mounted) return;
+                setMessage({ type: 'danger', text: typeof e === 'string' ? e : 'Errore nel caricamento dei dati' });
+            } finally {
+                if (mounted) setLoading(false);
             }
         })();
         return () => { mounted = false };
@@ -55,11 +67,39 @@ function AssignRole() {
         }
     };
 
+    // Derive visible staff based on selected office (if available in data)
+    const visibleStaff = (selectedOfficeId
+        ? staffOptions.filter(s => {
+            const officeId = s?.userOffice?.office?.id ?? s?.officeId;
+            return Number(officeId) === Number(selectedOfficeId);
+        })
+        : staffOptions
+    );
+
     return (
         <div style={{ maxWidth: 700, margin: '2rem auto' }}>
             <div className="card shadow-sm p-4">
                 <h3 className="mb-4 text-primary text-center">Assign Role to Staff</h3>
                 <Form onSubmit={onSubmit}>
+                    <FormGroup className="mb-3">
+                        <Select
+                            name="officeId"
+                            id="officeId"
+                            value={selectedOfficeId}
+                            onChange={(e) => {
+                                const v = e && e.target ? e.target.value : e;
+                                setSelectedOfficeId(v);
+                            }}
+                            label="Office (optional)"
+                            disabled={loading}
+                        >
+                            <option value="">All offices</option>
+                            {officeOptions.map(o => (
+                                <option key={o.id} value={o.id}>{o.name}</option>
+                            ))}
+                        </Select>
+                    </FormGroup>
+
                     <FormGroup className="mb-3">
                         <Select
                             name="userId"
@@ -70,10 +110,14 @@ function AssignRole() {
                                 setForm(f => ({ ...f, userId: v }));
                             }}
                             label="Staff user"
+                            disabled={loading}
                         >
                             <option value="">Choose from the list</option>
-                            {staffOptions.map(s => (
-                                <option key={s.id} value={s.id}>{s.username} — {s.name} {s.surname}</option>
+                            {visibleStaff.map(s => (
+                                <option key={s.id} value={s.id}>
+                                    {s.username} — {s.name} {s.surname}
+                                    {s?.userOffice?.role?.name ? ` (${s.userOffice.role.name})` : ''}
+                                </option>
                             ))}
                         </Select>
                     </FormGroup>
@@ -88,6 +132,7 @@ function AssignRole() {
                                 setForm(f => ({ ...f, roleId: v }));
                             }}
                             label="Role"
+                            disabled={loading}
                         >
                             <option value="">Choose from the list</option>
                             {roleOptions.map(r => (
@@ -105,8 +150,8 @@ function AssignRole() {
                     )}
 
                     <div className="d-flex gap-2">
-                        <Button color="secondary" type="button" onClick={reset} disabled={submitting}>Cancel</Button>
-                        <Button color="primary" type="submit" disabled={submitting || !form.userId || !form.roleId}>
+                        <Button color="secondary" type="button" onClick={reset} disabled={submitting || loading}>Cancel</Button>
+                        <Button color="primary" type="submit" disabled={submitting || loading || !form.userId || !form.roleId}>
                             Assign Role
                         </Button>
                     </div>
