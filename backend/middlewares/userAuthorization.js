@@ -59,13 +59,13 @@ export function authorizeRole(roleName) {
             if (!userId) return next(new UnauthorizedError('UNAUTHORIZED'));
 
             const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);
-            const userOffice = await userOfficeRepo.findOne({ where: { userId: Number(userId) }, relations: ['role'] });
-            if (!userOffice || !userOffice.role || !userOffice.role.name) {
+            const userOffices = await userOfficeRepo.find({ where: { userId: Number(userId) }, relations: ['role'] });
+            if (!userOffices || userOffices.length === 0) {
                 return next(new InsufficientRightsError('FORBIDDEN'));
             }
 
-            const actual = String(userOffice.role.name || '').toLowerCase();
-            if (actual !== String(roleName || '').toLowerCase()) {
+            const match = userOffices.find(uo => uo.role && String(uo.role.name || '').toLowerCase() === String(roleName || '').toLowerCase());
+            if (!match) {
                 return next(new InsufficientRightsError('FORBIDDEN'));
             }
 

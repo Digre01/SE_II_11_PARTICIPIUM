@@ -16,6 +16,10 @@ export const Roles = new EntitySchema({
     officeId: {
       type: Number,
       nullable: false
+    },
+    officeIdExternal: {
+      type: Number,
+      nullable: true
     }
   },
   relations: {

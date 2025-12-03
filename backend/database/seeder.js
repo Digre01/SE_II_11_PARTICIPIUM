@@ -8,16 +8,26 @@ export async function seedDatabase() {
   let officesExisting = await officeRepo.find();
   if (officesExisting.length === 0) {
     await officeRepo.save([
-      { name: 'Organization Office' },
-      { name: 'Water Office' },
-      { name: 'Architectural Barriers Office' },
-      { name: 'Sewer System Office' },
-      { name: 'Public Lighting Office' },
-      { name: 'Waste Management Office' },
-      { name: 'Road Signs and Traffic Lights Office' },
-      { name: 'Roads and Urban Furnishings Office' },
-      { name: 'Public Green Areas and Playgrounds Office' },
-      { name: 'Generic Office' }
+      { name: 'Organization Office', isExternal: false },
+      { name: 'Water Office', isExternal: false },
+      { name: 'Architectural Barriers Office', isExternal: false },
+      { name: 'Sewer System Office', isExternal: false },
+      { name: 'Public Lighting Office', isExternal: false },
+      { name: 'Waste Management Office', isExternal: false },
+      { name: 'Road Signs and Traffic Lights Office', isExternal: false },
+      { name: 'Roads and Urban Furnishings Office', isExternal: false },
+      { name: 'Public Green Areas and Playgrounds Office', isExternal: false },
+      { name: 'Generic Office', isExternal: false },
+      // Uffici esterni
+      { name: 'SMAT', isExternal: true },
+      { name: 'AccessiWay', isExternal: true },
+      { name: 'Bosco Spurghi', isExternal: true },
+      { name: 'IREN', isExternal: true },
+      { name: 'Soris', isExternal: true },
+      { name: '5T Srl', isExternal: true },
+      { name: 'F.G. Srl', isExternal: true },
+      { name: 'Turin Garden', isExternal: true },
+      { name: 'taskrabbit', isExternal: true }
     ]);
     console.log("Added default Offices");
     officesExisting = await officeRepo.find(); // aggiorna con gli id generati
@@ -70,17 +80,17 @@ export async function seedDatabase() {
   const rolesExisting = await rolesRepo.find();
   if (rolesExisting.length === 0) {
     await rolesRepo.save([
-      { name: 'Municipal Public Relations Officer', officeId: officeMap['Organization Office'] },
-      { name: 'Municipal Administrator', officeId: officeMap['Organization Office'] },
-      { name: 'Water Systems Technician', officeId: officeMap['Water Office'] },
-      { name: 'Accessibility Coordinator', officeId: officeMap['Architectural Barriers Office'] },
-      { name: 'Wastewater Engineer', officeId: officeMap['Sewer System Office'] },
-      { name: 'Lighting Technician', officeId: officeMap['Public Lighting Office'] },
-      { name: 'Waste Management Officer', officeId: officeMap['Waste Management Office'] },
-      { name: 'Traffic Systems Technician', officeId: officeMap['Road Signs and Traffic Lights Office'] },
-      { name: 'Public Works Supervisor', officeId: officeMap['Roads and Urban Furnishings Office'] },
-      { name: 'Parks and Recreation Officer', officeId: officeMap['Public Green Areas and Playgrounds Office'] },
-      { name: 'General Maintenance Worker', officeId: officeMap['Generic Office'] },
+      { name: 'Municipal Public Relations Officer', officeId: officeMap['Organization Office'], officeIdExternal: null },
+      { name: 'Municipal Administrator', officeId: officeMap['Organization Office'], officeIdExternal: null },
+      { name: 'Water Systems Technician', officeId: officeMap['Water Office'], officeIdExternal: officeMap['SMAT'] },
+      { name: 'Accessibility Coordinator', officeId: officeMap['Architectural Barriers Office'], officeIdExternal: officeMap['AccessiWay'] },
+      { name: 'Wastewater Engineer', officeId: officeMap['Sewer System Office'], officeIdExternal: officeMap['Bosco Spurghi'] },
+      { name: 'Lighting Technician', officeId: officeMap['Public Lighting Office'], officeIdExternal: officeMap['IREN'] },
+      { name: 'Waste Management Officer', officeId: officeMap['Waste Management Office'], officeIdExternal: officeMap['Soris'] },
+      { name: 'Traffic Systems Technician', officeId: officeMap['Road Signs and Traffic Lights Office'], officeIdExternal: officeMap['5T Srl'] },
+      { name: 'Public Works Supervisor', officeId: officeMap['Roads and Urban Furnishings Office'], officeIdExternal: officeMap['F.G. Srl'] },
+      { name: 'Parks and Recreation Officer', officeId: officeMap['Public Green Areas and Playgrounds Office'], officeIdExternal: officeMap['Turin Garden'] },
+      { name: 'General Maintenance Worker', officeId: officeMap['Generic Office'], officeIdExternal: officeMap['taskrabbit'] },
     ]);
     console.log("Added default Roles");
   }
