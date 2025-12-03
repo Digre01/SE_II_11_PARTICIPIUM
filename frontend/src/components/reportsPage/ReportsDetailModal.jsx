@@ -31,8 +31,8 @@ function ReportDetailModal({ isOpen, toggle, report }) {
                         </p>
                     </Col>
                     <Col md={6}>
-                        <p><strong>Latitude:</strong> {report.latitude}</p>
-                        <p><strong>Longitude:</strong> {report.longitude}</p>
+                        <p><strong>Latitude:</strong> {report.latitude.toFixed(3)}</p>
+                        <p><strong>Longitude:</strong> {report.longitude.toFixed(3)}</p>
                     </Col>
                 </Row>
 

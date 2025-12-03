@@ -20,8 +20,8 @@ export function ReportRow({ idx, report, user, onAction, onRowClick }) {
         >
             <td>{idx + 1}</td>
             <td>{report.title}</td>
-            <td>{report.latitude}</td>
-            <td>{report.longitude}</td>
+            <td>{report.latitude.toFixed(3)}</td>
+            <td>{report.longitude.toFixed(3)}</td>
             <td>
                 <Badge bg={getStatusVariant(report.status)} pill>
                     {report.status.replace("_", " ").toUpperCase()}
@@ -59,8 +59,8 @@ export function ReportCard({ report, user, onAction, onCardClick }) {
             </div>
             <Collapse isOpen={open}>
                 <CardBody>
-                    <p><strong>Latitude:</strong> {report.latitude}</p>
-                    <p><strong>Longitude:</strong> {report.longitude}</p>
+                    <p><strong>Latitude:</strong> {report.latitude.toFixed(3)}</p>
+                    <p><strong>Longitude:</strong> {report.longitude.toFixed(3)}</p>
                     <p>
                         <strong>Status:</strong>{" "}
                         <Badge bg={getStatusVariant(report.status)} pill>
