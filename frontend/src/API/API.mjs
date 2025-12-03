@@ -164,15 +164,15 @@ const fetchMessages = async (conversationId) => {
   }
 };
 
-// PATCH /api/sessions/:id/role
-export async function assignRole(userId, roleId) {
+// PATCH /api/v1/sessions/:id/role
+export async function assignRole(userId, roleId, isExternal) {
   const response = await fetch(`${SERVER_URL}/api/v1/sessions/${userId}/role`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json'
     },
     credentials: 'include',
-    body: JSON.stringify({ roleId })
+    body: JSON.stringify({ roleId, isExternal })
   });
 
   if (response.ok) {

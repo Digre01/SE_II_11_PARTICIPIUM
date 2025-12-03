@@ -12,6 +12,11 @@ export const Office = new EntitySchema({
     name: {
       type: String,
       nullable: false
+    },
+    isExternal: {
+      type: Boolean,
+      nullable: false,
+      default: false
     }
   },
   relations: {
