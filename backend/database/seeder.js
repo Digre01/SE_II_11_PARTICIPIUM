@@ -158,6 +158,50 @@ export async function seedDatabase() {
         userId: 2,
         categoryId: 4,
         technicianId: null
+      },
+      {
+        title: "Broken stake",
+        latitude: 45.074630103084814,
+        longitude: 7.680433630935115,
+        status: "assigned",
+        description: "There is a broken stake on the side of the road that hinders pedestrian passage.",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 4,
+        technicianId: null
+      },
+      {
+        title: "Broken bench",
+        latitude: 45.07491412834689,
+        longitude: 7.6809378862299145,
+        status: "suspended",
+        description: "This bench has a broken rod.",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 4,
+        technicianId: null
+      },
+      {
+        title: "Smoking manhole",
+        latitude: 45.066416034658424,
+        longitude: 7.657559752456111,
+        status: "assigned",
+        description: "There is smoke coming from this manhole.",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 4,
+        technicianId: null
+      },
+      {
+        title: "Trash bin upside-down",
+        latitude: 45.06756836458845,
+        longitude: 7.664941191665093,
+        status: "assigned",
+        description: "The trash bin on the street is upside-down.",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 6,
+        technicianId: null
       }
     ]);
     console.log("Added default Reports");
