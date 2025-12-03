@@ -61,7 +61,7 @@ export default function ReportReview({ user, loggedIn }) {
       <div className="card p-3 mb-3">
         <h5>{report.title}</h5>
         <p>{report.description}</p>
-        <p><strong>Coordinates:</strong> {report.latitude}, {report.longitude}</p>
+        <p><strong>Coordinates:</strong> {report.latitude.toFixed(3)}, {report.longitude.toFixed(3)}</p>
         <p><strong>Status:</strong> {report.status}</p>
         {report.reject_explanation && (
           <p><strong>Rejection:</strong> {report.reject_explanation}</p>

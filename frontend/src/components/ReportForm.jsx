@@ -181,7 +181,7 @@ const ReportForm = ({ user, loggedIn }) => {
               <Input
                 id="latitude"
                 label="Latitude"
-                value={form.latitude}
+                value={form.latitude.toFixed(3)}
                 readOnly
               />
             </div>
@@ -189,7 +189,7 @@ const ReportForm = ({ user, loggedIn }) => {
               <Input
                 id="longitude"
                 label="Longitude"
-                value={form.longitude}
+                value={form.longitude.toFixed(3)}
                 readOnly
               />
             </div>
