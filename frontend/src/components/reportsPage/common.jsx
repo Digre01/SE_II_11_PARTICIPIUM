@@ -38,7 +38,8 @@ export const getActionButtons = (report, user, onAction) => {
     if (status === "assigned") {
         return [
             createButton("start", "success", "start", "START"),
-            createButton("suspend", "warning", "suspend", "SUSPEND")
+            createButton("suspend", "warning", "suspend", "SUSPEND"),
+            createButton("assign", "primary", "assign", "ASSIGN")
         ];
     }
 

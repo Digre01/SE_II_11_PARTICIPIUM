@@ -49,6 +49,8 @@ function ReportsPage({user}) {
         try {
             if (action === 'start') {
                 await API.startReport(reportId);
+            } else if (action === 'assign') {
+                await API.assignReportToExternalMaintainer(reportId)
             } else if (action === 'finish') {
                 await API.finishReport(reportId);
             } else if (action === 'suspend') {

@@ -294,5 +294,14 @@ const sendMessage = async (conversationId, content) => {
   throw await response.text();
 };
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, sendMessage };
+const assignReportToExternalMaintainer = async (reportId) => {
+    let response;
+    if (response.ok) return await response.json();
+    throw await response.text();
+}
+
+const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations,
+    fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles,
+    fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts,
+    markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, sendMessage, assignReportToExternalMaintainer };
 export default API;
