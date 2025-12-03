@@ -298,7 +298,14 @@ export async function seedDatabase() {
       { link: "/public/1764005720824-834890826.jpg", reportId: 3 },
       { link: "/public/1764005720848-687674767.jpg", reportId: 3 },
       { link: "/public/1764005780459-915574856.jpg", reportId: 4 },
-      { link: "/public/1764006030253-881531326.jpg", reportId: 5 }
+      { link: "/public/1764006030253-881531326.jpg", reportId: 5 },
+      { link: "/public/Broken_stake1.jpg", reportId: 6 },
+      { link: "/public/Broken_stake2.jpg", reportId: 6 },
+      { link: "/public/Broken_stake3.jpg", reportId: 6 },
+      { link: "/public/Broken_bench.jpg", reportId: 7 },
+      { link: "/public/Smoking_manhole.jpg", reportId: 8 },
+      { link: "/public/Trash_upsidedown1.jpg", reportId: 9 },
+      { link: "/public/Trash_upsidedown2.jpg", reportId: 9 }
     ]);
     console.log("Added default Photos");
   }
