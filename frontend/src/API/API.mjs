@@ -250,6 +250,17 @@ const finishReport = async (id) => {
   if (response.ok) return await response.json();
   throw await response.text();
 };
+
+// PATCH /api/v1/reports/:id/assign_external
+const assignReportToExternalMaintainer = async (id) => {
+    const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/assign_external`, {
+        method: 'PATCH',
+        credentials: 'include'
+    });
+    if (response.ok) return await response.json();
+    throw await response.text();
+}
+
 // POST /api/v1/notifications/:conversationId/read
 const markNotificationsAsRead = async (conversationId) => {
   const response = await fetch(SERVER_URL + `/api/v1/notifications/${conversationId}/read`, {
@@ -293,12 +304,6 @@ const sendMessage = async (conversationId, content) => {
   if (response.ok) return await response.json();
   throw await response.text();
 };
-
-const assignReportToExternalMaintainer = async (reportId) => {
-    let response;
-    if (response.ok) return await response.json();
-    throw await response.text();
-}
 
 const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations,
     fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles,

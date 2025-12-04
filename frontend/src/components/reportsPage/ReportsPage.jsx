@@ -17,11 +17,21 @@ function ReportsPage({user}) {
         fetchReports();
     }, []);
 
-    const officeReports = (reports || []).filter(r => {
+    const officeReportsAssignedToInternal = (reports || []).filter(r => {
         const statusMatch = ["assigned", "in_progress", "suspended"].includes(String(r.status || '').toLowerCase());
         const officeMatch = r.category?.officeId === user?.officeId;
         return statusMatch && officeMatch;
     });
+
+    const officeReportsAssignedToExternal = (reports || []).filter(r => {
+        const statusMatch = ["assigned", "in_progress", "suspended"].includes(String(r.status || '').toLowerCase());
+        const officeMatch = r.category?.externalOfficeId === user?.officeId;
+        const assignedExternal = r.assignedExternal === true;
+        return statusMatch && officeMatch && assignedExternal;
+    });
+
+    const officeReports = user.office.isExternal ?
+        officeReportsAssignedToExternal : officeReportsAssignedToInternal;
 
     const yourReports = (reports || []).filter(r => {
         const status = String(r.status || '').toLowerCase();
