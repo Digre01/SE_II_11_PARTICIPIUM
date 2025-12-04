@@ -111,7 +111,7 @@ function VerifyEmail({ user, onVerified }) {
             <Alert color="success" className="mt-3">{status.success}</Alert>
           )}
           {!status.isVerified ? (
-            <Alert color="warning">Your email is not verified yet. Please enter the code sent to your email: <strong>{recipientEmail}</strong></Alert>
+            <Alert color="warning">Your email is not verified yet. Please enter the code sent to your email: <strong>{recipientEmail}</strong>, Check also your spam</Alert>
           ) : null}
           {state.error && <Alert color="danger">{String(state.error)}</Alert>}
         </>
