@@ -94,7 +94,7 @@ export async function seedDatabase() {
     ]);
     console.log("Added default Roles");
   }
-
+  
   // UserOffice
   const { UserOffice } = await import("../entities/UserOffice.js");
   const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);

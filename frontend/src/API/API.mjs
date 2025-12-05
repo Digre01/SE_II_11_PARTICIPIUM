@@ -212,6 +212,16 @@ export async function fetchOffices() {
   throw await response.text();
 }
 
+// GET offices
+export async function fetchOffice(id) {
+    const response = await fetch(`${SERVER_URL}/api/v1/offices/${id}`, {
+        method: 'GET',
+        credentials: 'include'
+    });
+    if (response.ok) return await response.json();
+    throw await response.text();
+}
+
 // PATCH /api/v1/reports/:id/suspend
 const suspendReport = async (id) => {
   const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/suspend`, {
@@ -307,6 +317,6 @@ const sendMessage = async (conversationId, content) => {
 
 const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations,
     fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles,
-    fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts,
+    fetchOffices, fetchOffice, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts,
     markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, sendMessage, assignReportToExternalMaintainer };
 export default API;
