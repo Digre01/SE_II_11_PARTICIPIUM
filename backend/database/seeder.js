@@ -266,7 +266,7 @@ export async function seedDatabase() {
         description: "There are two lamps on this street lamp that don't work",
         reject_explanation: "",
         userId: 2,
-        categoryId: 7,
+        categoryId: 4,
         technicianId: null
       },
       {
@@ -299,7 +299,7 @@ export async function seedDatabase() {
         description: "There's one lamp on this street lamp that doesn't work",
         reject_explanation: "",
         userId: 2,
-        categoryId: 7,
+        categoryId: 4,
         technicianId: null
       },
       {
@@ -319,6 +319,28 @@ export async function seedDatabase() {
         longitude: 7.679387569460233,
         status: "assigned",
         description: "There is a bent stake that needs to be fixed",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 7,
+        technicianId: null
+      },      
+      {
+        title: "Stuck Escalator",
+        latitude: 45.0627824399293,
+        longitude: 7.67827713488714,
+        status: "assigned",
+        description: "The escalator here is stuck, it's not working",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 7,
+        technicianId: null
+      },
+      {
+        title: "Moving paving slub",
+        latitude: 45.0740512658843,
+        longitude: 7.68184447287695,
+        status: "assigned",
+        description: "There's a big paving slub that moves a lot when you walk over it, often you risk stumbling",
         reject_explanation: "",
         userId: 2,
         categoryId: 7,
@@ -354,7 +376,9 @@ export async function seedDatabase() {
       { report: { id: 16 }, createdAt: '2025-11-24T17:50:25.678901Z' },
       { report: { id: 17 }, createdAt: '2025-11-24T17:51:26.789012Z' },
       { report: { id: 18 }, createdAt: '2025-11-24T17:52:27.890123Z' },
-      { report: { id: 19 }, createdAt: '2025-11-24T17:53:28.901234Z' }
+      { report: { id: 19 }, createdAt: '2025-11-24T17:53:28.901234Z' },
+      { report: { id: 20 }, createdAt: '2025-11-24T18:00:00.000000Z' },
+      { report: { id: 21 }, createdAt: '2025-11-24T18:05:00.000000Z' }
 
     ]);
     console.log("Added default Conversations");
@@ -405,7 +429,12 @@ export async function seedDatabase() {
       { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:50:25.678901Z", isSystem: true, conversation: { id: 16 } },
       { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:51:26.789012Z", isSystem: true, conversation: { id: 17 } },
       { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:52:27.890123Z", isSystem: true, conversation: { id: 18 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:53:28.901234Z", isSystem: true, conversation: { id: 19 } }
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:53:28.901234Z", isSystem: true, conversation: { id: 19 } },
+      // New conversations messages
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T18:00:00.010000Z", isSystem: true, conversation: { id: 20 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T18:00:00.020000Z", isSystem: true, conversation: { id: 20 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T18:05:00.010000Z", isSystem: true, conversation: { id: 21 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T18:05:00.020000Z", isSystem: true, conversation: { id: 21 } }
     ]);
     console.log("Added default Messages");
   }
@@ -474,6 +503,24 @@ export async function seedDatabase() {
     console.log("Added default Notifications");
   }
 
+  // Add notifications for newly added conversations (20, 21): create for all system messages in those conversations
+  const conv20 = await conversationRepo.findOne({ where: { id: 20 } });
+  const conv21 = await conversationRepo.findOne({ where: { id: 21 } });
+  if (conv20 || conv21) {
+    const { Message } = await import("../entities/Message.js");
+    const messageRepo2 = AppDataSourcePostgres.getRepository(Message);
+    const messagesNew = await messageRepo2.find({ where: [{ conversation: { id: 20 } }, { conversation: { id: 21 } }] });
+    const notificationsToAdd = [];
+    messagesNew.forEach(m => {
+      notificationsToAdd.push({ user: { id: 2 }, message: { id: m.id }, createdAt: new Date().toISOString() });
+      notificationsToAdd.push({ user: { id: 3 }, message: { id: m.id }, createdAt: new Date().toISOString() });
+    });
+    if (notificationsToAdd.length > 0) {
+      await notificationRepo.save(notificationsToAdd);
+      console.log("Added notifications for conversations 20 and 21");
+    }
+  }
+
   // Photos
   const { Photos } = await import("../entities/Photos.js");
   const photosRepo = AppDataSourcePostgres.getRepository(Photos);
@@ -510,7 +557,10 @@ export async function seedDatabase() {
       { link: "/public/Broken_lamp_2.jpg", reportId: 17 },
       { link: "/public/Hole_3.jpg", reportId: 18 },
       { link: "/public/Bent_stake.jpg", reportId: 19 },
-      { link: "/public/Bent_stake2.jpg", reportId: 19 }
+      { link: "/public/Bent_stake2.jpg", reportId: 19 },
+      { link: "/public/Stuck_escalator1.jpg", reportId: 20 },
+      { link: "/public/Stuck_escalator2.jpg", reportId: 20 },
+      { link: "/public/Moving_paving_slub.jpg", reportId: 21 }
       
     ]);
     console.log("Added default Photos");
