@@ -7,9 +7,7 @@ export function mapUserToDTO(user) {
         surname: user.surname,
         userType: user.userType,
         // user.userOffice may be an array (multiple roles) — pick the first mapping for backward compatibility
-        office:
-            (Array.isArray(user.userOffice) ? (user.userOffice[0] ?? null) : user.userOffice)
-                ? (Array.isArray(user.userOffice) ? (user.userOffice[0] ?? null) : user.userOffice) : null,
+        officeId: (Array.isArray(user.userOffice) ? (user.userOffice[0] ?? null) : user.userOffice) ? ((Array.isArray(user.userOffice) ? (user.userOffice[0] ?? null) : user.userOffice).officeId ?? null) : null,
         roleId: (Array.isArray(user.userOffice) ? (user.userOffice[0] ?? null) : user.userOffice) ? ((Array.isArray(user.userOffice) ? (user.userOffice[0] ?? null) : user.userOffice).roleId ?? null) : null,
         roleName: (() => {
             const uo = Array.isArray(user.userOffice) ? (user.userOffice[0] ?? null) : user.userOffice;
