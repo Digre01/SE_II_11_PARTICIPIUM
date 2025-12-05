@@ -3,11 +3,18 @@ import { Table, Container, Card } from "react-bootstrap";
 import API from "../../API/API.mjs";
 import {ReportCard, ReportRow} from "./ReportsRowCard.jsx";
 import ReportDetailModal from "./ReportsDetailModal.jsx";
+import {getUserOffices} from "./common.jsx";
+import {Alert} from "design-react-kit";
 
 function ReportsPage({user}) {
     const [reports, setReports] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedReport, setSelectedReport] = useState(null);
+    const [isExternal, setIsExternal] = useState(false);
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+    const [alertColor, setAlertColor] = useState('primary'); // "primary", "success", "warning", "danger"
+
 
     useEffect(() => {
         const fetchReports = async () => {
@@ -17,11 +24,25 @@ function ReportsPage({user}) {
         fetchReports();
     }, []);
 
+    useEffect(() => {
+        const fetchOffices = async () => {
+            const offices = await getUserOffices(user.officeId);
+            setIsExternal(offices.some(o => o.isExternal === true));
+        }
+
+        fetchOffices();
+    }, [user]);
+
     const officeReports = (reports || []).filter(r => {
         const statusMatch = ["assigned", "in_progress", "suspended"].includes(String(r.status || '').toLowerCase());
-        const officeMatch = r.category?.officeId === user?.officeId;
-        return statusMatch && officeMatch;
-    });
+        const officeMatch = !isExternal ?
+            user?.officeId.includes(r.category?.officeId) :
+            r.category?.externalOfficeId === user?.officeId;
+        const externalAssignmentMatch = isExternal
+            ? true
+            : r.assignedExternal !== true;
+        return statusMatch && officeMatch && externalAssignmentMatch;
+    })
 
     const yourReports = (reports || []).filter(r => {
         const status = String(r.status || '').toLowerCase();
@@ -51,6 +72,9 @@ function ReportsPage({user}) {
                 await API.startReport(reportId);
             } else if (action === 'assign') {
                 await API.assignReportToExternalMaintainer(reportId)
+                setAlertMessage("Report assigned to external office.");
+                setAlertColor("primary");
+                setAlertVisible(true);
             } else if (action === 'finish') {
                 await API.finishReport(reportId);
             } else if (action === 'suspend') {
@@ -124,6 +148,18 @@ function ReportsPage({user}) {
                     </div>
                 </Card>
             </Container>
+            {alertVisible && (
+                <Alert
+                    color={alertColor}
+                    icon="it-info-circle"
+                    className="mb-4"
+                    dismissible
+                    toggle={() => setAlertVisible(false)}
+                >
+                    {alertMessage}
+                </Alert>
+            )}
+
             <Container className="my-4">
                 <Card className="shadow-sm p-4">
                     <h3 className="mb-4 text-primary text-center">Reports assigned to your office</h3>

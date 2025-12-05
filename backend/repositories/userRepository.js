@@ -22,7 +22,7 @@ class UserRepository {
     }
 
     async getUserByEmail(email) {
-        return await this.repo.findOne({ where: { email } });
+        return await this.repo.findOne({ where: { email }, relations: ['userOffice', 'userOffice.role'] });
     }
 
     async createUser(username, email, name, surname, password, salt, userType){

@@ -121,7 +121,7 @@ function App() {
   }, [loggedIn, user]);
 
   const handleLogin = async (credentials) => {
-    const user = await API.logIn(credentials); 
+    const user = await API.logIn(credentials);
     setUser(user);
     const roleName = user?.roleName || null;
     setIsReportsAllowed(Boolean(roleName && String(roleName).toLowerCase() === 'municipal public relations officer'));

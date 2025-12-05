@@ -1,4 +1,5 @@
 import {Button} from "react-bootstrap";
+import API from "../../API/API.mjs";
 
 export const getStatusVariant = (status) => {
     switch (status) {
@@ -39,7 +40,7 @@ export const getActionButtons = (report, user, onAction) => {
         return [
             createButton("start", "success", "start", "START"),
             createButton("suspend", "warning", "suspend", "SUSPEND"),
-            createButton("assign", "primary", "assign", "ASSIGN")
+            createButton("assign", "primary", "assign", "ASSIGN TO EXTERNAL")
         ];
     }
 
@@ -59,4 +60,10 @@ export const getActionButtons = (report, user, onAction) => {
     }
 
     return [];
+};
+
+export const getUserOffices = async (officesIdArray) => {
+    return await Promise.all(
+        officesIdArray.map(id => API.fetchOffice(id))
+    );
 };
