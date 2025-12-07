@@ -138,4 +138,25 @@ router.patch('/:id/resume', authorizeUserType(['staff']), async (req, res, next)
   } catch (err) { next(err); }
 });
 
+// PATCH /api/v1/reports/:id/assign_external
+router.patch('/:id/assign_external', authorizeUserType(['staff']), async (
+    req, res, next) => {
+    try {
+        const updated = await import('../controllers/reportController.mjs').then(
+            mod => mod.assignReportToExternalMaintainer({ reportId: req.params.id}));
+        if (!updated) return next(new NotFoundError('Not found'));
+        res.json(updated);
+    } catch (err) { next(err); }
+});
+
+router.get("/:id/photos", async function(
+    req, res, next) {
+    try {
+        const photos = await import('../controllers/reportController.mjs').then(
+            mod => mod.getReportPhotos(req.params.id));
+        if (!photos) return next(new NotFoundError('Not found'));
+        res.json(photos);
+    } catch (err) { next(err); }
+})
+
 export default router;

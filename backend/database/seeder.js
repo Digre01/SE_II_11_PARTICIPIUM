@@ -42,15 +42,15 @@ export async function seedDatabase() {
   const categoriesExisting = await categoryRepo.find();
   if (categoriesExisting.length === 0) {
     await categoryRepo.save([
-      { name: 'Water Supply – Drinking Water', officeId: officeMap['Water Office'] },
-      { name: 'Architectural Barriers', officeId: officeMap['Architectural Barriers Office'] },
-      { name: 'Sewer System', officeId: officeMap['Sewer System Office'] },
-      { name: 'Public Lighting', officeId: officeMap['Public Lighting Office'] },
-      { name: 'Waste', officeId: officeMap['Waste Management Office'] },
-      { name: 'Road Signs and Traffic Lights', officeId: officeMap['Road Signs and Traffic Lights Office'] },
-      { name: 'Roads and Urban Furnishings', officeId: officeMap['Roads and Urban Furnishings Office'] },
-      { name: 'Public Green Areas and Playgrounds', officeId: officeMap['Public Green Areas and Playgrounds Office'] },
-      { name: 'Other', officeId: officeMap['Generic Office'] }
+      { name: 'Water Supply – Drinking Water', officeId: officeMap['Water Office'], externalOfficeId: officeMap['SMAT'] },
+      { name: 'Architectural Barriers', officeId: officeMap['Architectural Barriers Office'], externalOfficeId: officeMap['AccessiWay'] },
+      { name: 'Sewer System', officeId: officeMap['Sewer System Office'], externalOfficeId: officeMap['Bosco Spurghi'] },
+      { name: 'Public Lighting', officeId: officeMap['Public Lighting Office'], externalOfficeId: officeMap['IREN'] },
+      { name: 'Waste', officeId: officeMap['Waste Management Office'], externalOfficeId: officeMap['Soris'] },
+      { name: 'Road Signs and Traffic Lights', officeId: officeMap['Road Signs and Traffic Lights Office'], externalOfficeId: officeMap['5T Srl'] },
+      { name: 'Roads and Urban Furnishings', officeId: officeMap['Roads and Urban Furnishings Office'], externalOfficeId: officeMap['F.G. Srl'] },
+      { name: 'Public Green Areas and Playgrounds', officeId: officeMap['Public Green Areas and Playgrounds Office'], externalOfficeId: officeMap['Turin Garden'] },
+      { name: 'Other', officeId: officeMap['Generic Office'], externalOfficeId: officeMap['SMAT'] }
     ]);
     console.log("Added default Categories");
   }
@@ -94,7 +94,7 @@ export async function seedDatabase() {
     ]);
     console.log("Added default Roles");
   }
-
+  
   // UserOffice
   const { UserOffice } = await import("../entities/UserOffice.js");
   const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);
@@ -113,243 +113,141 @@ export async function seedDatabase() {
   const reportRepo = AppDataSourcePostgres.getRepository(Report);
   const reportsExisting = await reportRepo.find();
   if (reportsExisting.length === 0) {
-    await reportRepo.save([
-      {
-        title: "Not working street lamp",
-        latitude: 45.0648099481403,
-        longitude: 7.69553446768896,
-        status: "assigned",
-        description: "One of the street lamps in Piazza Vittorio has a light out.",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 4,
-        technicianId: null
-      },
-      {
-        title: "Broken tile",
-        latitude: 45.0656169914633,
-        longitude: 7.69498193263189,
-        status: "assigned",
-        description: "Broken tile in Piazza Vittorio.",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 7,
-        technicianId: null
-      },
-      {
-        title: "Uneven pavement",
-        latitude: 45.0641804082172,
-        longitude: 7.69560420512335,
-        status: "assigned",
-        description: "Uneven pavement in Piazza Vittorio.",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 7,
-        technicianId: null
-      },
-      {
-        title: "Uneven pavement",
-        latitude: 45.0650746262417,
-        longitude: 7.69513213633672,
-        status: "assigned",
-        description: "Uneven pavement under a street lamp.",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 7,
-        technicianId: null
-      },
-      {
-        title: "Not working street lamp",
-        latitude: 45.05641653005936,
-        longitude: 7.633678436213814,
-        status: "assigned",
-        description: "Not working street lamp in Parcheggio Fermi.",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 4,
-        technicianId: null
-      },
-      {
-        title: "Broken stake",
-        latitude: 45.074630103084814,
-        longitude: 7.680433630935115,
-        status: "assigned",
-        description: "There is a broken stake on the side of the road that hinders pedestrian passage.",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 4,
-        technicianId: null
-      },
-      {
-        title: "Broken bench",
-        latitude: 45.07491412834689,
-        longitude: 7.6809378862299145,
-        status: "suspended",
-        description: "This bench has a broken rod.",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 4,
-        technicianId: null
-      },
-      {
-        title: "Smoking manhole",
-        latitude: 45.066416034658424,
-        longitude: 7.657559752456111,
-        status: "assigned",
-        description: "There is smoke coming from this manhole.",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 4,
-        technicianId: null
-      },
-      {
-        title: "Trash bin upside-down",
-        latitude: 45.06756836458845,
-        longitude: 7.664941191665093,
-        status: "assigned",
-        description: "The trash bin on the street is upside-down.",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 6,
-        technicianId: null
-      },
-      {
-        title: "Missing trash bin",
-        latitude: 45.0753279481942,
-        longitude: 7.680869221703689,
-        status: "assigned",
-        description: "Here there is no trash bin where there should be one.",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 5,
-        technicianId: null
-      },
-      {
-        title: "Smeared traffic sign",
-        latitude: 45.07455788775502,
-        longitude: 7.680943250647944,
-        status: "suspended",
-        description: "Traffic sign has been smeared, it could be misleading",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 6,
-        technicianId: null
-      },
-      //New reports
-      {
-        title: "Lots of trash",
-        latitude: 45.07563923520235,
-        longitude: 7.681775808350722,
-        status: "assigned",
-        description: "Here there's a lot of trash that makes the place look bad",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 5,
-        technicianId: null
-      },
-      {
-        title: "Lots of smoke",
-        latitude: 45.06084902320209,
-        longitude: 7.657981395786921,
-        status: "assigned",
-        description: "There's a lot of smoke coming out from these manholes",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 7,
-        technicianId: null
-      },
-      {
-        title: "Defective street lamp",
-        latitude: 45.071034627219845,
-        longitude: 7.681930303606351,
-        status: "assigned",
-        description: "There are two lamps on this street lamp that don't work",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 4,
-        technicianId: null
-      },
-      {
-        title: "Hole in the pavement",
-        latitude: 45.07216349385147,
-        longitude: 7.6814475059836695,
-        status: "assigned",
-        description: "There is a hole in the pavement that needs to be fixed",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 7,
-        technicianId: null
-      },
-      {
-        title: "Little hole in the pavement",
-        latitude: 45.07348230299595,
-        longitude: 7.679151535066922,
-        status: "assigned",
-        description: "There is a little hole in the pavement that needs to be fixed",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 7,
-        technicianId: null
-      },
-      {
-        title: "Defective street lamp",
-        latitude: 45.07151912157739,
-        longitude: 7.681576252016385,
-        status: "assigned",
-        description: "There's one lamp on this street lamp that doesn't work",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 4,
-        technicianId: null
-      },
-      {
-        title: "Hole in the pavement",
-        latitude: 45.07348970346821,
-        longitude: 7.67922449118487,
-        status: "assigned",
-        description: "There is a hole in the pavement that needs to be fixed",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 7,
-        technicianId: null
-      },
-      {
-        title: "Bent stake",
-        latitude: 45.07398278785967,
-        longitude: 7.679387569460233,
-        status: "assigned",
-        description: "There is a bent stake that needs to be fixed",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 7,
-        technicianId: null
-      },      
-      {
-        title: "Stuck Escalator",
-        latitude: 45.0627824399293,
-        longitude: 7.67827713488714,
-        status: "assigned",
-        description: "The escalator here is stuck, it's not working",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 7,
-        technicianId: null
-      },
-      {
-        title: "Moving paving slub",
-        latitude: 45.0740512658843,
-        longitude: 7.68184447287695,
-        status: "assigned",
-        description: "There's a big paving slub that moves a lot when you walk over it, often you risk stumbling",
-        reject_explanation: "",
-        userId: 2,
-        categoryId: 7,
-        technicianId: null
-      }
-
-
-    ]);
-    console.log("Added default Reports");
+      await reportRepo.save([
+          {
+              title: "Not working street lamp",
+              latitude: 45.0648099481403,
+              longitude: 7.69553446768896,
+              status: "assigned",
+              description: "One of the street lamps in Piazza Vittorio has a light out.",
+              reject_explanation: "",
+              userId: 2,
+              categoryId: 4,
+              technicianId: null,
+              assignedExternal: null
+          },
+          {
+              title: "Broken tile",
+              latitude: 45.0656169914633,
+              longitude: 7.69498193263189,
+              status: "assigned",
+              description: "Broken tile in Piazza Vittorio.",
+              reject_explanation: "",
+              userId: 2,
+              categoryId: 7,
+              technicianId: null,
+              assignedExternal: null
+          },
+          {
+              title: "Uneven pavement",
+              latitude: 45.0641804082172,
+              longitude: 7.69560420512335,
+              status: "assigned",
+              description: "Uneven pavement in Piazza Vittorio.",
+              reject_explanation: "",
+              userId: 2,
+              categoryId: 7,
+              technicianId: null,
+              assignedExternal: null
+          },
+          {
+              title: "Uneven pavement",
+              latitude: 45.0650746262417,
+              longitude: 7.69513213633672,
+              status: "assigned",
+              description: "Uneven pavement under a street lamp.",
+              reject_explanation: "",
+              userId: 2,
+              categoryId: 7,
+              technicianId: null,
+              assignedExternal: null
+          },
+          {
+              title: "Not working street lamp",
+              latitude: 45.05641653005936,
+              longitude: 7.633678436213814,
+              status: "assigned",
+              description: "Not working street lamp in Parcheggio Fermi.",
+              reject_explanation: "",
+              userId: 2,
+              categoryId: 4,
+              technicianId: null,
+              assignedExternal: null
+          },
+          {
+              title: "Broken stake",
+              latitude: 45.074630103084814,
+              longitude: 7.680433630935115,
+              status: "assigned",
+              description: "There is a broken stake on the side of the road that hinders pedestrian passage.",
+              reject_explanation: "",
+              userId: 2,
+              categoryId: 4,
+              technicianId: null,
+              assignedExternal: null
+          },
+          {
+              title: "Broken bench",
+              latitude: 45.07491412834689,
+              longitude: 7.6809378862299145,
+              status: "suspended",
+              description: "This bench has a broken rod.",
+              reject_explanation: "",
+              userId: 2,
+              categoryId: 4,
+              technicianId: null,
+              assignedExternal: null
+          },
+          {
+              title: "Smoking manhole",
+              latitude: 45.066416034658424,
+              longitude: 7.657559752456111,
+              status: "assigned",
+              description: "There is smoke coming from this manhole.",
+              reject_explanation: "",
+              userId: 2,
+              categoryId: 4,
+              technicianId: null,
+              assignedExternal: null
+          },
+          {
+              title: "Trash bin upside-down",
+              latitude: 45.06756836458845,
+              longitude: 7.664941191665093,
+              status: "assigned",
+              description: "The trash bin on the street is upside-down.",
+              reject_explanation: "",
+              userId: 2,
+              categoryId: 6,
+              technicianId: null,
+              assignedExternal: null
+          },
+          {
+              title: "Missing trash bin",
+              latitude: 45.07491412834689,
+              longitude: 7.6809378862299145,
+              status: "assigned",
+              description: "Here there is no trash bin where there should be one.",
+              reject_explanation: "",
+              userId: 2,
+              categoryId: 5,
+              technicianId: null,
+              assignedExternal: null
+          },
+          {
+              title: "Smeared traffic sign",
+              latitude: 45.07491412834689,
+              longitude: 7.6809378862299145,
+              status: "suspended",
+              description: "Traffic sign has been smeared, it could be misleading",
+              reject_explanation: "",
+              userId: 2,
+              categoryId: 6,
+              technicianId: null,
+              assignedExternal: null
+          }
+      ]);
+      console.log("Added default Reports");
   }
 
   // Conversation

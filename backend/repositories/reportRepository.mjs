@@ -212,6 +212,18 @@ export class ReportRepository {
 		}
 		return savedReport;
 	}
+
+    async assignReportToExternalMaintainer(reportId) {
+        const report = await this.repo.findOneBy({id: Number(reportId)});
+        if (!report) return null;
+        report.assignedExternal = true
+        return await this.repo.save(report);
+    }
+
+    async getReportPhotos(reportId) {
+        const photoRepo = AppDataSourcePostgres.getRepository(Photos);
+        return await photoRepo.find({ where: { reportId: Number(reportId) } });
+    }
 }
 
 export const reportRepository = new ReportRepository();
