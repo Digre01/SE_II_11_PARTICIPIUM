@@ -17,7 +17,7 @@ import SignUpForm from "./components/authComponents/signUpForm.jsx";
 import VerifyEmail from "./components/authComponents/VerifyEmail.jsx";
 import ConversationsPage from './components/messageComponents/ConversationsPage.jsx';
 import ConversationPage from './components/messageComponents/ConversationPage.jsx';
-import ReportsPage from './components/ReportsPage.jsx';
+import ReportsPage from './components/reportsPage/ReportsPage.jsx';
 import NotFoundPage from './components/NotFoundPage.jsx';
 
 
@@ -147,7 +147,7 @@ function App() {
   }, [loggedIn, user]);
 
   const handleLogin = async (credentials) => {
-    const user = await API.logIn(credentials); 
+    const user = await API.logIn(credentials);
     setUser(user);
     const roleName = user?.roleName || null;
     setIsReportsAllowed(Boolean(roleName && String(roleName).toLowerCase() === 'municipal public relations officer'));

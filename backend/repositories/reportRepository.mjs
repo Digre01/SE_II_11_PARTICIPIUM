@@ -47,14 +47,14 @@ export class ReportRepository {
 		// Trova tutti gli staff member con ruolo 'Municipal Public Relations Officer' tramite join
 		const staffRepo = AppDataSourcePostgres.getRepository(Users);
 		const staffMembers = await staffRepo.find({
-			where: { userType: 'staff' },
+			where: { userType: 'STAFF' },
 			relations: ['userOffice', 'userOffice.role']
 		});
-		const municipalStaff = staffMembers.filter(u =>
-			u.userOffice &&
-			u.userOffice.role &&
-			u.userOffice.role.name === 'Municipal Public Relations Officer'
-		);
+		const municipalStaff = staffMembers.filter(u => {
+			if (!u.userOffice) return false;
+			const uos = Array.isArray(u.userOffice) ? u.userOffice : [u.userOffice];
+			return uos.some(uo => uo && uo.role && uo.role.name === 'Municipal Public Relations Officer');
+		});
 
 		// Conversation creation
 		const { createConversation } = await import('./conversationRepository.js');
@@ -82,7 +82,14 @@ export class ReportRepository {
 	}
 
 	async getAcceptedReports() {
-		return await this.repo.find({ where: { status: 'assigned' }, relations: ['photos', 'category', 'user'] });
+		// Include both 'assigned' and 'suspended' statuses
+		return await this.repo.find({
+			where: [
+				{ status: 'assigned' },
+				{ status: 'suspended' }
+			],
+			relations: ['photos', 'category', 'user']
+		});
 	}
 
 	async reviewReport({ reportId, action, explanation, categoryId }) {
@@ -205,6 +212,18 @@ export class ReportRepository {
 		}
 		return savedReport;
 	}
+
+    async assignReportToExternalMaintainer(reportId) {
+        const report = await this.repo.findOneBy({id: Number(reportId)});
+        if (!report) return null;
+        report.assignedExternal = true
+        return await this.repo.save(report);
+    }
+
+    async getReportPhotos(reportId) {
+        const photoRepo = AppDataSourcePostgres.getRepository(Photos);
+        return await photoRepo.find({ where: { reportId: Number(reportId) } });
+    }
 }
 
 export const reportRepository = new ReportRepository();

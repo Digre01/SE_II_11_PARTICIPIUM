@@ -76,7 +76,7 @@ export const Users = new EntitySchema({
       joinColumn: { name: 'photoId' }
     },
     userOffice: {
-      type: 'one-to-one',
+      type: 'one-to-many',
       target: 'UserOffice',
       inverseSide: 'user'
     },

@@ -93,8 +93,10 @@ test.describe('Conversation Page', () => {
     await page.goto('/conversations/200');
     // ensure the GET handler ran
     const start200 = Date.now();
-    while (!messageGetCalled200 && Date.now() - start200 < 5000) {
-      await page.waitForTimeout(100);
+    if (!messageGetCalled200) {
+      while (Date.now() - start200 < 5000) {
+        await page.waitForTimeout(100);
+      }
     }
 
     // fetch messages directly from the app endpoint (ensures we received the same payload)
@@ -127,8 +129,10 @@ test.describe('Conversation Page', () => {
     await page.goto('/conversations/300');
     // wait until the conversation/messages GET was handled (poll test-scope flag)
     const start = Date.now();
-    while (!messageGetCalled && Date.now() - start < 5000) {
-      await page.waitForTimeout(100);
+    if (!messageGetCalled){
+      while (Date.now() - start < 5000) {
+        await page.waitForTimeout(100);
+      }
     }
 
     const inputSel = 'input[placeholder="Type your message..."]';

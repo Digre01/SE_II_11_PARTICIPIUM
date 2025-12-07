@@ -54,11 +54,14 @@ router.get('/', authorizeUserType(['staff']), async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// GET /api/v1/reports/assigned (public map layer)
-router.get('/assigned', authorizeUserType(['citizen']), async (req, res, next) => {
+// GET /api/v1/reports/assigned and /api/v1/reports/suspended (public map layer)
+router.get(['/assigned', '/suspended'], authorizeUserType(['citizen']), async (req, res, next) => {
   try {
     const reports = await getAcceptedReports();
-    const dto = reports.map(r => ({
+    // Filter by requested path to avoid duplicates when frontend merges both endpoints
+    const isAssignedPath = req.path.endsWith('/assigned');
+    const filtered = reports.filter(r => isAssignedPath ? r.status === 'assigned' : r.status === 'suspended');
+    const dto = filtered.map(r => ({
       id: r.id,
       title: r.title,
       latitude: r.latitude,
@@ -134,5 +137,26 @@ router.patch('/:id/resume', authorizeUserType(['staff']), async (req, res, next)
     res.json(updated);
   } catch (err) { next(err); }
 });
+
+// PATCH /api/v1/reports/:id/assign_external
+router.patch('/:id/assign_external', authorizeUserType(['staff']), async (
+    req, res, next) => {
+    try {
+        const updated = await import('../controllers/reportController.mjs').then(
+            mod => mod.assignReportToExternalMaintainer({ reportId: req.params.id}));
+        if (!updated) return next(new NotFoundError('Not found'));
+        res.json(updated);
+    } catch (err) { next(err); }
+});
+
+router.get("/:id/photos", async function(
+    req, res, next) {
+    try {
+        const photos = await import('../controllers/reportController.mjs').then(
+            mod => mod.getReportPhotos(req.params.id));
+        if (!photos) return next(new NotFoundError('Not found'));
+        res.json(photos);
+    } catch (err) { next(err); }
+})
 
 export default router;

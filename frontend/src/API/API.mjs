@@ -99,11 +99,19 @@ const fetchReports = async () => {
   throw await response.text();
 };
 
-// GET /api/v1/reports/assigned (public map)
+// GET /api/v1/reports/assigned + /api/v1/reports/suspended (public map)
 const fetchAssignedReports = async () => {
-  const response = await fetch(SERVER_URL + `/api/v1/reports/assigned`, { credentials: 'include' });
-  if (response.ok) return await response.json();
-  throw await response.text();
+  const [assignedRes, suspendedRes] = await Promise.all([
+    fetch(SERVER_URL + '/api/v1/reports/assigned', { credentials: 'include' }),
+    fetch(SERVER_URL + '/api/v1/reports/suspended', { credentials: 'include' })
+  ]);
+  if (!assignedRes.ok) throw await assignedRes.text();
+  if (!suspendedRes.ok) throw await suspendedRes.text();
+  const [assigned, suspended] = await Promise.all([
+    assignedRes.json(),
+    suspendedRes.json()
+  ]);
+  return [...assigned, ...suspended];
 };
 
 // GET /api/v1/reports/:id
@@ -156,15 +164,15 @@ const fetchMessages = async (conversationId) => {
   }
 };
 
-// PATCH /api/sessions/:id/role
-export async function assignRole(userId, roleId) {
+// PATCH /api/v1/sessions/:id/role
+export async function assignRole(userId, roleId, isExternal) {
   const response = await fetch(`${SERVER_URL}/api/v1/sessions/${userId}/role`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json'
     },
     credentials: 'include',
-    body: JSON.stringify({ roleId })
+    body: JSON.stringify({ roleId, isExternal })
   });
 
   if (response.ok) {
@@ -202,6 +210,16 @@ export async function fetchOffices() {
   });
   if (response.ok) return await response.json();
   throw await response.text();
+}
+
+// GET offices
+export async function fetchOffice(id) {
+    const response = await fetch(`${SERVER_URL}/api/v1/offices/${id}`, {
+        method: 'GET',
+        credentials: 'include'
+    });
+    if (response.ok) return await response.json();
+    throw await response.text();
 }
 
 // PATCH /api/v1/reports/:id/suspend
@@ -242,6 +260,17 @@ const finishReport = async (id) => {
   if (response.ok) return await response.json();
   throw await response.text();
 };
+
+// PATCH /api/v1/reports/:id/assign_external
+const assignReportToExternalMaintainer = async (id) => {
+    const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/assign_external`, {
+        method: 'PATCH',
+        credentials: 'include'
+    });
+    if (response.ok) return await response.json();
+    throw await response.text();
+}
+
 // POST /api/v1/notifications/:conversationId/read
 const markNotificationsAsRead = async (conversationId) => {
   const response = await fetch(SERVER_URL + `/api/v1/notifications/${conversationId}/read`, {
@@ -308,5 +337,44 @@ const checkEmailVerified = async () => {
   throw await response.text();
 };
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, sendMessage, verifyEmail, checkEmailVerified };
+const fetchReportPhotos = async (reportId) => {
+    const response = await fetch(`${SERVER_URL}/api/v1/reports/${reportId}/photos`, {
+        method: 'GET',
+    });
+    if (response.ok) return await response.json();
+    throw await response.text();
+}
+
+const API = { 
+    signUp, 
+    logIn, 
+    logOut, 
+    createReport, 
+    fetchCategories, 
+    fetchAssignedReports, 
+    fetchConversations, 
+    fetchMessages, 
+    fetchReports, 
+    fetchReport, 
+    reviewReport, 
+    assignRole, 
+    fetchAvailableStaff, 
+    fetchRoles, 
+    fetchOffices, 
+    fetchOffice,                    
+    updateAccount, 
+    fetchProfilePicture, 
+    fetchNotifications, 
+    fetchNotificationCounts, 
+    markNotificationsAsRead, 
+    startReport, 
+    finishReport, 
+    suspendReport, 
+    resumeReport, 
+    sendMessage, 
+    verifyEmail,                    
+    checkEmailVerified,             
+    assignReportToExternalMaintainer, 
+    fetchReportPhotos               
+};
 export default API;

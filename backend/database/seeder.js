@@ -8,16 +8,26 @@ export async function seedDatabase() {
   let officesExisting = await officeRepo.find();
   if (officesExisting.length === 0) {
     await officeRepo.save([
-      { name: 'Organization Office' },
-      { name: 'Water Office' },
-      { name: 'Architectural Barriers Office' },
-      { name: 'Sewer System Office' },
-      { name: 'Public Lighting Office' },
-      { name: 'Waste Management Office' },
-      { name: 'Road Signs and Traffic Lights Office' },
-      { name: 'Roads and Urban Furnishings Office' },
-      { name: 'Public Green Areas and Playgrounds Office' },
-      { name: 'Generic Office' }
+      { name: 'Organization Office', isExternal: false },
+      { name: 'Water Office', isExternal: false },
+      { name: 'Architectural Barriers Office', isExternal: false },
+      { name: 'Sewer System Office', isExternal: false },
+      { name: 'Public Lighting Office', isExternal: false },
+      { name: 'Waste Management Office', isExternal: false },
+      { name: 'Road Signs and Traffic Lights Office', isExternal: false },
+      { name: 'Roads and Urban Furnishings Office', isExternal: false },
+      { name: 'Public Green Areas and Playgrounds Office', isExternal: false },
+      { name: 'Generic Office', isExternal: false },
+      // Uffici esterni
+      { name: 'SMAT', isExternal: true },
+      { name: 'AccessiWay', isExternal: true },
+      { name: 'Bosco Spurghi', isExternal: true },
+      { name: 'IREN', isExternal: true },
+      { name: 'Soris', isExternal: true },
+      { name: '5T Srl', isExternal: true },
+      { name: 'F.G. Srl', isExternal: true },
+      { name: 'Turin Garden', isExternal: true },
+      { name: 'taskrabbit', isExternal: true }
     ]);
     console.log("Added default Offices");
     officesExisting = await officeRepo.find(); // aggiorna con gli id generati
@@ -32,15 +42,15 @@ export async function seedDatabase() {
   const categoriesExisting = await categoryRepo.find();
   if (categoriesExisting.length === 0) {
     await categoryRepo.save([
-      { name: 'Water Supply – Drinking Water', officeId: officeMap['Water Office'] },
-      { name: 'Architectural Barriers', officeId: officeMap['Architectural Barriers Office'] },
-      { name: 'Sewer System', officeId: officeMap['Sewer System Office'] },
-      { name: 'Public Lighting', officeId: officeMap['Public Lighting Office'] },
-      { name: 'Waste', officeId: officeMap['Waste Management Office'] },
-      { name: 'Road Signs and Traffic Lights', officeId: officeMap['Road Signs and Traffic Lights Office'] },
-      { name: 'Roads and Urban Furnishings', officeId: officeMap['Roads and Urban Furnishings Office'] },
-      { name: 'Public Green Areas and Playgrounds', officeId: officeMap['Public Green Areas and Playgrounds Office'] },
-      { name: 'Other', officeId: officeMap['Generic Office'] }
+      { name: 'Water Supply – Drinking Water', officeId: officeMap['Water Office'], externalOfficeId: officeMap['SMAT'] },
+      { name: 'Architectural Barriers', officeId: officeMap['Architectural Barriers Office'], externalOfficeId: officeMap['AccessiWay'] },
+      { name: 'Sewer System', officeId: officeMap['Sewer System Office'], externalOfficeId: officeMap['Bosco Spurghi'] },
+      { name: 'Public Lighting', officeId: officeMap['Public Lighting Office'], externalOfficeId: officeMap['IREN'] },
+      { name: 'Waste', officeId: officeMap['Waste Management Office'], externalOfficeId: officeMap['Soris'] },
+      { name: 'Road Signs and Traffic Lights', officeId: officeMap['Road Signs and Traffic Lights Office'], externalOfficeId: officeMap['5T Srl'] },
+      { name: 'Roads and Urban Furnishings', officeId: officeMap['Roads and Urban Furnishings Office'], externalOfficeId: officeMap['F.G. Srl'] },
+      { name: 'Public Green Areas and Playgrounds', officeId: officeMap['Public Green Areas and Playgrounds Office'], externalOfficeId: officeMap['Turin Garden'] },
+      { name: 'Other', officeId: officeMap['Generic Office'], externalOfficeId: officeMap['SMAT'] }
     ]);
     console.log("Added default Categories");
   }
@@ -70,21 +80,21 @@ export async function seedDatabase() {
   const rolesExisting = await rolesRepo.find();
   if (rolesExisting.length === 0) {
     await rolesRepo.save([
-      { name: 'Municipal Public Relations Officer', officeId: officeMap['Organization Office'] },
-      { name: 'Municipal Administrator', officeId: officeMap['Organization Office'] },
-      { name: 'Water Systems Technician', officeId: officeMap['Water Office'] },
-      { name: 'Accessibility Coordinator', officeId: officeMap['Architectural Barriers Office'] },
-      { name: 'Wastewater Engineer', officeId: officeMap['Sewer System Office'] },
-      { name: 'Lighting Technician', officeId: officeMap['Public Lighting Office'] },
-      { name: 'Waste Management Officer', officeId: officeMap['Waste Management Office'] },
-      { name: 'Traffic Systems Technician', officeId: officeMap['Road Signs and Traffic Lights Office'] },
-      { name: 'Public Works Supervisor', officeId: officeMap['Roads and Urban Furnishings Office'] },
-      { name: 'Parks and Recreation Officer', officeId: officeMap['Public Green Areas and Playgrounds Office'] },
-      { name: 'General Maintenance Worker', officeId: officeMap['Generic Office'] },
+      { name: 'Municipal Public Relations Officer', officeId: officeMap['Organization Office'], officeIdExternal: null },
+      { name: 'Municipal Administrator', officeId: officeMap['Organization Office'], officeIdExternal: null },
+      { name: 'Water Systems Technician', officeId: officeMap['Water Office'], officeIdExternal: officeMap['SMAT'] },
+      { name: 'Accessibility Coordinator', officeId: officeMap['Architectural Barriers Office'], officeIdExternal: officeMap['AccessiWay'] },
+      { name: 'Wastewater Engineer', officeId: officeMap['Sewer System Office'], officeIdExternal: officeMap['Bosco Spurghi'] },
+      { name: 'Lighting Technician', officeId: officeMap['Public Lighting Office'], officeIdExternal: officeMap['IREN'] },
+      { name: 'Waste Management Officer', officeId: officeMap['Waste Management Office'], officeIdExternal: officeMap['Soris'] },
+      { name: 'Traffic Systems Technician', officeId: officeMap['Road Signs and Traffic Lights Office'], officeIdExternal: officeMap['5T Srl'] },
+      { name: 'Public Works Supervisor', officeId: officeMap['Roads and Urban Furnishings Office'], officeIdExternal: officeMap['F.G. Srl'] },
+      { name: 'Parks and Recreation Officer', officeId: officeMap['Public Green Areas and Playgrounds Office'], officeIdExternal: officeMap['Turin Garden'] },
+      { name: 'General Maintenance Worker', officeId: officeMap['Generic Office'], officeIdExternal: officeMap['taskrabbit'] },
     ]);
     console.log("Added default Roles");
   }
-
+  
   // UserOffice
   const { UserOffice } = await import("../entities/UserOffice.js");
   const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);
@@ -103,7 +113,7 @@ export async function seedDatabase() {
   const reportRepo = AppDataSourcePostgres.getRepository(Report);
   const reportsExisting = await reportRepo.find();
   if (reportsExisting.length === 0) {
-    await reportRepo.save([
+       await reportRepo.save([
       {
         title: "Not working street lamp",
         latitude: 45.0648099481403,
@@ -113,7 +123,9 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 4,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
+
       },
       {
         title: "Broken tile",
@@ -124,7 +136,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 7,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Uneven pavement",
@@ -135,7 +148,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 7,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Uneven pavement",
@@ -146,21 +160,216 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 7,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Not working street lamp",
-        latitude: 45.0769028941044,
-        longitude: 7.59023952482494,
+        latitude: 45.05641653005936,
+        longitude: 7.633678436213814,
         status: "assigned",
         description: "Not working street lamp in Parcheggio Fermi.",
         reject_explanation: "",
         userId: 2,
         categoryId: 4,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
+      },
+      {
+        title: "Broken stake",
+        latitude: 45.074630103084814,
+        longitude: 7.680433630935115,
+        status: "assigned",
+        description: "There is a broken stake on the side of the road that hinders pedestrian passage.",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 4,
+        technicianId: null,
+        assignedExternal: null
+      },
+      {
+        title: "Broken bench",
+        latitude: 45.07491412834689,
+        longitude: 7.6809378862299145,
+        status: "suspended",
+        description: "This bench has a broken rod.",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 4,
+        technicianId: null,
+        assignedExternal: null
+      },
+      {
+        title: "Smoking manhole",
+        latitude: 45.066416034658424,
+        longitude: 7.657559752456111,
+        status: "assigned",
+        description: "There is smoke coming from this manhole.",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 4,
+        technicianId: null,
+        assignedExternal: null
+      },
+      {
+        title: "Trash bin upside-down",
+        latitude: 45.06756836458845,
+        longitude: 7.664941191665093,
+        status: "assigned",
+        description: "The trash bin on the street is upside-down.",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 6,
+        technicianId: null,
+        assignedExternal: null
+      },
+      {
+        title: "Missing trash bin",
+        latitude: 45.0753279481942,
+        longitude: 7.680869221703689,
+        status: "assigned",
+        description: "Here there is no trash bin where there should be one.",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 5,
+        technicianId: null,
+        assignedExternal: null
+      },
+      {
+        title: "Smeared traffic sign",
+        latitude: 45.07455788775502,
+        longitude: 7.680943250647944,
+        status: "suspended",
+        description: "Traffic sign has been smeared, it could be misleading",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 6,
+        technicianId: null,
+        assignedExternal: null
+      },
+      
+      {
+        title: "Lots of trash",
+        latitude: 45.07563923520235,
+        longitude: 7.681775808350722,
+        status: "assigned",
+        description: "Here there's a lot of trash that makes the place look bad",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 5,
+        technicianId: null,
+        assignedExternal: null
+      },
+      {
+        title: "Lots of smoke",
+        latitude: 45.06084902320209,
+        longitude: 7.657981395786921,
+        status: "assigned",
+        description: "There's a lot of smoke coming out from these manholes",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 7,
+        technicianId: null,
+        assignedExternal: null
+      },
+      {
+        title: "Defective street lamp",
+        latitude: 45.071034627219845,
+        longitude: 7.681930303606351,
+        status: "assigned",
+        description: "There are two lamps on this street lamp that don't work",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 4,
+        technicianId: null,
+        assignedExternal: null
+      },
+      {
+        title: "Hole in the pavement",
+        latitude: 45.07216349385147,
+        longitude: 7.6814475059836695,
+        status: "assigned",
+        description: "There is a hole in the pavement that needs to be fixed",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 7,
+        technicianId: null,
+        assignedExternal: null
+      },
+      {
+        title: "Little hole in the pavement",
+        latitude: 45.07348230299595,
+        longitude: 7.679151535066922,
+        status: "assigned",
+        description: "There is a little hole in the pavement that needs to be fixed",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 7,
+        technicianId: null,
+        assignedExternal: null
+      },
+      {
+        title: "Defective street lamp",
+        latitude: 45.07151912157739,
+        longitude: 7.681576252016385,
+        status: "assigned",
+        description: "There's one lamp on this street lamp that doesn't work",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 4,
+        technicianId: null,
+        assignedExternal: null
+      },
+      {
+        title: "Hole in the pavement",
+        latitude: 45.07348970346821,
+        longitude: 7.67922449118487,
+        status: "assigned",
+        description: "There is a hole in the pavement that needs to be fixed",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 7,
+        technicianId: null,
+        assignedExternal: null
+      },
+      {
+        title: "Bent stake",
+        latitude: 45.07398278785967,
+        longitude: 7.679387569460233,
+        status: "assigned",
+        description: "There is a bent stake that needs to be fixed",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 7,
+        technicianId: null,
+        assignedExternal: null
+      },      
+      {
+        title: "Stuck Escalator",
+        latitude: 45.0627824399293,
+        longitude: 7.67827713488714,
+        status: "assigned",
+        description: "The escalator here is stuck, it's not working",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 7,
+        technicianId: null,
+        assignedExternal: null
+      },
+      {
+        title: "Moving paving slub",
+        latitude: 45.0740512658843,
+        longitude: 7.68184447287695,
+        status: "assigned",
+        description: "There's a big paving slub that moves a lot when you walk over it, often you risk stumbling",
+        reject_explanation: "",
+        userId: 2,
+        categoryId: 7,
+        technicianId: null,
+        assignedExternal: null
       }
-    ]);
-    console.log("Added default Reports");
+      ]);
+      console.log("Added default Reports");
   }
 
   // Conversation
@@ -173,7 +382,24 @@ export async function seedDatabase() {
       { report: { id: 2 }, createdAt: '2025-11-24T17:34:17.210933Z' },
       { report: { id: 3 }, createdAt: '2025-11-24T17:35:20.901083Z' },
       { report: { id: 4 }, createdAt: '2025-11-24T17:36:20.503512Z' },
-      { report: { id: 5 }, createdAt: '2025-11-24T17:40:30.305441Z' }
+      { report: { id: 5 }, createdAt: '2025-11-24T17:40:30.305441Z' },
+      { report: { id: 6 }, createdAt: '2025-11-24T17:41:05.174964Z' },
+      { report: { id: 7 }, createdAt: '2025-11-24T17:41:08.014828Z' },
+      { report: { id: 8 }, createdAt: '2025-11-24T17:41:11.063828Z' },
+      { report: { id: 9 }, createdAt: '2025-11-24T17:41:14.276978Z' },
+      { report: { id: 10 }, createdAt: '2025-11-24T17:41:17.062239Z' },
+      { report: { id: 11 }, createdAt: '2025-11-24T17:45:20.123456Z' },
+      { report: { id: 12 }, createdAt: '2025-11-24T17:46:21.234567Z' },
+      { report: { id: 13 }, createdAt: '2025-11-24T17:47:22.345678Z' },
+      { report: { id: 14 }, createdAt: '2025-11-24T17:48:23.456789Z' },
+      { report: { id: 15 }, createdAt: '2025-11-24T17:49:24.567890Z' },
+      { report: { id: 16 }, createdAt: '2025-11-24T17:50:25.678901Z' },
+      { report: { id: 17 }, createdAt: '2025-11-24T17:51:26.789012Z' },
+      { report: { id: 18 }, createdAt: '2025-11-24T17:52:27.890123Z' },
+      { report: { id: 19 }, createdAt: '2025-11-24T17:53:28.901234Z' },
+      { report: { id: 20 }, createdAt: '2025-11-24T18:00:00.000000Z' },
+      { report: { id: 21 }, createdAt: '2025-11-24T18:05:00.000000Z' }
+
     ]);
     console.log("Added default Conversations");
   }
@@ -190,12 +416,45 @@ export async function seedDatabase() {
       { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:35:20.911851Z", isSystem: true, conversation: { id: 3 } },
       { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:36:20.512655Z", isSystem: true, conversation: { id: 4 } },
       { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:40:30.321685Z", isSystem: true, conversation: { id: 5 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:41:05.186209Z", isSystem: true, conversation: { id: 6 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:41:08.033828Z", isSystem: true, conversation: { id: 7 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:41:11.067828Z", isSystem: true, conversation: { id: 8 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:41:14.276978Z", isSystem: true, conversation: { id: 9 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:41:17.062239Z", isSystem: true, conversation: { id: 10 } }, 
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:45:20.123456Z", isSystem: true, conversation: { id: 11 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:46:21.234567Z", isSystem: true, conversation: { id: 12 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:47:22.345678Z", isSystem: true, conversation: { id: 13 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:48:23.456789Z", isSystem: true, conversation: { id: 14 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:49:24.567890Z", isSystem: true, conversation: { id: 15 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:50:25.678901Z", isSystem: true, conversation: { id: 16 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:51:26.789012Z", isSystem: true, conversation: { id: 17 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:52:27.890123Z", isSystem: true, conversation: { id: 18 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:53:28.901234Z", isSystem: true, conversation: { id: 19 } },
       // Assigned
       { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:05.194941Z", isSystem: true, conversation: { id: 1 } },
       { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:08.044277Z", isSystem: true, conversation: { id: 2 } },
       { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:11.080816Z", isSystem: true, conversation: { id: 3 } },
       { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:14.298519Z", isSystem: true, conversation: { id: 4 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:17.075239Z", isSystem: true, conversation: { id: 5 } }
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:17.075239Z", isSystem: true, conversation: { id: 5 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:20.123456Z", isSystem: true, conversation: { id: 6 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:23.234567Z", isSystem: true, conversation: { id: 7 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:26.345678Z", isSystem: true, conversation: { id: 8 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:29.456789Z", isSystem: true, conversation: { id: 9 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:32.567890Z", isSystem: true, conversation: { id: 10 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:45:20.123456Z", isSystem: true, conversation: { id: 11 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:46:21.234567Z", isSystem: true, conversation: { id: 12 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:47:22.345678Z", isSystem: true, conversation: { id: 13 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:48:23.456789Z", isSystem: true, conversation: { id: 14 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:49:24.567890Z", isSystem: true, conversation: { id: 15 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:50:25.678901Z", isSystem: true, conversation: { id: 16 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:51:26.789012Z", isSystem: true, conversation: { id: 17 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:52:27.890123Z", isSystem: true, conversation: { id: 18 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:53:28.901234Z", isSystem: true, conversation: { id: 19 } },
+      // New conversations messages
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T18:00:00.010000Z", isSystem: true, conversation: { id: 20 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T18:00:00.020000Z", isSystem: true, conversation: { id: 20 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T18:05:00.010000Z", isSystem: true, conversation: { id: 21 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T18:05:00.020000Z", isSystem: true, conversation: { id: 21 } }
     ]);
     console.log("Added default Messages");
   }
@@ -235,9 +494,51 @@ export async function seedDatabase() {
       { user: { id: 3 }, message: { id: 9 }, createdAt: "2025-11-24T17:41:14.314934Z" },
       // messageId 10
       { user: { id: 2 }, message: { id: 10 }, createdAt: "2025-11-24T17:41:17.086807Z" },
-      { user: { id: 3 }, message: { id: 10 }, createdAt: "2025-11-24T17:41:17.092776Z" }
+      { user: { id: 3 }, message: { id: 10 }, createdAt: "2025-11-24T17:41:17.092776Z" },
+      // messageId 11
+      { user: { id: 2 }, message: { id: 11 }, createdAt: "2025-11-24T17:45:20.137890Z" },
+      { user: { id: 3 }, message: { id: 11 }, createdAt: "2025-11-24T17:45:20.142678Z" },
+      // messageId 12
+      { user: { id: 2 }, message: { id: 12 }, createdAt: "2025-11-24T17:46:21.249345Z" },
+      { user: { id: 3 }, message: { id: 12 }, createdAt: "2025-11-24T17:46:21.255123Z" },
+      // messageId 13
+      { user: { id: 2 }, message: { id: 13 }, createdAt: "2025-11-24T17:47:22.358912Z" },
+      { user: { id: 3 }, message: { id: 13 }, createdAt: "2025-11-24T17:47:22.364789Z" },
+      // messageId 14
+      { user: { id: 2 }, message: { id: 14 }, createdAt: "2025-11-24T17:48:23.468123Z" },
+      { user: { id: 3 }, message: { id: 14 }, createdAt: "2025-11-24T17:48:23.473456Z" },
+      // messageId 15
+      { user: { id: 2 }, message: { id: 15 }, createdAt: "2025-11-24T17:49:24.579012Z" },
+      { user: { id: 3 }, message: { id: 15 }, createdAt: "2025-11-24T17:49:24.584345Z" },
+      // messageId 16
+      { user: { id: 2 }, message: { id: 16 }, createdAt: "2025-11-24T17:50:25.689123Z" },
+      { user: { id: 3 }, message: { id: 16 }, createdAt: "2025-11-24T17:50:25.694567Z" },
+      // messageId 17
+      { user: { id: 2 }, message: { id: 17 }, createdAt: "2025-11-24T17:51:26.798234Z" },
+      { user: { id: 3 }, message: { id: 17 }, createdAt: "2025-11-24T17:51:26.803456Z" },
+      // messageId 18
+      { user: { id: 2 }, message: { id: 18 }, createdAt: "2025-11-24T17:52:27.905678Z" },
+      { user: { id: 3 }, message: { id: 18 }, createdAt: "2025-11-24T17:52:27.910789Z" }
     ]);
     console.log("Added default Notifications");
+  }
+
+  // Add notifications for newly added conversations (20, 21): create for all system messages in those conversations
+  const conv20 = await conversationRepo.findOne({ where: { id: 20 } });
+  const conv21 = await conversationRepo.findOne({ where: { id: 21 } });
+  if (conv20 || conv21) {
+    const { Message } = await import("../entities/Message.js");
+    const messageRepo2 = AppDataSourcePostgres.getRepository(Message);
+    const messagesNew = await messageRepo2.find({ where: [{ conversation: { id: 20 } }, { conversation: { id: 21 } }] });
+    const notificationsToAdd = [];
+    messagesNew.forEach(m => {
+      notificationsToAdd.push({ user: { id: 2 }, message: { id: m.id }, createdAt: new Date().toISOString() });
+      notificationsToAdd.push({ user: { id: 3 }, message: { id: m.id }, createdAt: new Date().toISOString() });
+    });
+    if (notificationsToAdd.length > 0) {
+      await notificationRepo.save(notificationsToAdd);
+      console.log("Added notifications for conversations 20 and 21");
+    }
   }
 
   // Photos
@@ -254,7 +555,33 @@ export async function seedDatabase() {
       { link: "/public/1764005720824-834890826.jpg", reportId: 3 },
       { link: "/public/1764005720848-687674767.jpg", reportId: 3 },
       { link: "/public/1764005780459-915574856.jpg", reportId: 4 },
-      { link: "/public/1764006030253-881531326.jpg", reportId: 5 }
+      { link: "/public/1764006030253-881531326.jpg", reportId: 5 },
+      { link: "/public/Broken_stake1.jpg", reportId: 6 },
+      { link: "/public/Broken_stake2.jpg", reportId: 6 },
+      { link: "/public/Broken_stake3.jpg", reportId: 6 },
+      { link: "/public/Broken_bench.jpg", reportId: 7 },
+      { link: "/public/Smoking_manhole.jpg", reportId: 8 },
+      { link: "/public/Trash_upsidedown1.jpg", reportId: 9 },
+      { link: "/public/Trash_upsidedown2.jpg", reportId: 9 },
+      { link: "/public/Missing_trashbin.jpg", reportId: 10 },
+      { link: "/public/Traffic_sign.jpg", reportId: 11 },
+      { link: "/public/Loadsoftrash.jpg", reportId: 12 },
+      { link: "/public/SmokingBig_manhole1.jpg", reportId: 13 },
+      { link: "/public/SmokingBig_manhole2.jpg", reportId: 13 },
+      { link: "/public/SmokingBig_manhole3.jpg", reportId: 13 },
+      { link: "/public/Broken_lamp1.jpg", reportId: 14 },
+      { link: "/public/Broken_lamp2.jpg", reportId: 14 },
+      { link: "/public/Hole1.jpg", reportId: 15 },
+      { link: "/public/Hole2.jpg", reportId: 15 },
+      { link: "/public/Hole_2.jpg", reportId: 16 },
+      { link: "/public/Broken_lamp_2.jpg", reportId: 17 },
+      { link: "/public/Hole_3.jpg", reportId: 18 },
+      { link: "/public/Bent_stake.jpg", reportId: 19 },
+      { link: "/public/Bent_stake2.jpg", reportId: 19 },
+      { link: "/public/Stuck_escalator1.jpg", reportId: 20 },
+      { link: "/public/Stuck_escalator2.jpg", reportId: 20 },
+      { link: "/public/Moving_paving_slub.jpg", reportId: 21 }
+      
     ]);
     console.log("Added default Photos");
   }

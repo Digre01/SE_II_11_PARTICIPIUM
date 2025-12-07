@@ -1,2 +1,2 @@
 -- Truncate all main tables and reset identity (PostgreSQL)
-TRUNCATE "UserOffice", "Users", "Roles", "Categories", "Offices", "Photos", "Reports" RESTART IDENTITY CASCADE;
+TRUNCATE "UserOffice","Conversation", "conversation_participants_users", "Notification", "Users", "Roles", "Categories", "Offices", "Photos", "Reports" RESTART IDENTITY CASCADE;

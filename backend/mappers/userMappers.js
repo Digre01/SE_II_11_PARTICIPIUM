@@ -7,9 +7,17 @@ export function mapUserToDTO(user) {
         surname: user.surname,
         userType: user.userType,
         isVerified: user.isVerified,
-        officeId: user.userOffice ? (user.userOffice.officeId ?? null) : null,
-        roleId: user.userOffice ? (user.userOffice.roleId ?? null) : null,
-        roleName: user.userOffice && user.userOffice.role ? (user.userOffice.role.name ?? null) : null,
+        // user.userOffice may be an array (multiple roles) — pick the first mapping for backward compatibility
+        officeId: user.userOffice
+            ? (Array.isArray(user.userOffice)
+                ? user.userOffice.map(o => o.officeId ?? null)
+                : [user.userOffice.officeId ?? null])
+            : null,
+        roleId: (Array.isArray(user.userOffice) ? (user.userOffice[0] ?? null) : user.userOffice) ? ((Array.isArray(user.userOffice) ? (user.userOffice[0] ?? null) : user.userOffice).roleId ?? null) : null,
+        roleName: (() => {
+            const uo = Array.isArray(user.userOffice) ? (user.userOffice[0] ?? null) : user.userOffice;
+            return uo && uo.role ? (uo.role.name ?? null) : null;
+        })(),
         telegramId: user.telegramId ?? null,
         emailNotifications: user.emailNotifications ?? null,
     }

@@ -94,7 +94,7 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
         >
           {isCitizen && (
             <Popup>
-              {selectedAddress || `${selectedPoint.lat.toFixed(5)}, ${selectedPoint.lng.toFixed(5)}`}<br />
+              {selectedAddress || `${selectedPoint.lat.toFixed(3)}, ${selectedPoint.lng.toFixed(3)}`}<br />
               {isInTurin && (
                 <button
                   onClick={() => navigate('/report', { state: { lat: selectedPoint.lat, lng: selectedPoint.lng, address: selectedAddress || null } })}
