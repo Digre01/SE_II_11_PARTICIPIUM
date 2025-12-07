@@ -315,8 +315,17 @@ const sendMessage = async (conversationId, content) => {
   throw await response.text();
 };
 
+const fetchReportPhotos = async (reportId) => {
+    const response = await fetch(`${SERVER_URL}/api/v1/reports/${reportId}/photos`, {
+        method: 'GET',
+    });
+    if (response.ok) return await response.json();
+    throw await response.text();
+}
+
 const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations,
     fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles,
     fetchOffices, fetchOffice, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts,
-    markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, sendMessage, assignReportToExternalMaintainer };
+    markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, sendMessage,
+    assignReportToExternalMaintainer, fetchReportPhotos };
 export default API;

@@ -219,6 +219,11 @@ export class ReportRepository {
         report.assignedExternal = true
         return await this.repo.save(report);
     }
+
+    async getReportPhotos(reportId) {
+        const photoRepo = AppDataSourcePostgres.getRepository(Photos);
+        return await photoRepo.find({ where: { reportId: Number(reportId) } });
+    }
 }
 
 export const reportRepository = new ReportRepository();

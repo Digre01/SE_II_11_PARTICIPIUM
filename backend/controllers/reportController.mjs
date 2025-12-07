@@ -41,3 +41,7 @@ export async function assignReportToExternalMaintainer({reportId}) {
     console.log("Controller - Assigning report to external maintainer, report id:", reportId);
     return await reportRepository.assignReportToExternalMaintainer(reportId);
 }
+
+export async function getReportPhotos(reportId) {
+    return await reportRepository.getReportPhotos(reportId);
+}

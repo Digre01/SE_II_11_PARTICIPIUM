@@ -149,4 +149,14 @@ router.patch('/:id/assign_external', authorizeUserType(['staff']), async (
     } catch (err) { next(err); }
 });
 
+router.get("/:id/photos", async function(
+    req, res, next) {
+    try {
+        const photos = await import('../controllers/reportController.mjs').then(
+            mod => mod.getReportPhotos(req.params.id));
+        if (!photos) return next(new NotFoundError('Not found'));
+        res.json(photos);
+    } catch (err) { next(err); }
+})
+
 export default router;
