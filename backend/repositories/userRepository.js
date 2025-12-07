@@ -64,41 +64,10 @@ class UserRepository {
         }));
     }
 
-    async addUserRole(userId, roleId, isExternal) {
-        const userRepo = AppDataSourcePostgres.getRepository(Users);
-        const user = await userRepo.findOneBy({ id: Number(userId) });
-        if (!user) {
-            throw new NotFoundError(`User with id '${userId}' not found`);
-        }
-        // Only users of type STAFF possono essere assegnati
-        const userType = String(user.userType || '').toUpperCase();
-        if (userType !== 'STAFF') {
-            throw new InsufficientRightsError('Only staff accounts can be assigned a role');
-        }
-        // Prendi il ruolo e l'ufficio corretto
-        const roleRepo = AppDataSourcePostgres.getRepository(Roles);
-        const role = await roleRepo.findOneBy({ id: Number(roleId) });
-        if (!role) {
-            throw new NotFoundError(`Role with id '${roleId}' not found`);
-        }
-        let officeId;
-        if (isExternal) {
-            officeId = role.officeIdExternal;
-        } else {
-            officeId = role.officeId;
-        }
-        if (!officeId) {
-            throw new NotFoundError(`Role with id '${roleId}' does not have an associated office for ${isExternal ? 'external' : 'internal'} assignment`);
-        }
-        //add the new role
-        const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);
-        const userOffice = userOfficeRepo.create({ userId: Number(userId), officeId: Number(officeId), roleId: Number(roleId) });
-        await userOfficeRepo.save(userOffice);
-        return await userOfficeRepo.findOne({ where: { userId: Number(userId), officeId: Number(officeId), roleId: Number(roleId) }, relations: ['role', 'office'] });
-    }
 
-    // Add multiple roles to a staff user in one call (idempotent)
-    async addUserRoles(userId, roleIds, isExternal) {
+    // Set final roles for a staff user: synchronize add/remove in a single transaction
+    // roles: Array<{ roleId: number, isExternal?: boolean }>
+    async setUserRoles(userId, roles) {
         const userRepo = AppDataSourcePostgres.getRepository(Users);
         const user = await userRepo.findOneBy({ id: Number(userId) });
         if (!user) {
@@ -109,39 +78,61 @@ class UserRepository {
             throw new InsufficientRightsError('Only staff accounts can be assigned roles');
         }
 
-        if (!Array.isArray(roleIds) || roleIds.length === 0) {
-            throw new BadRequestError('roleIds must be a non-empty array');
+        if (!Array.isArray(roles)) {
+            throw new BadRequestError('roles must be an array of { roleId, isExternal? }');
         }
 
         const roleRepo = AppDataSourcePostgres.getRepository(Roles);
         const officeRepo = AppDataSourcePostgres.getRepository(Office);
         const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);
 
-        const results = [];
-        for (const rid of roleIds) {
-            const role = await roleRepo.findOneBy({ id: Number(rid) });
+        // Build desired set of triples (userId, officeId, roleId)
+        const desiredTriples = [];
+        for (const entry of roles) {
+            const roleId = Number(entry?.roleId ?? entry); // allow number-only entries
+            if (!roleId) continue;
+            const role = await roleRepo.findOneBy({ id: roleId });
             if (!role) {
-                throw new NotFoundError(`Role with id '${rid}' not found`);
+                throw new NotFoundError(`Role with id '${roleId}' not found`);
             }
-            const officeId = isExternal ? role.officeIdExternal : role.officeId;
+            const officeId = (entry?.isExternal ? role.officeIdExternal : role.officeId);
             if (!officeId) {
-                throw new NotFoundError(`Role with id '${rid}' does not have an associated office for ${isExternal ? 'external' : 'internal'} assignment`);
+                throw new NotFoundError(`Role with id '${roleId}' does not have an associated office for ${entry?.isExternal ? 'external' : 'internal'} assignment`);
             }
             const office = await officeRepo.findOneBy({ id: Number(officeId) });
             if (!office) {
                 throw new NotFoundError(`Office with id '${officeId}' not found`);
             }
-            const existing = await userOfficeRepo.findOneBy({ userId: Number(userId), officeId: Number(officeId), roleId: Number(rid) });
-            if (!existing) {
-                const created = userOfficeRepo.create({ userId: Number(userId), officeId: Number(officeId), roleId: Number(rid) });
-                await userOfficeRepo.save(created);
-            }
-            const saved = await userOfficeRepo.findOne({ where: { userId: Number(userId), officeId: Number(officeId), roleId: Number(rid) }, relations: ['role', 'office'] });
-            results.push(saved);
+            desiredTriples.push({ userId: Number(userId), officeId: Number(officeId), roleId });
         }
 
-        return results;
+        // Read current assignments
+        const current = await userOfficeRepo.find({ where: { userId: Number(userId) } });
+        const currentKey = new Set(current.map(uo => `${uo.userId}:${uo.officeId}:${uo.roleId}`));
+        const desiredKey = new Set(desiredTriples.map(t => `${t.userId}:${t.officeId}:${t.roleId}`));
+
+        // Compute diff
+        const toAdd = desiredTriples.filter(t => !currentKey.has(`${t.userId}:${t.officeId}:${t.roleId}`));
+        const toRemove = current.filter(uo => !desiredKey.has(`${uo.userId}:${uo.officeId}:${uo.roleId}`));
+
+        // Apply changes
+        if (toRemove.length > 0) {
+            for (const uo of toRemove) {
+                await userOfficeRepo.delete({ userId: uo.userId, officeId: uo.officeId, roleId: uo.roleId });
+            }
+        }
+        if (toAdd.length > 0) {
+            for (const t of toAdd) {
+                const created = userOfficeRepo.create(t);
+                await userOfficeRepo.save(created);
+            }
+        }
+
+        // Return updated assignments with relations
+        return await userOfficeRepo.find({ where: { userId: Number(userId) }, relations: ['role', 'office'] });
     }
+
+    
 
 
     async assignRoleToUser(userId, roleId, isExternal) {
