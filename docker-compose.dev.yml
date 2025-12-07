@@ -8,6 +8,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-se_ii_db}
+
     ports:
       - "5432:5432"
     volumes:
@@ -46,6 +47,8 @@ services:
     volumes:
       - ./backend:/app
       - backend_node_modules:/app/node_modules   #need to be removed when prod code
+    env_file:
+      - .env
     environment:
       PG_HOST: db
       PG_PORT: 5432

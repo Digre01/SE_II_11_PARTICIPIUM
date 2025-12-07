@@ -6,6 +6,7 @@ export function mapUserToDTO(user) {
         name: user.name,
         surname: user.surname,
         userType: user.userType,
+        isVerified: user.isVerified,
         // user.userOffice may be an array (multiple roles) — pick the first mapping for backward compatibility
         officeId: user.userOffice
             ? (Array.isArray(user.userOffice)

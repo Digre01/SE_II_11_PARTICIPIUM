@@ -14,6 +14,7 @@ import API from "./API/API.mjs";
 import { useState, useEffect, useRef } from "react";
 import { LoginForm } from "./components/authComponents/loginForm.jsx";
 import SignUpForm from "./components/authComponents/signUpForm.jsx";
+import VerifyEmail from "./components/authComponents/VerifyEmail.jsx";
 import ConversationsPage from './components/messageComponents/ConversationsPage.jsx';
 import ConversationPage from './components/messageComponents/ConversationPage.jsx';
 import ReportsPage from './components/reportsPage/ReportsPage.jsx';
@@ -34,6 +35,7 @@ function App() {
   const isAdmin = String(user?.userType || '').toLowerCase() === 'admin';
   const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
   const isStaff = String(user?.userType || '').toLowerCase() === 'staff';
+  const isVerified = Boolean(user?.isVerified); // <-- controllo verifica
 
   // Aggiorna il conteggio notifiche
   const updateNotificationCount = async () => {
@@ -75,6 +77,30 @@ function App() {
     };
     fetchCurrentUser();
   }, []);
+
+  //Force refresh, we use it for redirect (Verify mail) that needs to update the "isVerified" >:)
+  const refreshCurrentUser = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/v1/sessions/current', {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+        const roleName = userData?.roleName || null;
+        setIsReportsAllowed(Boolean(roleName && String(roleName).toLowerCase() === 'municipal public relations officer'));
+        setLoggedIn(true);
+      } else {
+        setUser(undefined);
+        setLoggedIn(false);
+        setIsReportsAllowed(false);
+      }
+    } catch {
+      setUser(undefined);
+      setLoggedIn(false);
+      setIsReportsAllowed(false);
+    }
+  };
 
   useEffect(() => {
     updateNotificationCount();
@@ -139,8 +165,8 @@ function App() {
   };
 
   const handleSignUp = async (data) => {
-    const user = await API.signUp(data);
-    setUser(user);
+    const result = await API.signUp(data);
+    setUser(result.user);
     setIsReportsAllowed(false);
     setLoggedIn(true);
     updateNotificationCount();
@@ -164,11 +190,27 @@ function App() {
   return (
     <Routes>
       <Route element={<DefaultLayout user={user} loggedIn={loggedIn} isAdmin={isAdmin} isReportsAllowed={isReportsAllowed} handleLogout={handleLogout} notificationCount={notificationCount}/> }>
-        <Route path='/' element={<HomePage user={user} loggedIn={loggedIn} isAdmin={isAdmin} isCitizen={isCitizen} isStaff={isStaff} isReportsAllowed={isReportsAllowed} wsMessage={wsMessage}/>}/>
-        <Route path='/login' element={
-          loggedIn ? <Navigate to='/' replace /> : <LoginForm handleLogin={handleLogin}/>
+
+        <Route path='/' element={
+          <HomePage user={user} loggedIn={loggedIn} isAdmin={isAdmin} isCitizen={isCitizen} isStaff={isStaff} isReportsAllowed={isReportsAllowed} wsMessage={wsMessage}/>
         }/>
+
+        <Route path='/login' element={
+          loggedIn
+            ? (isVerified
+                ? <Navigate to='/' replace />
+                : <Navigate to='/verify_mail' replace />)
+            : <LoginForm handleLogin={handleLogin}/>
+        }/>
+
         <Route path='/signup' element={<SignUpForm handleSignUp={handleSignUp}/>}/>
+
+        <Route path='/verify_mail' element={
+          (!loggedIn)
+            ? (<Navigate to='/login' replace />)
+            : (<VerifyEmail user={user} onVerified={refreshCurrentUser} />)
+        }/>
+
         <Route path='/staff_signup' element={
           (!loggedIn)
             ? <Navigate to="/login" replace />
@@ -176,6 +218,7 @@ function App() {
               ? <StaffRegistration/>
               : <Navigate to="/" replace />
         }/>
+
         <Route path='/assign_role' element={
           (!loggedIn)
             ? <Navigate to="/login" replace />
@@ -183,11 +226,15 @@ function App() {
               ? <AssignRole/>
               : <Navigate to="/" replace />
         }/>
+
         <Route path='/report' element={
           isCitizen
-            ? <ReportForm user={user} loggedIn={loggedIn}/>
+            ? (isVerified
+                ? <ReportForm user={user} loggedIn={loggedIn}/>
+                : <Navigate to="/verify_mail" replace />)
             : <Navigate to="/" replace />
         } />
+
         <Route path='/reports' element={
           (!loggedIn)
             ? <Navigate to="/login" replace />
@@ -211,13 +258,18 @@ function App() {
               ? <ReportReview user={user} loggedIn={loggedIn} />
               : <Navigate to="/" replace />
         } />
+
         <Route path='/setting' element={
           (!loggedIn)
             ? <Navigate to="/login" replace />
-            : (isCitizen)
-              ? <AccountConfig user={user} loggedIn={loggedIn} />
-              : <Navigate to="/" replace />
+            : (isCitizen
+                ? (isVerified
+                    ? <AccountConfig user={user} loggedIn={loggedIn} />
+                    : <Navigate to="/verify_mail" replace />)
+                : <Navigate to="/" replace />
+              )
         } />
+
         <Route path='/conversations' element={
           (!loggedIn)
             ? <Navigate to="/login" replace />
@@ -228,7 +280,7 @@ function App() {
             ? <Navigate to="/login" replace />
             : <ConversationPage user={user} loggedIn={loggedIn} handleNotificationsUpdate={handleNotificationsUpdate} wsMessage={wsMessage} />
         } />
-        
+
         <Route path='*' element={<NotFoundPage/>} />
       </Route>
     </Routes>

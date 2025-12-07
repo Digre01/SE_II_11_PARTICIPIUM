@@ -1,10 +1,11 @@
-import Router from "express";
+import { Router } from "express";
 import userController from "../controllers/userController.js";
 import passport from "passport";
 import { requireAdminIfCreatingStaff, authorizeUserType } from "../middlewares/userAuthorization.js";
 import {BadRequestError} from "../errors/BadRequestError.js";
 import upload from '../middlewares/uploadMiddleware.js';
 import fs from 'fs';
+import { sendVerificationEmail } from '../utils/email.js';
 
 const router = Router();
 
@@ -92,27 +93,72 @@ router.get('/available_staff', authorizeUserType(['ADMIN']), async function(req,
     } catch (err) { next(err); }
 });
 
-
 //signup
 router.post("/signup", requireAdminIfCreatingStaff,
-    async function(
-    req,
-    res,
-    next) {
-    try {
-        const user = await userController.createUser(req.body);
+    async function(req, res, next) {
+        try {
+            const { email, userType } = req.body;
+            if (!email) {
+                return next(new BadRequestError('email is required'));
+            }
 
-        if (user.userType === 'citizen'){ // if a citizen signs up, log them in
-            req.login(user, (err) => {  // login after sign up
+            const isStaff = String(userType || '').toUpperCase() === 'STAFF';
+            const user = await userController.createUser(req.body);
+
+            if (isStaff) {
+                //skip email
+                const verifiedUser = await userController.markEmailVerified(user.id);
+                return res.status(201).json({ user: verifiedUser, emailSent: false, emailReason: 'staff auto-verified' });
+            }
+
+            //citizen
+            const { code } = await userController.createEmailVerification(user.id);
+
+            let emailSent = false;
+            let emailReason;
+            try {
+                const result = await sendVerificationEmail(email, code);
+                emailSent = Boolean(result?.sent);
+                emailReason = result?.reason;
+            } catch (mailErr) {
+                emailReason = mailErr?.message || String(mailErr);
+                console.error('sendVerificationEmail failed:', emailReason);
+            }
+            req.login(user, (err) => {
                 if (err) return next(err);
-                return res.status(201).json(req.user);
+                return res.status(201).json({ user, emailSent, emailReason });
             });
-        } else {
-            // if an admin creates a staff member, return the created user without logging in
-            return res.status(201).json(user);
+        } catch (err) {
+            next(err);
         }
+    }
+);
+
+
+
+// verify email for currently authenticated session user 
+import { UnauthorizedError } from '../errors/UnauthorizedError.js';
+router.post('/current/verify_email', async function(req, res, next) {
+    try {
+        if (!req.isAuthenticated?.() || !req.user?.id) {
+            return next(new UnauthorizedError('Not authenticated'));
+        }
+        const { code } = req.body || {};
+        if (!code) return next(new BadRequestError('code is required'));
+        const user = await userController.verifyEmail(Number(req.user.id), code);
+        return res.status(200).json({ message: 'Email verified', user });
     } catch (err) {
-        next(err)
+        next(err);
+    }
+});
+
+// Check if email is verified
+router.get('/current/email_verified', authorizeUserType(['CITIZEN']), async function(req, res, next) {
+    try {
+        const result = await userController.isEmailVerified(Number(req.user.id));
+        return res.status(200).json(result);
+    } catch (err) {
+        next(err);
     }
 });
 

@@ -30,8 +30,21 @@ function SignUpForm(props){
             return {error: "The fields can't be empty."}
         }
 
-        const user = await props.handleSignUp(data);
-        navigate(`/`);
+        try {
+            const user = await props.handleSignUp(data);
+            // If signup succeeds, go to email verification page
+            navigate(`/verify_mail`);
+            return { success: true };
+        } catch (err) {
+            
+            const status = err?.status ?? err?.response?.status;
+            if (status === 409) {
+                const serverMsg = err?.response?.data?.message || err?.message;
+                return { error: serverMsg || "Username or email already in use." };
+            }
+            const serverMsg = err?.response?.data?.message || err?.message;
+            return { error: serverMsg || "Registration failed. Please try again." };
+        }
     }
 
     const handleInputChange = (e) => {
