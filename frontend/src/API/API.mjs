@@ -182,6 +182,37 @@ export async function assignRole(userId, roleId, isExternal) {
   }
 }
 
+// GET /api/v1/sessions/:id/roles
+export async function fetchUserRoles(userId) {
+  const response = await fetch(`${SERVER_URL}/api/v1/sessions/${userId}/roles`, {
+    method: 'GET',
+    credentials: 'include'
+  });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+}
+
+// PUT /api/v1/sessions/:id/roles
+export async function setUserRoles(userId, rolesPayload) {
+  const response = await fetch(`${SERVER_URL}/api/v1/sessions/${userId}/roles`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify({ roles: rolesPayload })
+  });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+}
+
+
 // GET available staff for role assignment
 export async function fetchAvailableStaff() {
   const response = await fetch(`${SERVER_URL}/api/v1/sessions/available_staff`, {
