@@ -265,7 +265,19 @@ export async function seedDatabase() {
       { report: { id: 7 }, createdAt: '2025-11-24T17:41:08.014828Z' },
       { report: { id: 8 }, createdAt: '2025-11-24T17:41:11.063828Z' },
       { report: { id: 9 }, createdAt: '2025-11-24T17:41:14.276978Z' },
-      { report: { id: 10 }, createdAt: '2025-11-24T17:41:17.062239Z' }
+      { report: { id: 10 }, createdAt: '2025-11-24T17:41:17.062239Z' },
+      { report: { id: 11 }, createdAt: '2025-11-24T17:45:20.123456Z' },
+      { report: { id: 12 }, createdAt: '2025-11-24T17:46:21.234567Z' },
+      { report: { id: 13 }, createdAt: '2025-11-24T17:47:22.345678Z' },
+      { report: { id: 14 }, createdAt: '2025-11-24T17:48:23.456789Z' },
+      { report: { id: 15 }, createdAt: '2025-11-24T17:49:24.567890Z' },
+      { report: { id: 16 }, createdAt: '2025-11-24T17:50:25.678901Z' },
+      { report: { id: 17 }, createdAt: '2025-11-24T17:51:26.789012Z' },
+      { report: { id: 18 }, createdAt: '2025-11-24T17:52:27.890123Z' },
+      { report: { id: 19 }, createdAt: '2025-11-24T17:53:28.901234Z' },
+      { report: { id: 20 }, createdAt: '2025-11-24T18:00:00.000000Z' },
+      { report: { id: 21 }, createdAt: '2025-11-24T18:05:00.000000Z' }
+
     ]);
     console.log("Added default Conversations");
   }
@@ -287,6 +299,15 @@ export async function seedDatabase() {
       { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:41:11.067828Z", isSystem: true, conversation: { id: 8 } },
       { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:41:14.276978Z", isSystem: true, conversation: { id: 9 } },
       { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:41:17.062239Z", isSystem: true, conversation: { id: 10 } }, 
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:45:20.123456Z", isSystem: true, conversation: { id: 11 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:46:21.234567Z", isSystem: true, conversation: { id: 12 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:47:22.345678Z", isSystem: true, conversation: { id: 13 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:48:23.456789Z", isSystem: true, conversation: { id: 14 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:49:24.567890Z", isSystem: true, conversation: { id: 15 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:50:25.678901Z", isSystem: true, conversation: { id: 16 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:51:26.789012Z", isSystem: true, conversation: { id: 17 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:52:27.890123Z", isSystem: true, conversation: { id: 18 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:53:28.901234Z", isSystem: true, conversation: { id: 19 } },
       // Assigned
       { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:05.194941Z", isSystem: true, conversation: { id: 1 } },
       { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:08.044277Z", isSystem: true, conversation: { id: 2 } },
@@ -297,7 +318,21 @@ export async function seedDatabase() {
       { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:23.234567Z", isSystem: true, conversation: { id: 7 } },
       { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:26.345678Z", isSystem: true, conversation: { id: 8 } },
       { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:29.456789Z", isSystem: true, conversation: { id: 9 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:32.567890Z", isSystem: true, conversation: { id: 10 } }
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:32.567890Z", isSystem: true, conversation: { id: 10 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:45:20.123456Z", isSystem: true, conversation: { id: 11 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:46:21.234567Z", isSystem: true, conversation: { id: 12 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:47:22.345678Z", isSystem: true, conversation: { id: 13 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:48:23.456789Z", isSystem: true, conversation: { id: 14 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:49:24.567890Z", isSystem: true, conversation: { id: 15 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:50:25.678901Z", isSystem: true, conversation: { id: 16 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:51:26.789012Z", isSystem: true, conversation: { id: 17 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:52:27.890123Z", isSystem: true, conversation: { id: 18 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:53:28.901234Z", isSystem: true, conversation: { id: 19 } },
+      // New conversations messages
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T18:00:00.010000Z", isSystem: true, conversation: { id: 20 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T18:00:00.020000Z", isSystem: true, conversation: { id: 20 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T18:05:00.010000Z", isSystem: true, conversation: { id: 21 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-24T18:05:00.020000Z", isSystem: true, conversation: { id: 21 } }
     ]);
     console.log("Added default Messages");
   }
@@ -337,9 +372,51 @@ export async function seedDatabase() {
       { user: { id: 3 }, message: { id: 9 }, createdAt: "2025-11-24T17:41:14.314934Z" },
       // messageId 10
       { user: { id: 2 }, message: { id: 10 }, createdAt: "2025-11-24T17:41:17.086807Z" },
-      { user: { id: 3 }, message: { id: 10 }, createdAt: "2025-11-24T17:41:17.092776Z" }
+      { user: { id: 3 }, message: { id: 10 }, createdAt: "2025-11-24T17:41:17.092776Z" },
+      // messageId 11
+      { user: { id: 2 }, message: { id: 11 }, createdAt: "2025-11-24T17:45:20.137890Z" },
+      { user: { id: 3 }, message: { id: 11 }, createdAt: "2025-11-24T17:45:20.142678Z" },
+      // messageId 12
+      { user: { id: 2 }, message: { id: 12 }, createdAt: "2025-11-24T17:46:21.249345Z" },
+      { user: { id: 3 }, message: { id: 12 }, createdAt: "2025-11-24T17:46:21.255123Z" },
+      // messageId 13
+      { user: { id: 2 }, message: { id: 13 }, createdAt: "2025-11-24T17:47:22.358912Z" },
+      { user: { id: 3 }, message: { id: 13 }, createdAt: "2025-11-24T17:47:22.364789Z" },
+      // messageId 14
+      { user: { id: 2 }, message: { id: 14 }, createdAt: "2025-11-24T17:48:23.468123Z" },
+      { user: { id: 3 }, message: { id: 14 }, createdAt: "2025-11-24T17:48:23.473456Z" },
+      // messageId 15
+      { user: { id: 2 }, message: { id: 15 }, createdAt: "2025-11-24T17:49:24.579012Z" },
+      { user: { id: 3 }, message: { id: 15 }, createdAt: "2025-11-24T17:49:24.584345Z" },
+      // messageId 16
+      { user: { id: 2 }, message: { id: 16 }, createdAt: "2025-11-24T17:50:25.689123Z" },
+      { user: { id: 3 }, message: { id: 16 }, createdAt: "2025-11-24T17:50:25.694567Z" },
+      // messageId 17
+      { user: { id: 2 }, message: { id: 17 }, createdAt: "2025-11-24T17:51:26.798234Z" },
+      { user: { id: 3 }, message: { id: 17 }, createdAt: "2025-11-24T17:51:26.803456Z" },
+      // messageId 18
+      { user: { id: 2 }, message: { id: 18 }, createdAt: "2025-11-24T17:52:27.905678Z" },
+      { user: { id: 3 }, message: { id: 18 }, createdAt: "2025-11-24T17:52:27.910789Z" }
     ]);
     console.log("Added default Notifications");
+  }
+
+  // Add notifications for newly added conversations (20, 21): create for all system messages in those conversations
+  const conv20 = await conversationRepo.findOne({ where: { id: 20 } });
+  const conv21 = await conversationRepo.findOne({ where: { id: 21 } });
+  if (conv20 || conv21) {
+    const { Message } = await import("../entities/Message.js");
+    const messageRepo2 = AppDataSourcePostgres.getRepository(Message);
+    const messagesNew = await messageRepo2.find({ where: [{ conversation: { id: 20 } }, { conversation: { id: 21 } }] });
+    const notificationsToAdd = [];
+    messagesNew.forEach(m => {
+      notificationsToAdd.push({ user: { id: 2 }, message: { id: m.id }, createdAt: new Date().toISOString() });
+      notificationsToAdd.push({ user: { id: 3 }, message: { id: m.id }, createdAt: new Date().toISOString() });
+    });
+    if (notificationsToAdd.length > 0) {
+      await notificationRepo.save(notificationsToAdd);
+      console.log("Added notifications for conversations 20 and 21");
+    }
   }
 
   // Photos
@@ -365,7 +442,24 @@ export async function seedDatabase() {
       { link: "/public/Trash_upsidedown1.jpg", reportId: 9 },
       { link: "/public/Trash_upsidedown2.jpg", reportId: 9 },
       { link: "/public/Missing_trashbin.jpg", reportId: 10 },
-      { link: "/public/Smeared_trafficsign.jpg", reportId: 11 }
+      { link: "/public/Traffic_sign.jpg", reportId: 11 },
+      { link: "/public/Loadsoftrash.jpg", reportId: 12 },
+      { link: "/public/SmokingBig_manhole1.jpg", reportId: 13 },
+      { link: "/public/SmokingBig_manhole2.jpg", reportId: 13 },
+      { link: "/public/SmokingBig_manhole3.jpg", reportId: 13 },
+      { link: "/public/Broken_lamp1.jpg", reportId: 14 },
+      { link: "/public/Broken_lamp2.jpg", reportId: 14 },
+      { link: "/public/Hole1.jpg", reportId: 15 },
+      { link: "/public/Hole2.jpg", reportId: 15 },
+      { link: "/public/Hole_2.jpg", reportId: 16 },
+      { link: "/public/Broken_lamp_2.jpg", reportId: 17 },
+      { link: "/public/Hole_3.jpg", reportId: 18 },
+      { link: "/public/Bent_stake.jpg", reportId: 19 },
+      { link: "/public/Bent_stake2.jpg", reportId: 19 },
+      { link: "/public/Stuck_escalator1.jpg", reportId: 20 },
+      { link: "/public/Stuck_escalator2.jpg", reportId: 20 },
+      { link: "/public/Moving_paving_slub.jpg", reportId: 21 }
+      
     ]);
     console.log("Added default Photos");
   }
