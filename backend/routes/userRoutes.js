@@ -26,6 +26,33 @@ router.patch('/:id/role', authorizeUserType(['ADMIN']), async function(req, res,
     } catch (err) { next(err); }
 });
 
+// GET /api/v1/sessions/:id/roles - List roles for a user (ADMIN only)
+router.get('/:id/roles', authorizeUserType(['ADMIN']), async function(req, res, next) {
+    try {
+        const userId = Number(req.params.id);
+        const roles = await userController.getUserRoles(userId);
+        res.status(200).json(roles);
+    } catch (err) { next(err); }
+});
+
+// PUT /api/v1/sessions/:id/roles - Set final roles for a user (ADMIN only)
+// Body supports either { roleIds: number[] } or { roles: Array<{ roleId: number, isExternal?: boolean }> }
+router.put('/:id/roles', authorizeUserType(['ADMIN']), async function(req, res, next) {
+    try {
+        const userId = Number(req.params.id);
+        const { roleIds, roles } = req.body || {};
+        let payload = roles;
+        if (!payload && Array.isArray(roleIds)) {
+            payload = roleIds.map(rid => ({ roleId: rid }));
+        }
+        if (!Array.isArray(payload)) {
+            throw new BadRequestError('Provide roleIds array or roles array');
+        }
+        const updated = await userController.setUserRoles(userId, payload);
+        res.status(200).json(updated);
+    } catch (err) { next(err); }
+});
+
 // GET /api/v1/sessions/:id/pfp - Get profile picture URL for a user (authenticated)
 router.get('/:id/pfp', authorizeUserType(['CITIZEN']), async function(req, res, next) {
     try {
