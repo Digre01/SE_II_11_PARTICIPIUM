@@ -10,6 +10,7 @@ export const mockRepo = {
     finishReport: jest.fn(),
     suspendReport: jest.fn(),
     resumeReport: jest.fn(),
+    assignReportToExternalMaintainer: jest.fn(),
 };
 
 // Setup authorization middleware with custom behavior for reports

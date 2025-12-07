@@ -69,19 +69,25 @@ function ReportDetailModal({ isOpen, toggle, report }) {
                             <h6>Photos</h6>
                             <div className="d-flex gap-2 flex-wrap">
                                 {photos.map((photo, index) => (
-                                    <img
+                                    <a 
                                         key={photo.id || index}
-                                        src={SERVER_URL+photo.link}
-                                        alt={`Photo ${index + 1}`}
-                                        style={{
-                                            width: '150px',
-                                            height: '150px',
-                                            objectFit: 'cover',
-                                            borderRadius: '8px',
-                                            cursor: 'pointer'
-                                        }}
-                                        onClick={() => window.open(photo.url, '_blank')}
-                                    />
+                                        href={photo.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="d-block"
+                                    >
+                                        <img
+                                            src={SERVER_URL + photo.link}
+                                            alt={`Photo ${index + 1}`}
+                                            style={{
+                                                width: '150px',
+                                                height: '150px',
+                                                objectFit: 'cover',
+                                                borderRadius: '8px',
+                                                cursor: 'pointer' 
+                                            }}
+                                        />
+                                    </a>
                                 ))}
                             </div>
                         </Col>

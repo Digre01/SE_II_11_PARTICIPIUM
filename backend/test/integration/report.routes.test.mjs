@@ -5,6 +5,7 @@ import { InsufficientRightsError } from '../../errors/InsufficientRightsError.js
 // Repository mock
 const mockRepo = {
   createReport: jest.fn(),
+  assignReportToExternalMaintainer: jest.fn(),
 };
 
 // Mock repository before importing app
@@ -14,18 +15,28 @@ await jest.unstable_mockModule('../../repositories/reportRepository.mjs', () => 
 
 // Mock authorization middleware with role enforcement based on X-Role header
 await jest.unstable_mockModule('../../middlewares/userAuthorization.js', () => ({
-  authorizeUserType: (allowed) => (req, _res, next) => {
+  authorizeUserType: (allowed) => (req, res, next) => {
     const roleHdr = req.header('X-Test-Role');
+    const hasAuth = !!req.header('Authorization') || !!roleHdr;
+
+    // If no auth info provided at all, emulate a 401 from auth middleware
+    if (!hasAuth) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
     if (roleHdr) {
       req.user = { id: 10, userType: roleHdr };
-      const normalized = (allowed || []).map(a => String(a).toUpperCase());
-      const caller = String(roleHdr).toUpperCase();
-      if (!normalized.includes(caller)) {
-        return next(new InsufficientRightsError('Forbidden'));
-      }
-    } else if (req.header('Authorization')) {
+    } else {
+      // without X-Test-Role -> treat as citizen
       req.user = { id: 10, userType: 'citizen' };
     }
+
+    // Enforce allowed user types
+    const normalized = (allowed || []).map(a => String(a).toUpperCase());
+    const caller = String(req.user.userType).toUpperCase();
+    if (normalized.length > 0 && !normalized.includes(caller)) {
+      return next(new InsufficientRightsError('Forbidden'));
+    }
+
     next();
   },
   requireAdminIfCreatingStaff: () => (req, _res, next) => next(), // no-op for tests
@@ -188,7 +199,39 @@ describe('POST /api/v1/reports', () => {
       .post('/api/v1/reports')
       .set('X-Test-Photos', 'a.jpg')
       .send(body);
-    expect(res.status).toBe(400);
-    expect(res.body.message).toMatch(/All fields are required/);
+    // No auth should be rejected by auth middleware
+    expect(res.status).toBe(401);
+  });
+});
+
+describe('PATCH /api/v1/reports/:id/assign_external', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockRepo.assignReportToExternalMaintainer.mockResolvedValue({ id: 1, assignedExternal: true });
+  });
+
+  it('fails without authentication (no auth header)', async () => {
+    const res = await request(app)
+      .patch('/api/v1/reports/1/assign_external');
+    // Staff-only endpoint must reject unauthenticated calls
+    expect(res.status).toBe(401);
+  });
+
+  it('successfully assigns externally for staff user', async () => {
+    const res = await request(app)
+      .patch('/api/v1/reports/1/assign_external')
+      .set('X-Test-Role', 'staff');
+    expect(res.status).toBe(200);
+    expect(res.body.id).toBe(1);
+    expect(res.body.assignedExternal).toBe(true);
+    expect(mockRepo.assignReportToExternalMaintainer).toHaveBeenCalledWith('1');
+  });
+
+  it('returns 404 when repository returns null', async () => {
+    mockRepo.assignReportToExternalMaintainer.mockResolvedValueOnce(null);
+    const res = await request(app)
+      .patch('/api/v1/reports/999/assign_external')
+      .set('X-Test-Role', 'staff');
+    expect(res.status).toBe(404);
   });
 });
