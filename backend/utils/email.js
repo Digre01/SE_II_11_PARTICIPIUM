@@ -23,7 +23,7 @@ export const sendVerificationEmail = async (email, code) => {
     secure: true,
     auth: {
         user: 'resend',            
-        pass: process.env.SMTP_KEY, 
+        pass: process.env.RESEND_SMTP_KEY, 
     },
   });
   */
