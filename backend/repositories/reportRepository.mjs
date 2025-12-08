@@ -3,6 +3,8 @@ import { Report } from "../entities/Reports.js";
 import { Photos } from "../entities/Photos.js";
 import { Users } from "../entities/Users.js";
 import { Categories } from "../entities/Categories.js";
+import { UserOffice } from "../entities/UserOffice.js";
+import { Office } from "../entities/Offices.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
 
 export class ReportRepository {
@@ -224,6 +226,64 @@ export class ReportRepository {
         const photoRepo = AppDataSourcePostgres.getRepository(Photos);
         return await photoRepo.find({ where: { reportId: Number(reportId) } });
     }
+
+	async externalStart({ reportId, externalMaintainerId }) {
+		return await this._externalChangeStatus({ reportId, externalMaintainerId, status: 'in_progress' });
+	}
+
+	async externalFinish({ reportId, externalMaintainerId }) {
+		return await this._externalChangeStatus({ reportId, externalMaintainerId, status: 'resolved' });
+	}
+
+	async externalSuspend({ reportId, externalMaintainerId }) {
+		return await this._externalChangeStatus({ reportId, externalMaintainerId, status: 'suspended' });
+	}
+
+	async externalResume({ reportId, externalMaintainerId }) {
+		// If the report previously had any technicianId we can't infer it here; resume to 'assigned'
+		return await this._externalChangeStatus({ reportId, externalMaintainerId, status: 'assigned' });
+	}
+
+	async _externalChangeStatus({ reportId, externalMaintainerId, status }) {
+		// reuse validation: report exists, assignedExternal true, user belongs to external office
+		const report = await this.repo.findOne({ where: { id: Number(reportId) }, relations: ['category'] });
+		if (!report) return null;
+		if (!report.assignedExternal) return null;
+
+		const categoryRepo = AppDataSourcePostgres.getRepository(Categories);
+		const category = await categoryRepo.findOne({ where: { id: Number(report.categoryId) }, relations: ['externalOffice'] });
+		const externalOfficeId = category?.externalOfficeId || (category?.externalOffice && category.externalOffice.id) || null;
+		if (!externalOfficeId) return null;
+
+		const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);
+		const membership = await userOfficeRepo.findOne({ where: { userId: Number(externalMaintainerId), officeId: Number(externalOfficeId) } });
+		if (!membership) return null;
+
+		const officeRepo = AppDataSourcePostgres.getRepository(Office);
+		const office = await officeRepo.findOneBy({ id: Number(externalOfficeId) });
+		if (!office || !office.isExternal) return null;
+
+		report.status = status;
+		const savedReport = await this.repo.save(report);
+
+		// Add external maintainer to conversation participants if conversation exists
+		const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
+		const conversation = await convRepo.findOne({ where: { report: { id: report.id } }, relations: ['participants'] });
+		if (conversation) {
+			const { addParticipantToConversation } = await import('./conversationRepository.js');
+			try {
+				await addParticipantToConversation(conversation.id, externalMaintainerId);
+			} catch (e) {
+				// ignore participant adding errors
+			}
+			const { createSystemMessage } = await import('./messageRepository.js');
+			const { broadcastToConversation } = await import('../wsHandler.js');
+			const sysMsg = await createSystemMessage(conversation.id, `Report status change to: ${status}`);
+			await broadcastToConversation(conversation.id, sysMsg);
+		}
+
+		return savedReport;
+	}
 }
 
 export const reportRepository = new ReportRepository();

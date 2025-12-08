@@ -35,11 +35,13 @@ function ReportsPage({user}) {
 
     const officeReports = (reports || []).filter(r => {
         const statusMatch = ["assigned", "in_progress", "suspended"].includes(String(r.status || '').toLowerCase());
+        // normalize user's office ids to an array for safe includes checks
+        const userOfficeIds = Array.isArray(user?.officeId) ? user.officeId : (user?.officeId ? [user.officeId] : []);
         const officeMatch = !isExternal ?
-            user?.officeId.includes(r.category?.officeId) :
-            r.category?.externalOfficeId === user?.officeId;
+            userOfficeIds.includes(r.category?.officeId) :
+            userOfficeIds.includes(r.category?.externalOfficeId);
         const externalAssignmentMatch = isExternal
-            ? true
+            ? r.assignedExternal === true
             : r.assignedExternal !== true;
         return statusMatch && officeMatch && externalAssignmentMatch;
     })

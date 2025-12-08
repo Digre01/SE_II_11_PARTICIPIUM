@@ -45,3 +45,19 @@ export async function assignReportToExternalMaintainer({reportId}) {
 export async function getReportPhotos(reportId) {
     return await reportRepository.getReportPhotos(reportId);
 }
+
+export async function externalStart({ reportId, externalMaintainerId }) {
+  return await reportRepository.externalStart({ reportId, externalMaintainerId });
+}
+
+export async function externalFinish({ reportId, externalMaintainerId }) {
+  return await reportRepository.externalFinish({ reportId, externalMaintainerId });
+}
+
+export async function externalSuspend({ reportId, externalMaintainerId }) {
+  return await reportRepository.externalSuspend({ reportId, externalMaintainerId });
+}
+
+export async function externalResume({ reportId, externalMaintainerId }) {
+  return await reportRepository.externalResume({ reportId, externalMaintainerId });
+}
