@@ -52,6 +52,16 @@ class UserRepository {
         return await qb.getMany();
     }
 
+    async getAssignedStaffForRoleModification() {
+        // return users with userType = 'STAFF' that HAVE at least one UserOffice row
+        const repo = AppDataSourcePostgres.getRepository(Users);
+        const qb = repo.createQueryBuilder('user')
+            .leftJoinAndSelect('user.userOffice', 'userOffice')
+            .where("UPPER(user.userType) = :staff", { staff: 'STAFF' })
+            .andWhere('userOffice.userId IS NOT NULL');
+        return await qb.getMany();
+    }
+
     async getUserRoles(userId) {
         const userRepo = AppDataSourcePostgres.getRepository(Users);
         const user = await userRepo.findOne({ where: { id: Number(userId) }, relations: ['userOffice', 'userOffice.role', 'userOffice.office'] });

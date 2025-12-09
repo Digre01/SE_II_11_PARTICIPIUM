@@ -18,6 +18,10 @@ async function getAvailableStaffForRoleAssignment() {
     return await userRepository.getAvailableStaffForRoleAssignment();
 }
 
+async function getAssignedStaffForRoleModification() {
+    return await userRepository.getAssignedStaffForRoleModification();
+}
+
 async function getAllRoles() {
     return await rolesRepository.findAll();
 }
@@ -92,5 +96,5 @@ async function getPfpUrl(userId) {
     
 
 
-const userController = { getUserByUsernameOrEmail, createUser, assignRole, getAvailableStaffForRoleAssignment, getAllRoles, getAllOffices, configAccount, getPfpUrl, addUserRoles, removeUserRole, getUserRoles, setUserRoles };
+const userController = { getUserByUsernameOrEmail, createUser, assignRole, getAvailableStaffForRoleAssignment, getAssignedStaffForRoleModification, getAllRoles, getAllOffices, configAccount, getPfpUrl, addUserRoles, removeUserRole, getUserRoles, setUserRoles };
 export default userController;

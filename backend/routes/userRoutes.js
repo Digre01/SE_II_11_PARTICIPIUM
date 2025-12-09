@@ -15,6 +15,18 @@ router.post('/login', passport.authenticate('local'), function(
         res.status(201).json(req.user);
 });
 
+// GET /api/v1/sessions/me/roles - Roles for the current logged-in user (STAFF or ADMIN)
+router.get('/me/roles', authorizeUserType(['ADMIN','STAFF']), async function(req, res, next) {
+    try {
+        const userId = Number(req.user?.id);
+        if (!userId) {
+            return res.status(401).json({ error: 'UNAUTHORIZED' });
+        }
+        const roles = await userController.getUserRoles(userId);
+        res.status(200).json(roles);
+    } catch (err) { next(err); }
+});
+
 // PATCH /api/v1/sessions/:id/role - Assign role to staff (ADMIN only)
 router.patch('/:id/role', authorizeUserType(['ADMIN']), async function(req, res, next) {
     try {
@@ -26,14 +38,23 @@ router.patch('/:id/role', authorizeUserType(['ADMIN']), async function(req, res,
     } catch (err) { next(err); }
 });
 
-// GET /api/v1/sessions/:id/roles - List roles for a user (ADMIN only)
-router.get('/:id/roles', authorizeUserType(['ADMIN']), async function(req, res, next) {
+// GET /api/v1/sessions/:id/roles - List roles for a user
+// Allows ADMIN to query any user; allows a logged-in STAFF user to query their own roles
+router.get('/:id/roles', authorizeUserType(['ADMIN','STAFF']), async function(req, res, next) {
     try {
         const userId = Number(req.params.id);
+        const callerType = String(req.user?.userType || '').toUpperCase();
+        const isAdmin = callerType === 'ADMIN';
+        const isSelf = req.user?.id === userId;
+        if (!isAdmin && !isSelf) {
+            // Only admins can query other users' roles
+            return res.status(403).json({ error: 'FORBIDDEN' });
+        }
         const roles = await userController.getUserRoles(userId);
         res.status(200).json(roles);
     } catch (err) { next(err); }
 });
+
 
 // PUT /api/v1/sessions/:id/roles - Set final roles for a user (ADMIN only)
 // Body supports either { roleIds: number[] } or { roles: Array<{ roleId: number, isExternal?: boolean }> }
@@ -114,6 +135,15 @@ router.patch(
 router.get('/available_staff', authorizeUserType(['ADMIN']), async function(req, res, next) {
     try {
         const users = await userController.getAvailableStaffForRoleAssignment();
+        const mapped = users.map(u => ({ id: u.id, username: u.username, name: u.name, surname: u.surname }));
+        res.status(200).json(mapped);
+    } catch (err) { next(err); }
+});
+
+// GET list of staff users already assigned to at least one role (ADMIN only)
+router.get('/assigned_staff', authorizeUserType(['ADMIN']), async function(req, res, next) {
+    try {
+        const users = await userController.getAssignedStaffForRoleModification();
         const mapped = users.map(u => ({ id: u.id, username: u.username, name: u.name, surname: u.surname }));
         res.status(200).json(mapped);
     } catch (err) { next(err); }

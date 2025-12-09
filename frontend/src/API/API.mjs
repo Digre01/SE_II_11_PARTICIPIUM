@@ -195,6 +195,19 @@ export async function fetchUserRoles(userId) {
   }
 }
 
+// GET /api/v1/sessions/me/roles
+export async function fetchMyRoles() {
+  const response = await fetch(`${SERVER_URL}/api/v1/sessions/me/roles`, {
+    method: 'GET',
+    credentials: 'include'
+  });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+}
+
 // PUT /api/v1/sessions/:id/roles
 export async function setUserRoles(userId, rolesPayload) {
   const response = await fetch(`${SERVER_URL}/api/v1/sessions/${userId}/roles`, {
@@ -216,6 +229,16 @@ export async function setUserRoles(userId, rolesPayload) {
 // GET available staff for role assignment
 export async function fetchAvailableStaff() {
   const response = await fetch(`${SERVER_URL}/api/v1/sessions/available_staff`, {
+    method: 'GET',
+    credentials: 'include'
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+}
+
+// GET assigned staff (already have at least one role)
+export async function fetchAssignedStaff() {
+  const response = await fetch(`${SERVER_URL}/api/v1/sessions/assigned_staff`, {
     method: 'GET',
     credentials: 'include'
   });
@@ -325,5 +348,5 @@ const sendMessage = async (conversationId, content) => {
   throw await response.text();
 };
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, sendMessage };
+const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchAssignedStaff, fetchRoles, fetchOffices, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, sendMessage, fetchMyRoles, fetchUserRoles };
 export default API;
