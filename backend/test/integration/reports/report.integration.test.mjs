@@ -390,7 +390,7 @@ describe('PATCH /api/v1/reports/:id/assign_external', () => {
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ id: 1, assignedExternal: true });
     expect(mockRepo.assignReportToExternalMaintainer).toHaveBeenCalledTimes(1);
-    expect(mockRepo.assignReportToExternalMaintainer).toHaveBeenCalledWith('1');
+    expect(mockRepo.assignReportToExternalMaintainer).toHaveBeenCalledWith('1', 10);
   });
 
   it('returns 404 when report does not exist', async () => {
@@ -401,7 +401,7 @@ describe('PATCH /api/v1/reports/:id/assign_external', () => {
       .set('X-Test-User-Type', 'staff');
 
     expect(res.status).toBe(404);
-    expect(mockRepo.assignReportToExternalMaintainer).toHaveBeenCalledWith('999');
+    expect(mockRepo.assignReportToExternalMaintainer).toHaveBeenCalledWith('999', 10);
   });
 
   it('returns 403 when called by citizen', async () => {

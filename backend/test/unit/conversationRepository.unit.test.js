@@ -66,11 +66,11 @@ describe('conversationRepository', () => {
   });
 
   it('createConversation crea e salva', async () => {
-    mockCreate.mockReturnValue({ report: 1, participants: [2] });
+    mockCreate.mockReturnValue({ report: 1, participants: [2], isInternal: false });
     mockSave.mockResolvedValue({ id: 99 });
     const result = await createConversation({ report: 1, participants: [2] });
-    expect(mockCreate).toHaveBeenCalledWith({ report: 1, participants: [2] });
-    expect(mockSave).toHaveBeenCalledWith({ report: 1, participants: [2] });
+    expect(mockCreate).toHaveBeenCalledWith({ report: 1, participants: [2], isInternal: false });
+    expect(mockSave).toHaveBeenCalledWith({ report: 1, participants: [2], isInternal: false });
     expect(result).toEqual({ id: 99 });
   });
 
