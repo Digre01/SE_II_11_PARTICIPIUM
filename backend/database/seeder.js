@@ -65,7 +65,8 @@ export async function seedDatabase() {
       { username: 'citizen', email: 'anna.gialli@email.it', name: 'Anna', surname: 'Gialli', telegramId: null, photoId: null, emailNotifications: false, password: '8eb331671576a8691107e2f0aa9be4badc9c3eb4125bde6c19513a66b86c3e4b', salt: '79e7eefbafbdd24a94407e802bbb10d4', userType: 'citizen', isVerified: true, verificationCode: null, verificationCodeExpires: null },
       { username: 'staff1', email: 'mario.rossi@participium.it', name: 'Mario', surname: 'Rossi', telegramId: null, photoId: null, emailNotifications: false, password: '545ce5de6a56c66b35a1e407a40c7c678eae373beea3883f2c4527664125166b', salt: '5bad9287ac7de649a5bc62ab91150931', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null},
       { username: 'staff2', email: 'luigi.verdi@participium.it', name: 'Luigi', surname: 'Verdi', telegramId: null, photoId: null, emailNotifications: false, password: '3b20f4a45c87791030262371d32bff00f4ffc7846ffed500aeb7436f341c515b', salt: 'abadcde601267d1aa3a579002f0eb4f7', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null},
-      { username: 'staff3', email: 'giovanni.bianchi@participium.it', name: 'Giovanni', surname: 'Bianchi', telegramId: null, photoId: null, emailNotifications: false, password: '688a3ce4dcec36ca0bb3349217fae599fb9d6b060c0a6df3585a2ab8f2fe8dae', salt: 'e8ab52af1d00bb0b830e0c4c3b85b9b7', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null}
+      { username: 'staff3', email: 'giovanni.bianchi@participium.it', name: 'Giovanni', surname: 'Bianchi', telegramId: null, photoId: null, emailNotifications: false, password: '688a3ce4dcec36ca0bb3349217fae599fb9d6b060c0a6df3585a2ab8f2fe8dae', salt: 'e8ab52af1d00bb0b830e0c4c3b85b9b7', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null},
+      { username: 'external1', email: '	external1@iren.it', name: 'Bruno', surname: 'Tuono', telegramId: null, photoId: null, emailNotifications: false, password: '906c0ea039d50f55beeafe0cbb46a98cdf4604f9f43d104cb3cdc697f1b4ff91', salt: 'ed24991e0bfc8cec4347eb9fc9b11467', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null}
     ]);
     console.log("Added default Users");
   }
@@ -73,6 +74,7 @@ export async function seedDatabase() {
   const staff1 = await userRepo.findOne({ where: { username: 'staff1' } });
   const staff2 = await userRepo.findOne({ where: { username: 'staff2' } });
   const staff3 = await userRepo.findOne({ where: { username: 'staff3' } });
+  const external1 = await userRepo.findOne({ where: { username: 'external1' } });
 
   // Roles
   const { Roles } = await import("../entities/Roles.js");
@@ -103,7 +105,8 @@ export async function seedDatabase() {
     await userOfficeRepo.save([
       { userId: staff1.id, officeId: officeMap['Organization Office'], roleId: 1 },
       { userId: staff2.id, officeId: officeMap['Public Lighting Office'], roleId: 6 },
-      { userId: staff3.id, officeId: officeMap['Roads and Urban Furnishings Office'], roleId: 9 }
+      { userId: staff3.id, officeId: officeMap['Roads and Urban Furnishings Office'], roleId: 9 },
+      { userId: external1.id, officeId: officeMap['IREN'], roleId: 6 }
     ]);
     console.log("Added default UserOffice");
   }

@@ -55,13 +55,42 @@ docker compose up
     username: admin
     password: admin
 
-### Staff:
+### Internal staff members:
 
     username: staff1
     password: staff1
+    role: Municipal Public Relations Officer
+    office: Organization Office
 
     username: staff2
     password: staff2
+    role: Lighting Technician
+    office: Public Lighting Office
 
     username: staff3
     password: staff3
+    role: Public Works Supervisor
+    office: Roads and Urban Furnishings Office
+
+### External maintainer
+
+    username: external1
+    password: external1
+    role: Lighting Technician
+    office: IREN
+
+## Roles and Offices
+
+| Role                           | Municipal Office                              | External Office         |
+|---------------------------------|------------------------------------------------|------------------------|
+| Municipal Public Relations Officer | Organization Office                         |                        |
+| Municipal Administrator         | Organization Office                           |                        |
+| Water Systems Technician        | Water Office                                  | SMAT                   |
+| Accessibility Coordinator       | Architectural Barriers Office                 | AccessiWay             |
+| Wastewater Engineer             | Sewer System Office                           | Bosco Spurghi          |
+| Lighting Technician             | Public Lighting Office                        | IREN                   |
+| Waste Management Officer        | Waste Management Office                       | Soris                  |
+| Traffic Systems Technician      | Road Signs and Traffic Lights Office          | 5T Srl                 |
+| Public Works Supervisor         | Roads and Urban Furnishings Office            | F.G. Srl               |
+| Parks and Recreation Officer    | Public Green Areas and Playgrounds Office     | Turin Garden           |
+| General Maintenance Worker      | Generic Office                                | taskrabbit             |
