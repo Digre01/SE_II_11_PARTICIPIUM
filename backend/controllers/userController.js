@@ -18,6 +18,10 @@ async function getAvailableStaffForRoleAssignment() {
     return await userRepository.getAvailableStaffForRoleAssignment();
 }
 
+async function getAssignedStaffForRoleModification() {
+    return await userRepository.getAssignedStaffForRoleModification();
+}
+
 async function getAllRoles() {
     return await rolesRepository.findAll();
 }
@@ -100,6 +104,22 @@ async function assignRole(userId, roleId, isExternal) {
     }
 }
 
+async function addUserRoles(userId, roleIds, isExternal) {
+    return await userRepository.addUserRoles(userId, roleIds, isExternal);
+}
+
+async function removeUserRole(userId, roleId) {
+    return await userRepository.removeUserRole(userId, roleId);
+}
+
+async function getUserRoles(userId) {
+    return await userRepository.getUserRoles(userId);
+}
+
+async function setUserRoles(userId, roles) {
+    return await userRepository.setUserRoles(userId, roles);
+}
+
 async function configAccount(userId, telegramId, emailNotifications, photoUrl){
     const user = await userRepository.configUserAccount(userId, telegramId, emailNotifications, photoUrl);
     return user;
@@ -111,18 +131,5 @@ async function getPfpUrl(userId) {
     
 
 
-const userController = { 
-    getUserByUsernameOrEmail, 
-    createUser, 
-    assignRole, 
-    getAvailableStaffForRoleAssignment, 
-    getAllRoles, 
-    getAllOffices, 
-    configAccount, 
-    getPfpUrl,
-    createEmailVerification,
-    verifyEmail,
-    isEmailVerified,
-    markEmailVerified
-};
+const userController = { getUserByUsernameOrEmail, createUser, assignRole, getAvailableStaffForRoleAssignment, getAssignedStaffForRoleModification, getAllRoles, getAllOffices, configAccount, getPfpUrl, addUserRoles, removeUserRole, getUserRoles, setUserRoles };
 export default userController;

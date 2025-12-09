@@ -10,11 +10,10 @@ function ReportsPage({user}) {
     const [reports, setReports] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedReport, setSelectedReport] = useState(null);
-    const [isExternal, setIsExternal] = useState(false);
-    const [alertVisible, setAlertVisible] = useState(false);
-    const [alertMessage, setAlertMessage] = useState('');
-    const [alertColor, setAlertColor] = useState('primary'); // "primary", "success", "warning", "danger"
-
+    // Initialize with user's officeId to avoid empty UI before roles load
+    const [userOfficeIds, setUserOfficeIds] = useState(() => {
+        return user?.officeId ? [Number(user.officeId)] : [];
+    });
 
     useEffect(() => {
         const fetchReports = async () => {
@@ -24,34 +23,38 @@ function ReportsPage({user}) {
         fetchReports();
     }, []);
 
+    // Load all officeIds for current staff user from backend roles
     useEffect(() => {
-        const fetchOffices = async () => {
-            const offices = await getUserOffices(user.officeId);
-            setIsExternal(offices.some(o => o.isExternal === true));
-        }
-
-        fetchOffices();
-    }, [user]);
+        const loadUserOffices = async () => {
+            try {
+                // Prefer roles of current session to avoid ID mismatch
+                const roles = await API.fetchMyRoles();
+                const officeIds = Array.from(new Set((roles || [])
+                    .map(r => r?.office?.id ?? r?.officeId)
+                    .filter(v => v !== undefined && v !== null)
+                    .map(v => Number(v))));
+                // Fallback to single officeId on user, if any
+                const fallback = user?.officeId ? [Number(user.officeId)] : [];
+                setUserOfficeIds(Array.from(new Set([ ...fallback, ...officeIds])));
+            } catch (e) {
+                // keep current state on error
+            }
+        };
+        loadUserOffices();
+    }, [user?.officeId]);
 
     const officeReports = (reports || []).filter(r => {
         const statusMatch = ["assigned", "in_progress", "suspended"].includes(String(r.status || '').toLowerCase());
-        // normalize user's office ids to an array for safe includes checks
-        const userOfficeIds = Array.isArray(user?.officeId) ? user.officeId : (user?.officeId ? [user.officeId] : []);
-        const officeMatch = !isExternal ?
-            userOfficeIds.includes(r.category?.officeId) :
-            userOfficeIds.includes(r.category?.externalOfficeId);
-        const externalAssignmentMatch = isExternal
-            ? r.assignedExternal === true
-            : r.assignedExternal !== true;
-        return statusMatch && officeMatch && externalAssignmentMatch;
-    })
+        const officeIdRaw = r?.officeId ?? r?.category?.officeId ?? r?.category?.office?.id;
+        const officeId = officeIdRaw !== undefined && officeIdRaw !== null ? Number(officeIdRaw) : undefined;
+        const officeMatch = officeId !== undefined ? userOfficeIds.includes(officeId) : false;
+        return statusMatch && officeMatch;
+    });
 
     const yourReports = (reports || []).filter(r => {
         const status = String(r.status || '').toLowerCase();
-        if (status === 'in_progress' && r.technicianId === user?.id) return true;
-        // Mostra anche report suspended assegnati a te
-        return status === 'suspended' && r.technicianId === user?.id;
-
+        const isMine = r.technicianId === user?.id;
+        return isMine && ["assigned", "in_progress", "suspended"].includes(status);
     });
 
     const handleOpenModal = (report) => {
