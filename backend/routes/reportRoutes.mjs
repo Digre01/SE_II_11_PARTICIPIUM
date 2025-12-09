@@ -143,8 +143,9 @@ router.patch('/:id/resume', authorizeUserType(['staff']), async (req, res, next)
 router.patch('/:id/assign_external', authorizeUserType(['staff']), async (
     req, res, next) => {
     try {
+        const internalStaffMemberId = req.user?.id;
         const updated = await import('../controllers/reportController.mjs').then(
-            mod => mod.assignReportToExternalMaintainer({ reportId: req.params.id}));
+            mod => mod.assignReportToExternalMaintainer({ reportId: req.params.id, internalStaffMemberId }));
         if (!updated) return next(new NotFoundError('Not found'));
         res.json(updated);
     } catch (err) { next(err); }

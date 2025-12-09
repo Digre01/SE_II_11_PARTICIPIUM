@@ -10,6 +10,7 @@ const ConversationPage = ({ user, handleNotificationsUpdate, wsMessage }) => {
   const [error, setError] = useState("");
   const [reportTitle, setReportTitle] = useState("");
   const [reportStatus, setReportStatus] = useState("");
+  const [isInternal, setIsInternal] = useState(false);
   const scrollContainerRef = useRef(null);
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -35,11 +36,13 @@ const ConversationPage = ({ user, handleNotificationsUpdate, wsMessage }) => {
         if (msgs.length > 0 && msgs[0].conversation && msgs[0].conversation.report) {
           setReportTitle(msgs[0].conversation.report.title);
           setReportStatus(msgs[0].conversation.report.status || "");
+          setIsInternal(!!msgs[0].conversation.isInternal);
         } else {
           const convs = await API.fetchConversations();
           const conv = convs.find(c => String(c.id) === String(conversationId));
           setReportTitle(conv?.report?.title || "Messages");
           setReportStatus(conv?.report?.status || "");
+          setIsInternal(!!conv?.isInternal);
         }
       } catch (err) {
         setError("Unable to load messages.");
@@ -183,6 +186,9 @@ const ConversationPage = ({ user, handleNotificationsUpdate, wsMessage }) => {
   return (
     <div className="container mt-4" style={{ maxWidth: 1200 }}>
       <h2 className="mb-3 text-center">{reportTitle || "Messages"}</h2>
+      {isInternal && (
+        <div className="text-center mb-3" style={{ fontStyle: 'italic', color: '#007bff', fontSize: "large" }}>Internal comments</div>
+      )}
       <div
         ref={scrollContainerRef}
         style={{

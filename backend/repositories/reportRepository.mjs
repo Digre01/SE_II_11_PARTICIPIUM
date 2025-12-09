@@ -137,19 +137,18 @@ export class ReportRepository {
 		report.technicianId = Number(technicianId);
 		const savedReport = await this.repo.save(report);
 
-		// Trova la conversazione associata al report
+		// Trova tutte le conversazioni associate al report
 		const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
-		const conversation = await convRepo.findOne({ where: { report: { id: report.id } }, relations: ['participants'] });
-		if (conversation) {
-			// Aggiungi il tecnico ai partecipanti
+		const conversations = await convRepo.find({ where: { report: { id: report.id } }, relations: ['participants'] });
+		if (conversations && conversations.length > 0) {
 			const { addParticipantToConversation } = await import('./conversationRepository.js');
-			await addParticipantToConversation(conversation.id, technicianId);
-
-			// Messaggio automatico per cambio stato
 			const { createSystemMessage } = await import('./messageRepository.js');
 			const { broadcastToConversation } = await import('../wsHandler.js');
-			const sysMsg = await createSystemMessage(conversation.id, `Report status change to: In Progress`);
-			await broadcastToConversation(conversation.id, sysMsg);
+			for (const conversation of conversations) {
+				await addParticipantToConversation(conversation.id, technicianId);
+				const sysMsg = await createSystemMessage(conversation.id, `Report status change to: In Progress`);
+				await broadcastToConversation(conversation.id, sysMsg);
+			}
 		}
 		return savedReport;
 	}
@@ -215,10 +214,39 @@ export class ReportRepository {
 		return savedReport;
 	}
 
-    async assignReportToExternalMaintainer(reportId) {
+    async assignReportToExternalMaintainer(reportId, internalStaffMemberId) {
         const report = await this.repo.findOneBy({id: Number(reportId)});
         if (!report) return null;
         report.assignedExternal = true
+		// Trova la conversazione associata al report
+		const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
+		const conversation = await convRepo.findOne({ where: { report: { id: report.id } }, relations: ['participants'] });
+		if (conversation) {
+			// Aggiungi l'internalStaffMember ai partecipanti
+			const { addParticipantToConversation } = await import('./conversationRepository.js');
+			await addParticipantToConversation(conversation.id, internalStaffMemberId);
+
+			// Messaggio automatico per cambio stato
+			const { createSystemMessage } = await import('./messageRepository.js');
+			const { broadcastToConversation } = await import('../wsHandler.js');
+			const sysMsg = await createSystemMessage(conversation.id, `Report has been assigned to external office`);
+			await broadcastToConversation(conversation.id, sysMsg);
+		}
+
+		// Conversation creation
+		const { createConversation } = await import('./conversationRepository.js');
+		const savedConversation = await createConversation({ report: report, participants: [], isInternal: true });
+		const { addParticipantToConversation } = await import('./conversationRepository.js');
+		await addParticipantToConversation(savedConversation.id, internalStaffMemberId);
+
+		// First message
+		const { createSystemMessage } = await import('./messageRepository.js');
+		const systemMsg = await createSystemMessage(savedConversation.id, 'Report has been assigned to external office');
+
+		// Broadcast del messaggio autogenerato
+		const { broadcastToConversation } = await import('../wsHandler.js');
+		await broadcastToConversation(savedConversation.id, systemMsg);
+		
         return await this.repo.save(report);
     }
 
@@ -227,23 +255,42 @@ export class ReportRepository {
         return await photoRepo.find({ where: { reportId: Number(reportId) } });
     }
 
+	// Questa funzione non viene mai usata dal frontend
 	async externalStart({ reportId, externalMaintainerId }) {
+		// Trova la conversazione associata al report
+		const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
+		const conversation = await convRepo.findOne({ where: { report: { id: reportId } }, relations: ['participants'], isInternal: true });
+		if (conversation) {
+			// Aggiungi l'externalMaintainer ai partecipanti
+			const { addParticipantToConversation } = await import('./conversationRepository.js');
+			await addParticipantToConversation(conversation.id, externalMaintainerId);
+
+			// Messaggio automatico per cambio stato
+			const { createSystemMessage } = await import('./messageRepository.js');
+			const { broadcastToConversation } = await import('../wsHandler.js');
+			const sysMsg = await createSystemMessage(conversation.id, `Report has been started by external maintainer ${externalMaintainerId}`);
+			await broadcastToConversation(conversation.id, sysMsg);
+		}
 		return await this._externalChangeStatus({ reportId, externalMaintainerId, status: 'in_progress' });
 	}
 
+	// Questa funzione non viene mai usata dal frontend
 	async externalFinish({ reportId, externalMaintainerId }) {
 		return await this._externalChangeStatus({ reportId, externalMaintainerId, status: 'resolved' });
 	}
 
+	// Questa funzione non viene mai usata dal frontend
 	async externalSuspend({ reportId, externalMaintainerId }) {
 		return await this._externalChangeStatus({ reportId, externalMaintainerId, status: 'suspended' });
 	}
 
+	// Questa funzione non viene mai usata dal frontend
 	async externalResume({ reportId, externalMaintainerId }) {
 		// If the report previously had any technicianId we can't infer it here; resume to 'assigned'
 		return await this._externalChangeStatus({ reportId, externalMaintainerId, status: 'assigned' });
 	}
 
+	// Questa funzione non viene mai usata dal frontend
 	async _externalChangeStatus({ reportId, externalMaintainerId, status }) {
 		// reuse validation: report exists, assignedExternal true, user belongs to external office
 		const report = await this.repo.findOne({ where: { id: Number(reportId) }, relations: ['category'] });
@@ -268,7 +315,7 @@ export class ReportRepository {
 
 		// Add external maintainer to conversation participants if conversation exists
 		const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
-		const conversation = await convRepo.findOne({ where: { report: { id: report.id } }, relations: ['participants'] });
+		const conversation = await convRepo.findOne({ where: { report: { id: report.id } }, relations: ['participants'], isInternal: false });
 		if (conversation) {
 			const { addParticipantToConversation } = await import('./conversationRepository.js');
 			try {

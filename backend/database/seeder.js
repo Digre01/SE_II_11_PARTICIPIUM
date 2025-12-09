@@ -378,27 +378,27 @@ export async function seedDatabase() {
   const conversationExisting = await conversationRepo.find();
   if (conversationExisting.length === 0) {
     await conversationRepo.save([
-      { report: { id: 1 }, createdAt: '2025-11-24T17:30:27.001359Z' },
-      { report: { id: 2 }, createdAt: '2025-11-24T17:34:17.210933Z' },
-      { report: { id: 3 }, createdAt: '2025-11-24T17:35:20.901083Z' },
-      { report: { id: 4 }, createdAt: '2025-11-24T17:36:20.503512Z' },
-      { report: { id: 5 }, createdAt: '2025-11-24T17:40:30.305441Z' },
-      { report: { id: 6 }, createdAt: '2025-11-24T17:41:05.174964Z' },
-      { report: { id: 7 }, createdAt: '2025-11-24T17:41:08.014828Z' },
-      { report: { id: 8 }, createdAt: '2025-11-24T17:41:11.063828Z' },
-      { report: { id: 9 }, createdAt: '2025-11-24T17:41:14.276978Z' },
-      { report: { id: 10 }, createdAt: '2025-11-24T17:41:17.062239Z' },
-      { report: { id: 11 }, createdAt: '2025-11-24T17:45:20.123456Z' },
-      { report: { id: 12 }, createdAt: '2025-11-24T17:46:21.234567Z' },
-      { report: { id: 13 }, createdAt: '2025-11-24T17:47:22.345678Z' },
-      { report: { id: 14 }, createdAt: '2025-11-24T17:48:23.456789Z' },
-      { report: { id: 15 }, createdAt: '2025-11-24T17:49:24.567890Z' },
-      { report: { id: 16 }, createdAt: '2025-11-24T17:50:25.678901Z' },
-      { report: { id: 17 }, createdAt: '2025-11-24T17:51:26.789012Z' },
-      { report: { id: 18 }, createdAt: '2025-11-24T17:52:27.890123Z' },
-      { report: { id: 19 }, createdAt: '2025-11-24T17:53:28.901234Z' },
-      { report: { id: 20 }, createdAt: '2025-11-24T18:00:00.000000Z' },
-      { report: { id: 21 }, createdAt: '2025-11-24T18:05:00.000000Z' }
+      { report: { id: 1 }, createdAt: '2025-11-24T17:30:27.001359Z', isInternal: false },
+      { report: { id: 2 }, createdAt: '2025-11-24T17:34:17.210933Z', isInternal: false },
+      { report: { id: 3 }, createdAt: '2025-11-24T17:35:20.901083Z', isInternal: false },
+      { report: { id: 4 }, createdAt: '2025-11-24T17:36:20.503512Z', isInternal: false },
+      { report: { id: 5 }, createdAt: '2025-11-24T17:40:30.305441Z', isInternal: false },
+      { report: { id: 6 }, createdAt: '2025-11-24T17:41:05.174964Z', isInternal: false },
+      { report: { id: 7 }, createdAt: '2025-11-24T17:41:08.014828Z', isInternal: false },
+      { report: { id: 8 }, createdAt: '2025-11-24T17:41:11.063828Z', isInternal: false },
+      { report: { id: 9 }, createdAt: '2025-11-24T17:41:14.276978Z', isInternal: false },
+      { report: { id: 10 }, createdAt: '2025-11-24T17:41:17.062239Z', isInternal: false },
+      { report: { id: 11 }, createdAt: '2025-11-24T17:45:20.123456Z', isInternal: false },
+      { report: { id: 12 }, createdAt: '2025-11-24T17:46:21.234567Z', isInternal: false },
+      { report: { id: 13 }, createdAt: '2025-11-24T17:47:22.345678Z', isInternal: false },
+      { report: { id: 14 }, createdAt: '2025-11-24T17:48:23.456789Z', isInternal: false },
+      { report: { id: 15 }, createdAt: '2025-11-24T17:49:24.567890Z', isInternal: false },
+      { report: { id: 16 }, createdAt: '2025-11-24T17:50:25.678901Z', isInternal: false },
+      { report: { id: 17 }, createdAt: '2025-11-24T17:51:26.789012Z', isInternal: false },
+      { report: { id: 18 }, createdAt: '2025-11-24T17:52:27.890123Z', isInternal: false },
+      { report: { id: 19 }, createdAt: '2025-11-24T17:53:28.901234Z', isInternal: false },
+      { report: { id: 20 }, createdAt: '2025-11-24T18:00:00.000000Z', isInternal: false },
+      { report: { id: 21 }, createdAt: '2025-11-24T18:05:00.000000Z', isInternal: false }
 
     ]);
     console.log("Added default Conversations");
