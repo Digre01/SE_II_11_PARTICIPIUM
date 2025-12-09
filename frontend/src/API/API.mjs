@@ -266,6 +266,16 @@ export async function fetchOffices() {
   throw await response.text();
 }
 
+// GET offices
+export async function fetchOffice(id) {
+    const response = await fetch(`${SERVER_URL}/api/v1/offices/${id}`, {
+        method: 'GET',
+        credentials: 'include'
+    });
+    if (response.ok) return await response.json();
+    throw await response.text();
+}
+
 // PATCH /api/v1/reports/:id/suspend
 const suspendReport = async (id) => {
   const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/suspend`, {
@@ -304,6 +314,17 @@ const finishReport = async (id) => {
   if (response.ok) return await response.json();
   throw await response.text();
 };
+
+// PATCH /api/v1/reports/:id/assign_external
+const assignReportToExternalMaintainer = async (id) => {
+    const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/assign_external`, {
+        method: 'PATCH',
+        credentials: 'include'
+    });
+    if (response.ok) return await response.json();
+    throw await response.text();
+}
+
 // POST /api/v1/notifications/:conversationId/read
 const markNotificationsAsRead = async (conversationId) => {
   const response = await fetch(SERVER_URL + `/api/v1/notifications/${conversationId}/read`, {

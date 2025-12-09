@@ -42,15 +42,15 @@ export async function seedDatabase() {
   const categoriesExisting = await categoryRepo.find();
   if (categoriesExisting.length === 0) {
     await categoryRepo.save([
-      { name: 'Water Supply – Drinking Water', officeId: officeMap['Water Office'] },
-      { name: 'Architectural Barriers', officeId: officeMap['Architectural Barriers Office'] },
-      { name: 'Sewer System', officeId: officeMap['Sewer System Office'] },
-      { name: 'Public Lighting', officeId: officeMap['Public Lighting Office'] },
-      { name: 'Waste', officeId: officeMap['Waste Management Office'] },
-      { name: 'Road Signs and Traffic Lights', officeId: officeMap['Road Signs and Traffic Lights Office'] },
-      { name: 'Roads and Urban Furnishings', officeId: officeMap['Roads and Urban Furnishings Office'] },
-      { name: 'Public Green Areas and Playgrounds', officeId: officeMap['Public Green Areas and Playgrounds Office'] },
-      { name: 'Other', officeId: officeMap['Generic Office'] }
+      { name: 'Water Supply – Drinking Water', officeId: officeMap['Water Office'], externalOfficeId: officeMap['SMAT'] },
+      { name: 'Architectural Barriers', officeId: officeMap['Architectural Barriers Office'], externalOfficeId: officeMap['AccessiWay'] },
+      { name: 'Sewer System', officeId: officeMap['Sewer System Office'], externalOfficeId: officeMap['Bosco Spurghi'] },
+      { name: 'Public Lighting', officeId: officeMap['Public Lighting Office'], externalOfficeId: officeMap['IREN'] },
+      { name: 'Waste', officeId: officeMap['Waste Management Office'], externalOfficeId: officeMap['Soris'] },
+      { name: 'Road Signs and Traffic Lights', officeId: officeMap['Road Signs and Traffic Lights Office'], externalOfficeId: officeMap['5T Srl'] },
+      { name: 'Roads and Urban Furnishings', officeId: officeMap['Roads and Urban Furnishings Office'], externalOfficeId: officeMap['F.G. Srl'] },
+      { name: 'Public Green Areas and Playgrounds', officeId: officeMap['Public Green Areas and Playgrounds Office'], externalOfficeId: officeMap['Turin Garden'] },
+      { name: 'Other', officeId: officeMap['Generic Office'], externalOfficeId: officeMap['SMAT'] }
     ]);
     console.log("Added default Categories");
   }
@@ -61,11 +61,12 @@ export async function seedDatabase() {
   const usersExisting = await userRepo.find();
   if (usersExisting.length === 0) {
     await userRepo.save([
-      { username: 'admin', email: 'admin@participium.it', name: 'Admin', surname: 'User', telegramId: null, photoId: null, emailNotifications: false, password: 'e902e3818acc6c6f842f95698f2d0fb99eb273a1fd4ce5c1f9f9a8cac04ba0cf', salt: '2f834c309f5faa13ec6d9a3b2a5b5ba7', userType: 'admin' },
-      { username: 'citizen', email: 'anna.gialli@email.it', name: 'Anna', surname: 'Gialli', telegramId: null, photoId: null, emailNotifications: false, password: '8eb331671576a8691107e2f0aa9be4badc9c3eb4125bde6c19513a66b86c3e4b', salt: '79e7eefbafbdd24a94407e802bbb10d4', userType: 'citizen' },
-      { username: 'staff1', email: 'mario.rossi@participium.it', name: 'Mario', surname: 'Rossi', telegramId: null, photoId: null, emailNotifications: false, password: '545ce5de6a56c66b35a1e407a40c7c678eae373beea3883f2c4527664125166b', salt: '5bad9287ac7de649a5bc62ab91150931', userType: 'staff' },
-      { username: 'staff2', email: 'luigi.verdi@participium.it', name: 'Luigi', surname: 'Verdi', telegramId: null, photoId: null, emailNotifications: false, password: '3b20f4a45c87791030262371d32bff00f4ffc7846ffed500aeb7436f341c515b', salt: 'abadcde601267d1aa3a579002f0eb4f7', userType: 'staff' },
-      { username: 'staff3', email: 'giovanni.bianchi@participium.it', name: 'Giovanni', surname: 'Bianchi', telegramId: null, photoId: null, emailNotifications: false, password: '688a3ce4dcec36ca0bb3349217fae599fb9d6b060c0a6df3585a2ab8f2fe8dae', salt: 'e8ab52af1d00bb0b830e0c4c3b85b9b7', userType: 'staff' }
+      { username: 'admin', email: 'admin@participium.it', name: 'Admin', surname: 'User', telegramId: null, photoId: null, emailNotifications: false, password: 'e902e3818acc6c6f842f95698f2d0fb99eb273a1fd4ce5c1f9f9a8cac04ba0cf', salt: '2f834c309f5faa13ec6d9a3b2a5b5ba7', userType: 'admin', isVerified: true, verificationCode: null, verificationCodeExpires: null },
+      { username: 'citizen', email: 'anna.gialli@email.it', name: 'Anna', surname: 'Gialli', telegramId: null, photoId: null, emailNotifications: false, password: '8eb331671576a8691107e2f0aa9be4badc9c3eb4125bde6c19513a66b86c3e4b', salt: '79e7eefbafbdd24a94407e802bbb10d4', userType: 'citizen', isVerified: true, verificationCode: null, verificationCodeExpires: null },
+      { username: 'staff1', email: 'mario.rossi@participium.it', name: 'Mario', surname: 'Rossi', telegramId: null, photoId: null, emailNotifications: false, password: '545ce5de6a56c66b35a1e407a40c7c678eae373beea3883f2c4527664125166b', salt: '5bad9287ac7de649a5bc62ab91150931', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null},
+      { username: 'staff2', email: 'luigi.verdi@participium.it', name: 'Luigi', surname: 'Verdi', telegramId: null, photoId: null, emailNotifications: false, password: '3b20f4a45c87791030262371d32bff00f4ffc7846ffed500aeb7436f341c515b', salt: 'abadcde601267d1aa3a579002f0eb4f7', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null},
+      { username: 'staff3', email: 'giovanni.bianchi@participium.it', name: 'Giovanni', surname: 'Bianchi', telegramId: null, photoId: null, emailNotifications: false, password: '688a3ce4dcec36ca0bb3349217fae599fb9d6b060c0a6df3585a2ab8f2fe8dae', salt: 'e8ab52af1d00bb0b830e0c4c3b85b9b7', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null},
+      { username: 'external1', email: '	external1@iren.it', name: 'Bruno', surname: 'Tuono', telegramId: null, photoId: null, emailNotifications: false, password: '906c0ea039d50f55beeafe0cbb46a98cdf4604f9f43d104cb3cdc697f1b4ff91', salt: 'ed24991e0bfc8cec4347eb9fc9b11467', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null}
     ]);
     console.log("Added default Users");
   }
@@ -73,6 +74,7 @@ export async function seedDatabase() {
   const staff1 = await userRepo.findOne({ where: { username: 'staff1' } });
   const staff2 = await userRepo.findOne({ where: { username: 'staff2' } });
   const staff3 = await userRepo.findOne({ where: { username: 'staff3' } });
+  const external1 = await userRepo.findOne({ where: { username: 'external1' } });
 
   // Roles
   const { Roles } = await import("../entities/Roles.js");
@@ -94,7 +96,7 @@ export async function seedDatabase() {
     ]);
     console.log("Added default Roles");
   }
-
+  
   // UserOffice
   const { UserOffice } = await import("../entities/UserOffice.js");
   const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);
@@ -103,7 +105,8 @@ export async function seedDatabase() {
     await userOfficeRepo.save([
       { userId: staff1.id, officeId: officeMap['Organization Office'], roleId: 1 },
       { userId: staff2.id, officeId: officeMap['Public Lighting Office'], roleId: 6 },
-      { userId: staff3.id, officeId: officeMap['Roads and Urban Furnishings Office'], roleId: 9 }
+      { userId: staff3.id, officeId: officeMap['Roads and Urban Furnishings Office'], roleId: 9 },
+      { userId: external1.id, officeId: officeMap['IREN'], roleId: 6 }
     ]);
     console.log("Added default UserOffice");
   }
@@ -113,7 +116,7 @@ export async function seedDatabase() {
   const reportRepo = AppDataSourcePostgres.getRepository(Report);
   const reportsExisting = await reportRepo.find();
   if (reportsExisting.length === 0) {
-    await reportRepo.save([
+       await reportRepo.save([
       {
         title: "Not working street lamp",
         latitude: 45.0648099481403,
@@ -123,7 +126,9 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 4,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
+
       },
       {
         title: "Broken tile",
@@ -134,7 +139,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 7,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Uneven pavement",
@@ -145,7 +151,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 7,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Uneven pavement",
@@ -156,7 +163,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 7,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Not working street lamp",
@@ -167,7 +175,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 4,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Broken stake",
@@ -178,7 +187,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 4,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Broken bench",
@@ -189,7 +199,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 4,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Smoking manhole",
@@ -200,7 +211,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 4,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Trash bin upside-down",
@@ -211,7 +223,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 6,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Missing trash bin",
@@ -222,7 +235,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 5,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Smeared traffic sign",
@@ -233,9 +247,10 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 6,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
-      //New reports
+      
       {
         title: "Lots of trash",
         latitude: 45.07563923520235,
@@ -245,7 +260,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 5,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Lots of smoke",
@@ -256,7 +272,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 7,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Defective street lamp",
@@ -267,7 +284,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 4,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Hole in the pavement",
@@ -278,7 +296,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 7,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Little hole in the pavement",
@@ -289,7 +308,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 7,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Defective street lamp",
@@ -300,7 +320,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 4,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Hole in the pavement",
@@ -311,7 +332,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 7,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Bent stake",
@@ -322,7 +344,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 7,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },      
       {
         title: "Stuck Escalator",
@@ -333,7 +356,8 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 7,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       },
       {
         title: "Moving paving slub",
@@ -344,12 +368,11 @@ export async function seedDatabase() {
         reject_explanation: "",
         userId: 2,
         categoryId: 7,
-        technicianId: null
+        technicianId: null,
+        assignedExternal: null
       }
-
-
-    ]);
-    console.log("Added default Reports");
+      ]);
+      console.log("Added default Reports");
   }
 
   // Conversation
@@ -358,27 +381,27 @@ export async function seedDatabase() {
   const conversationExisting = await conversationRepo.find();
   if (conversationExisting.length === 0) {
     await conversationRepo.save([
-      { report: { id: 1 }, createdAt: '2025-11-24T17:30:27.001359Z' },
-      { report: { id: 2 }, createdAt: '2025-11-24T17:34:17.210933Z' },
-      { report: { id: 3 }, createdAt: '2025-11-24T17:35:20.901083Z' },
-      { report: { id: 4 }, createdAt: '2025-11-24T17:36:20.503512Z' },
-      { report: { id: 5 }, createdAt: '2025-11-24T17:40:30.305441Z' },
-      { report: { id: 6 }, createdAt: '2025-11-24T17:41:05.174964Z' },
-      { report: { id: 7 }, createdAt: '2025-11-24T17:41:08.014828Z' },
-      { report: { id: 8 }, createdAt: '2025-11-24T17:41:11.063828Z' },
-      { report: { id: 9 }, createdAt: '2025-11-24T17:41:14.276978Z' },
-      { report: { id: 10 }, createdAt: '2025-11-24T17:41:17.062239Z' },
-      { report: { id: 11 }, createdAt: '2025-11-24T17:45:20.123456Z' },
-      { report: { id: 12 }, createdAt: '2025-11-24T17:46:21.234567Z' },
-      { report: { id: 13 }, createdAt: '2025-11-24T17:47:22.345678Z' },
-      { report: { id: 14 }, createdAt: '2025-11-24T17:48:23.456789Z' },
-      { report: { id: 15 }, createdAt: '2025-11-24T17:49:24.567890Z' },
-      { report: { id: 16 }, createdAt: '2025-11-24T17:50:25.678901Z' },
-      { report: { id: 17 }, createdAt: '2025-11-24T17:51:26.789012Z' },
-      { report: { id: 18 }, createdAt: '2025-11-24T17:52:27.890123Z' },
-      { report: { id: 19 }, createdAt: '2025-11-24T17:53:28.901234Z' },
-      { report: { id: 20 }, createdAt: '2025-11-24T18:00:00.000000Z' },
-      { report: { id: 21 }, createdAt: '2025-11-24T18:05:00.000000Z' }
+      { report: { id: 1 }, createdAt: '2025-11-24T17:30:27.001359Z', isInternal: false },
+      { report: { id: 2 }, createdAt: '2025-11-24T17:34:17.210933Z', isInternal: false },
+      { report: { id: 3 }, createdAt: '2025-11-24T17:35:20.901083Z', isInternal: false },
+      { report: { id: 4 }, createdAt: '2025-11-24T17:36:20.503512Z', isInternal: false },
+      { report: { id: 5 }, createdAt: '2025-11-24T17:40:30.305441Z', isInternal: false },
+      { report: { id: 6 }, createdAt: '2025-11-24T17:41:05.174964Z', isInternal: false },
+      { report: { id: 7 }, createdAt: '2025-11-24T17:41:08.014828Z', isInternal: false },
+      { report: { id: 8 }, createdAt: '2025-11-24T17:41:11.063828Z', isInternal: false },
+      { report: { id: 9 }, createdAt: '2025-11-24T17:41:14.276978Z', isInternal: false },
+      { report: { id: 10 }, createdAt: '2025-11-24T17:41:17.062239Z', isInternal: false },
+      { report: { id: 11 }, createdAt: '2025-11-24T17:45:20.123456Z', isInternal: false },
+      { report: { id: 12 }, createdAt: '2025-11-24T17:46:21.234567Z', isInternal: false },
+      { report: { id: 13 }, createdAt: '2025-11-24T17:47:22.345678Z', isInternal: false },
+      { report: { id: 14 }, createdAt: '2025-11-24T17:48:23.456789Z', isInternal: false },
+      { report: { id: 15 }, createdAt: '2025-11-24T17:49:24.567890Z', isInternal: false },
+      { report: { id: 16 }, createdAt: '2025-11-24T17:50:25.678901Z', isInternal: false },
+      { report: { id: 17 }, createdAt: '2025-11-24T17:51:26.789012Z', isInternal: false },
+      { report: { id: 18 }, createdAt: '2025-11-24T17:52:27.890123Z', isInternal: false },
+      { report: { id: 19 }, createdAt: '2025-11-24T17:53:28.901234Z', isInternal: false },
+      { report: { id: 20 }, createdAt: '2025-11-24T18:00:00.000000Z', isInternal: false },
+      { report: { id: 21 }, createdAt: '2025-11-24T18:05:00.000000Z', isInternal: false }
 
     ]);
     console.log("Added default Conversations");

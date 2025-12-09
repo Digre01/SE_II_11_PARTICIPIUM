@@ -4,6 +4,7 @@ import upload from '../middlewares/uploadMiddleware.js';
 import { authorizeUserType, authorizeRole } from '../middlewares/userAuthorization.js';
 import { BadRequestError } from '../errors/BadRequestError.js';
 import { NotFoundError } from '../errors/NotFoundError.js';
+import { UnauthorizedError } from '../errors/UnauthorizedError.js';
 import fs from 'fs';
 
 const router = Router();
@@ -137,5 +138,68 @@ router.patch('/:id/resume', authorizeUserType(['staff']), async (req, res, next)
     res.json(updated);
   } catch (err) { next(err); }
 });
+
+// PATCH /api/v1/reports/:id/assign_external
+router.patch('/:id/assign_external', authorizeUserType(['staff']), async (
+    req, res, next) => {
+    try {
+        const internalStaffMemberId = req.user?.id;
+        const updated = await import('../controllers/reportController.mjs').then(
+            mod => mod.assignReportToExternalMaintainer({ reportId: req.params.id, internalStaffMemberId }));
+        if (!updated) return next(new NotFoundError('Not found'));
+        res.json(updated);
+    } catch (err) { next(err); }
+});
+
+// External-specific start/finish/suspend/resume
+router.patch('/:id/external/start', async (req, res, next) => {
+  try {
+    if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
+    const userId = req.user?.id;
+    const updated = await import('../controllers/reportController.mjs').then(mod => mod.externalStart({ reportId: req.params.id, externalMaintainerId: userId }));
+    if (!updated) return next(new NotFoundError('Not found or not allowed'));
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+router.patch('/:id/external/finish', async (req, res, next) => {
+  try {
+    if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
+    const userId = req.user?.id;
+    const updated = await import('../controllers/reportController.mjs').then(mod => mod.externalFinish({ reportId: req.params.id, externalMaintainerId: userId }));
+    if (!updated) return next(new NotFoundError('Not found or not allowed'));
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+router.patch('/:id/external/suspend', async (req, res, next) => {
+  try {
+    if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
+    const userId = req.user?.id;
+    const updated = await import('../controllers/reportController.mjs').then(mod => mod.externalSuspend({ reportId: req.params.id, externalMaintainerId: userId }));
+    if (!updated) return next(new NotFoundError('Not found or not allowed'));
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+router.patch('/:id/external/resume', async (req, res, next) => {
+  try {
+    if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
+    const userId = req.user?.id;
+    const updated = await import('../controllers/reportController.mjs').then(mod => mod.externalResume({ reportId: req.params.id, externalMaintainerId: userId }));
+    if (!updated) return next(new NotFoundError('Not found or not allowed'));
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+router.get("/:id/photos", async function(
+    req, res, next) {
+    try {
+        const photos = await import('../controllers/reportController.mjs').then(
+            mod => mod.getReportPhotos(req.params.id));
+        if (!photos) return next(new NotFoundError('Not found'));
+        res.json(photos);
+    } catch (err) { next(err); }
+})
 
 export default router;

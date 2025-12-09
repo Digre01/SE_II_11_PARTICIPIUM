@@ -91,7 +91,10 @@ describe('E2E: userRoutes assign role', () => {
       'E2E',
       hashed,
       salt,
-      'admin'
+      'ADMIN',
+      true,
+      null,
+      null
     );
 
     const agent = request.agent(app);
@@ -117,7 +120,10 @@ describe('E2E: userRoutes assign role', () => {
         'E2E',
         hashS,
         saltS,
-        'STAFF'
+        'STAFF',
+        true,
+        null,
+        null
       );
     }
 
@@ -127,13 +133,11 @@ describe('E2E: userRoutes assign role', () => {
       .send({ roleId: 1, officeId: 1 });
 
     expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({
-      userId: staff.id,
-      roleId: 1,
-      officeId: 1,
-      role: expect.any(Object),
-      office: expect.any(Object)
-    });
+    expect(res.body.userId ?? res.body.user?.userId ?? res.body.user?.id).toBe(staff.id);
+    expect(res.body.roleId ?? res.body.user?.roleId).toBe(1);
+    expect(res.body.officeId ?? res.body.user?.officeId).toBe(1);
+    expect(res.body.role ?? res.body.user?.role).toEqual(expect.any(Object));
+    expect(res.body.office ?? res.body.user?.office).toEqual(expect.any(Object));
       // Cleanup UserOffice row
       const userOfficeRepo = dataSource.getRepository('UserOffice');
       await userOfficeRepo.delete({ userId: staff.id });
@@ -162,7 +166,8 @@ describe('E2E: userRoutes assign role', () => {
       .field('emailNotifications','true')
       .attach('photo', photoBuffer, { filename: 'avatar.png', contentType: 'image/png' });
     expect(configRes.status).toBe(200);
-    expect(configRes.body.user).toMatchObject({ telegramId: 'tel_999', emailNotifications: true });
+    expect(configRes.body.user.telegramId).toBe('tel_999');
+    expect(configRes.body.user.emailNotifications).toBe(true);
     const pfpRes = await agent.get(`/api/v1/sessions/${userId}/pfp`);
     expect(pfpRes.status).toBe(200);
     const bodyText = pfpRes.text || JSON.stringify(pfpRes.body);

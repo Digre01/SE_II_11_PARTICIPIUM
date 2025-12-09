@@ -9,8 +9,26 @@ import {
     Col,
 } from 'design-react-kit';
 import {getStatusVariant} from "./common.jsx";
+import {useEffect, useState} from "react";
+import API from "../../API/API.mjs";
+
+const SERVER_URL = "http://localhost:3000";
 
 function ReportDetailModal({ isOpen, toggle, report }) {
+    const [photos, setPhotos] = useState([]);
+
+    useEffect(() => {
+        const fetchReportPhotos = async () => {
+            if (isOpen && report?.id) {
+                const data = await API.fetchReportPhotos(report.id);
+                setPhotos(data);
+            } else {
+                setPhotos([]);
+            }
+        };
+        fetchReportPhotos();
+    }, [isOpen, report?.id]);
+
     if (!report) return null;
 
     return (
@@ -41,6 +59,37 @@ function ReportDetailModal({ isOpen, toggle, report }) {
                         <Col>
                             <h6>Description</h6>
                             <p className="text-muted">{report.description}</p>
+                        </Col>
+                    </Row>
+                )}
+
+                {photos.length > 0 && (
+                    <Row className="mb-3">
+                        <Col>
+                            <h6>Photos</h6>
+                            <div className="d-flex gap-2 flex-wrap">
+                                {photos.map((photo, index) => (
+                                    <a 
+                                        key={photo.id || index}
+                                        href={photo.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="d-block"
+                                    >
+                                        <img
+                                            src={SERVER_URL + photo.link}
+                                            alt={`Photo ${index + 1}`}
+                                            style={{
+                                                width: '150px',
+                                                height: '150px',
+                                                objectFit: 'cover',
+                                                borderRadius: '8px',
+                                                cursor: 'pointer' 
+                                            }}
+                                        />
+                                    </a>
+                                ))}
+                            </div>
                         </Col>
                     </Row>
                 )}

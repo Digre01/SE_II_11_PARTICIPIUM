@@ -144,11 +144,23 @@ describe('ReportRepository.createReport', () => {
     });
 
     // --- getAcceptedReports ---
-    it('getAcceptedReports chiama find con where status assigned', async () => {
-        reportRepoStub.find.mockResolvedValue([{ id: 3, status: 'assigned' }]);
+    it('getAcceptedReports call find where status are assigned e suspended', async () => {
+        reportRepoStub.find.mockResolvedValue([
+            { id: 3, status: 'assigned' },
+            { id: 4, status: 'suspended' }
+        ]);
         const result = await reportRepository.getAcceptedReports();
-        expect(reportRepoStub.find).toHaveBeenCalledWith({ where: { status: 'assigned' }, relations: ['photos', 'category', 'user'] });
-        expect(result).toEqual([{ id: 3, status: 'assigned' }]);
+        expect(reportRepoStub.find).toHaveBeenCalledWith({
+            where: [
+                { status: 'assigned' },
+                { status: 'suspended' }
+            ],
+            relations: ['photos', 'category', 'user']
+        });
+        expect(result).toEqual([
+            { id: 3, status: 'assigned' },
+            { id: 4, status: 'suspended' }
+        ]);
     });
 
     // --- reviewReport: null ---

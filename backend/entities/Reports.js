@@ -44,7 +44,11 @@ export const Report = new EntitySchema({
     technicianId: {
       type: Number,
       nullable: true
-    }
+    },
+      assignedExternal: {
+        type: Boolean,
+        nullable: true,
+      }
   },
   relations: {
     user: {

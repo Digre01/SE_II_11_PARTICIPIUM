@@ -22,8 +22,15 @@ function LoginForm(props) {
         }
 
         try {
-            const user = await props.handleLogin(credentials);
-            navigate(`/`);
+            const result = await props.handleLogin(credentials);
+            const loggedUser = result.user;
+            const isVerified = Boolean(loggedUser?.isVerified);
+            console.log(loggedUser.isVerified);
+            if (!isVerified) {
+                navigate(`/verify_mail`);
+            } else {
+                navigate(`/`);
+            }
         } catch (error) {
             return { error: 'Wrong username or password.' };
         }

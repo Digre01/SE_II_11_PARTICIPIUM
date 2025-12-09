@@ -148,14 +148,14 @@ describe('GET /api/v1/reports/assigned (map DTO)', () => {
     jest.resetAllMocks();
   });
 
-  it('returns mapped DTO for accepted reports (including author fields)', async () => {
+  it('returns mapped DTO for assigned reports (including author fields)', async () => {
     const reports = [
       {
         id: 1,
         title: 'Pothole in road',
         latitude: 45.1,
         longitude: 9.2,
-        status: 'accepted',
+        status: 'assigned',
         categoryId: 2,
         user: { username: 'jdoe', name: 'John', surname: 'Doe' },
         photos: [{ link: '/public/p1.jpg' }]
@@ -165,7 +165,7 @@ describe('GET /api/v1/reports/assigned (map DTO)', () => {
         title: 'Graffiti',
         latitude: 46.0,
         longitude: 10.0,
-        status: 'accepted',
+        status: 'assigned',
         categoryId: 3,
         user: null,
         photos: []
@@ -180,7 +180,7 @@ describe('GET /api/v1/reports/assigned (map DTO)', () => {
 
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body).toHaveLength(2);
+  expect(res.body).toHaveLength(2);
 
     const first = res.body.find(r => r.id === 1);
     expect(first).toBeDefined();
@@ -215,11 +215,11 @@ describe('GET /api/v1/reports/assigned (map DTO)', () => {
     expect((res.body.error || res.body.message || '')).toMatch(/UNAUTHORIZED|Unauthorized/);
   });
 
-  it('returns separate items when multiple reports share the same coordinates (client should cluster)', async () => {
+  it('returns separate items when multiple assigned reports share the same coordinates (client should cluster)', async () => {
     const reports = [
-      { id: 10, title: 'A', latitude: 40.0, longitude: 10.0, status: 'accepted', categoryId: 1, user: { username: 'u1', name: 'U', surname: 'One' }, photos: [] },
-      { id: 11, title: 'B', latitude: 40.0, longitude: 10.0, status: 'accepted', categoryId: 1, user: { username: 'u2', name: 'V', surname: 'Two' }, photos: [] },
-      { id: 12, title: 'C', latitude: 40.0, longitude: 10.0, status: 'accepted', categoryId: 1, user: null, photos: [] }
+      { id: 10, title: 'A', latitude: 40.0, longitude: 10.0, status: 'assigned', categoryId: 1, user: { username: 'u1', name: 'U', surname: 'One' }, photos: [] },
+      { id: 11, title: 'B', latitude: 40.0, longitude: 10.0, status: 'assigned', categoryId: 1, user: { username: 'u2', name: 'V', surname: 'Two' }, photos: [] },
+      { id: 12, title: 'C', latitude: 40.0, longitude: 10.0, status: 'assigned', categoryId: 1, user: null, photos: [] }
     ];
 
     mockRepo.getAcceptedReports.mockResolvedValueOnce(reports);
@@ -233,10 +233,10 @@ describe('GET /api/v1/reports/assigned (map DTO)', () => {
     expect(res.body.filter(r => r.latitude === 40.0 && r.longitude === 10.0)).toHaveLength(3);
   });
 
-  it('returns accepted reports when repository provides mixed statuses', async () => {
+  it('returns assigned reports when repository provides mixed statuses', async () => {
     const reports = [
       { id: 30, title: 'Pending', latitude: 1.0, longitude: 1.0, status: 'pending', categoryId: 1, user: null, photos: [] },
-      { id: 31, title: 'Accepted', latitude: 2.0, longitude: 2.0, status: 'accepted', categoryId: 1, user: { username: 'u1', name: 'U', surname: 'One' }, photos: [] }
+      { id: 31, title: 'Assigned', latitude: 2.0, longitude: 2.0, status: 'assigned', categoryId: 1, user: { username: 'u1', name: 'U', surname: 'One' }, photos: [] }
     ];
 
     mockRepo.getAcceptedReports.mockResolvedValueOnce(reports);
@@ -246,13 +246,13 @@ describe('GET /api/v1/reports/assigned (map DTO)', () => {
       .set('Authorization', 'Bearer test');
 
     expect(res.status).toBe(200);
-    // ensure at least one accepted report from the repository is returned and mapped
-    expect(res.body.some(r => r.id === 31 && r.status === 'accepted')).toBe(true);
+    // ensure at least one assigned report from the repository is returned and mapped
+    expect(res.body.some(r => r.id === 31 && r.status === 'assigned')).toBe(true);
   });
 
   it('each DTO contains required fields for map visualization', async () => {
     const reports = [
-      { id: 21, title: 'X', latitude: 41.1, longitude: 11.1, status: 'accepted', categoryId: 2, user: { username: 'alpha', name: 'A', surname: 'A' }, photos: [{ link: '/public/x.jpg' }] }
+      { id: 21, title: 'X', latitude: 41.1, longitude: 11.1, status: 'assigned', categoryId: 2, user: { username: 'alpha', name: 'A', surname: 'A' }, photos: [{ link: '/public/x.jpg' }] }
     ];
     mockRepo.getAcceptedReports.mockResolvedValueOnce(reports);
 
@@ -372,5 +372,44 @@ describe('GET /api/v1/reports/:id', () => {
 
     expect(res.status).toBe(403);
     expect(mockRepo.getReportById).not.toHaveBeenCalled();
+  });
+});
+
+// --- Staff / assign to external maintainer integration tests
+describe('PATCH /api/v1/reports/:id/assign_external', () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+    mockRepo.assignReportToExternalMaintainer.mockResolvedValue({ id: 1, assignedExternal: true });
+  });
+
+  it('successfully assigns report to external maintainer for staff', async () => {
+    const res = await request(app)
+      .patch('/api/v1/reports/1/assign_external')
+      .set('X-Test-User-Type', 'staff');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ id: 1, assignedExternal: true });
+    expect(mockRepo.assignReportToExternalMaintainer).toHaveBeenCalledTimes(1);
+    expect(mockRepo.assignReportToExternalMaintainer).toHaveBeenCalledWith('1', 10);
+  });
+
+  it('returns 404 when report does not exist', async () => {
+    mockRepo.assignReportToExternalMaintainer.mockResolvedValueOnce(null);
+
+    const res = await request(app)
+      .patch('/api/v1/reports/999/assign_external')
+      .set('X-Test-User-Type', 'staff');
+
+    expect(res.status).toBe(404);
+    expect(mockRepo.assignReportToExternalMaintainer).toHaveBeenCalledWith('999', 10);
+  });
+
+  it('returns 403 when called by citizen', async () => {
+    const res = await request(app)
+      .patch('/api/v1/reports/1/assign_external')
+      .set('X-Test-User-Type', 'citizen');
+
+    expect(res.status).toBe(403);
+    expect(mockRepo.assignReportToExternalMaintainer).not.toHaveBeenCalled();
   });
 });

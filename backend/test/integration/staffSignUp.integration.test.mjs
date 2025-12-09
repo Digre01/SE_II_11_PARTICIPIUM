@@ -5,19 +5,24 @@ import request from 'supertest';
 
 // Mock repository e middleware
 await jest.unstable_mockModule('../../repositories/userRepository.js', () => ({
-	userRepository: {
-		createUser: jest.fn(async (...args) => {
-			// Simula duplicati
-			if (args[0] === 'dupuser') throw new ConflictError(`User with username ${args[0]} already exists`);
-			if (args[1] === 'dup@email.com') throw new ConflictError(`User with email ${args[1]} already exists`);
-			// Simula campi mancanti
-			if (!args[0]) throw { message: 'username is required', status: 400 };
-			if (!args[1]) throw { message: 'email is required', status: 400 };
-			if (!args[4]) throw { message: 'password is required', status: 400 };
-			if (!args[6]) throw { message: 'usertype is required', status: 400 };
-			return { id: 123, username: args[0], email: args[1], userType: args[6] };
-		})
-	}
+	       userRepository: {
+		       createUser: jest.fn(async (...args) => {
+			       // Simula duplicati
+			       if (args[0] === 'dupuser') throw new ConflictError(`User with username ${args[0]} already exists`);
+			       if (args[1] === 'dup@email.com') throw new ConflictError(`User with email ${args[1]} already exists`);
+			       // Simula campi mancanti
+			       if (!args[0]) throw { message: 'username is required', status: 400 };
+			       if (!args[1]) throw { message: 'email is required', status: 400 };
+			       if (!args[4]) throw { message: 'password is required', status: 400 };
+			       if (!args[6]) throw { message: 'usertype is required', status: 400 };
+			       return { id: 123, username: args[0], email: args[1], userType: args[6] };
+		       }),
+				markEmailVerified: jest.fn(async (userId) => {}),
+				getUserById: jest.fn(async (userId) => {
+					return { id: userId, username: 'staff1', email: 'staff@email.com', userType: 'STAFF', isVerified: true };
+				}),
+		       saveEmailVerificationCode: jest.fn(async () => {})
+	       }
 }));
 await jest.unstable_mockModule('../../middlewares/userAuthorization.js', () => ({
 	requireAdminIfCreatingStaff: (req, res, next) => {
@@ -48,7 +53,7 @@ describe('POST /api/v1/sessions/signup (integration)', () => {
 			.set('X-Role', 'admin')
 			.send({ username: 'staff1', email: 'staff@email.com', name: 'Nome', surname: 'Cognome', password: 'pw', userType: 'STAFF' });
 		expect(res.status).toBe(201);
-		expect(res.body.userType).toBe('STAFF');
+		expect(res.body.user?.userType || res.body.userType).toBe('STAFF');
 	});
 
 	it('forbids staff registration by non-admin', async () => {
@@ -65,7 +70,7 @@ describe('POST /api/v1/sessions/signup (integration)', () => {
 			.set('X-Role', 'citizen')
 			.send({ username: 'citizen1', email: 'cit@email.com', name: 'Nome', surname: 'Cognome', password: 'pw', userType: 'citizen' });
 		expect(res.status).toBe(201);
-		expect(res.body.userType).toBe('citizen');
+		expect(res.body.user?.userType || res.body.userType).toBe('citizen');
 	});
 
 	it('fails if username already exists', async () => {

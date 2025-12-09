@@ -338,3 +338,68 @@ describe('GET /api/v1/reports/:id (E2E)', () => {
     expect(res.body.category.name).toBeDefined();
   });
 })
+
+describe('PATCH /api/v1/reports/:id/assign_external (E2E)', () => {
+  let createdForExternalId;
+
+  beforeAll(async () => {
+    
+    let req = request(app)
+      .post('/api/v1/reports')
+      .set('Cookie', cookie)
+      .field('title', 'To assign externally')
+      .field('description', 'Desc')
+      .field('categoryId', '5')
+      .field('latitude', '10.1')
+      .field('longitude', '20.2');
+    req = attachFakeImage(req, 'ext-a.jpg');
+    const createRes = await req;
+    expect(createRes.status).toBe(201);
+
+    // Get latest report for the citizen user
+    const { Users } = await import('../../entities/Users.js');
+    const userRepo = AppDataSourcePostgres.getRepository(Users);
+    const citizenUser = await userRepo.findOne({ where: { username: 'citizen' } });
+
+    const { Report } = await import('../../entities/Reports.js');
+    const reportRepo = AppDataSourcePostgres.getRepository(Report);
+    const report = await reportRepo.findOne({ 
+      where: { userId: citizenUser.id },
+      order: { id: 'DESC' }
+    });
+    createdForExternalId = report.id;
+
+    deleteReturnedPhotos(createRes.body.photos);
+  }, 30000);
+
+  it('fails without authentication (no cookie)', async () => {
+    const res = await request(app)
+      .patch(`/api/v1/reports/${createdForExternalId}/assign_external`);
+    expect(res.status).toBe(401);
+    expect(res.body.message).toMatch(/Unauthorized/i);
+  });
+
+  it('successfully assigns to external maintainer (staff)', async () => {
+    const res = await request(app)
+      .patch(`/api/v1/reports/${createdForExternalId}/assign_external`)
+      .set('Cookie', cookie_staff);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toBeDefined();
+    expect(res.body.id).toBe(createdForExternalId);
+    expect(res.body.assignedExternal).toBe(true);
+
+    // Double-check by reading back from DB
+    const { Report } = await import('../../entities/Reports.js');
+    const reportRepo = AppDataSourcePostgres.getRepository(Report);
+    const reloaded = await reportRepo.findOneBy({ id: createdForExternalId });
+    expect(reloaded.assignedExternal).toBe(true);
+  });
+
+  it('returns 404 for non-existent report id', async () => {
+    const res = await request(app)
+      .patch('/api/v1/reports/999999/assign_external')
+      .set('Cookie', cookie_staff);
+    expect(res.status).toBe(404);
+  });
+});

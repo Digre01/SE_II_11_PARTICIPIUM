@@ -16,15 +16,22 @@ describe('ReportRepository.getAcceptedReports', () => {
         jest.clearAllMocks();
     });
 
-    it('returns assigned reports with relations', async () => {
-        const mock = [{ id: 1, status: 'assigned', photos: [], category: {}, user: {} }];
+    it('returns accepted reports (assigned or suspended) with relations', async () => {
+        const mock = [
+            { id: 1, status: 'assigned', photos: [], category: {}, user: {} },
+            { id: 2, status: 'suspended', photos: [], category: {}, user: {} }
+        ];
         reportRepoStub.find.mockResolvedValue(mock);
 
         const res = await reportRepository.getAcceptedReports();
 
         expect(reportRepoStub.find).toHaveBeenCalledWith({
-            where: { status: 'assigned' },
-            relations: ['photos', 'category', 'user'] });
+            where: [
+                { status: 'assigned' },
+                { status: 'suspended' }
+            ],
+            relations: ['photos', 'category', 'user']
+        });
         expect(res).toEqual(mock);
     });
 });
@@ -434,5 +441,42 @@ describe('ReportRepository.reviewReport', () => {
         });
 
         expect(result.categoryId).toBe(15);
+    });
+});
+
+describe('ReportRepository.assignReportToExternalMaintainer', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        savedReports.length = 0;
+    });
+
+    it('assigns report to external maintainer (success)', async () => {
+        const mockReport = { id: 10, assignedExternal: false };
+        reportRepoStub.findOneBy.mockResolvedValue(mockReport);
+        reportRepoStub.save.mockImplementation(async (entity) => {
+            savedReports.push(entity);
+            return entity;
+        });
+
+        const result = await reportRepository.assignReportToExternalMaintainer(10);
+        expect(reportRepoStub.findOneBy).toHaveBeenCalledWith({ id: 10 });
+        expect(result.assignedExternal).toBe(true);
+        expect(reportRepoStub.save).toHaveBeenCalledWith(mockReport);
+    });
+
+    it('returns null when report not found', async () => {
+        reportRepoStub.findOneBy.mockResolvedValue(null);
+        const result = await reportRepository.assignReportToExternalMaintainer(999);
+        expect(result).toBeNull();
+        expect(reportRepoStub.save).not.toHaveBeenCalled();
+    });
+
+    it('converts string reportId to number', async () => {
+        const mockReport = { id: 42, assignedExternal: false };
+        reportRepoStub.findOneBy.mockResolvedValue(mockReport);
+        reportRepoStub.save.mockImplementation(async (entity) => entity);
+
+        await reportRepository.assignReportToExternalMaintainer('42');
+        expect(reportRepoStub.findOneBy).toHaveBeenCalledWith({ id: 42 });
     });
 });

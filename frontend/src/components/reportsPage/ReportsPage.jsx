@@ -3,6 +3,8 @@ import { Table, Container, Card } from "react-bootstrap";
 import API from "../../API/API.mjs";
 import {ReportCard, ReportRow} from "./ReportsRowCard.jsx";
 import ReportDetailModal from "./ReportsDetailModal.jsx";
+import {getUserOffices} from "./common.jsx";
+import {Alert} from "design-react-kit";
 
 function ReportsPage({user}) {
     const [reports, setReports] = useState([]);
@@ -73,6 +75,11 @@ function ReportsPage({user}) {
         try {
             if (action === 'start') {
                 await API.startReport(reportId);
+            } else if (action === 'assign') {
+                await API.assignReportToExternalMaintainer(reportId)
+                setAlertMessage("Report assigned to external office.");
+                setAlertColor("primary");
+                setAlertVisible(true);
             } else if (action === 'finish') {
                 await API.finishReport(reportId);
             } else if (action === 'suspend') {
@@ -146,6 +153,18 @@ function ReportsPage({user}) {
                     </div>
                 </Card>
             </Container>
+            {alertVisible && (
+                <Alert
+                    color={alertColor}
+                    icon="it-info-circle"
+                    className="mb-4"
+                    dismissible
+                    toggle={() => setAlertVisible(false)}
+                >
+                    {alertMessage}
+                </Alert>
+            )}
+
             <Container className="my-4">
                 <Card className="shadow-sm p-4">
                     <h3 className="mb-4 text-primary text-center">Reports assigned to your office</h3>

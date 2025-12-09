@@ -10,9 +10,9 @@ export async function getConversationsForUser(userId) {
     .getMany();
 }
 
-export async function createConversation({ report, participants }) {
+export async function createConversation({ report, participants, isInternal = false }) {
   const repo = AppDataSourcePostgres.getRepository(Conversation);
-  const conversationEntity = repo.create({ report, participants });
+  const conversationEntity = repo.create({ report, participants, isInternal });
   return await repo.save(conversationEntity);
 }
 

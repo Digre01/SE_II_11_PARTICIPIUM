@@ -61,7 +61,7 @@ describe('POST /api/v1/sessions/signup (E2E)', () => {
       .set('Cookie', adminCookie)
       .send({ username: 'staffE2E', email: 'staffE2E@email.com', name: 'Nome', surname: 'Cognome', password: 'pw', userType: 'STAFF' });
     expect(res.status).toBe(201);
-    expect(res.body.userType).toBe('STAFF');
+    expect(res.body.user.userType).toBe('STAFF');
   });
 
   it('forbids staff registration by non-admin', async () => {
