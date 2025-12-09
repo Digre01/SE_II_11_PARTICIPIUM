@@ -6,6 +6,7 @@ import DefaultLayout from './components/DefaultLayout';
 import HomePage from './components/HomePage.jsx';
 import StaffRegistration from './components/StaffRegistration';
 import AssignRole from './components/AssignRole';
+import ModifyRole from './components/ModifyRole.jsx';
 import ReportForm from './components/ReportForm';
 import AccountConfig from './components/AccountConfig.jsx';
 import ReportReview from './components/ReportReview.jsx';
@@ -181,6 +182,13 @@ function App() {
             ? <Navigate to="/login" replace />
             : (isAdmin)
               ? <AssignRole/>
+              : <Navigate to="/" replace />
+        }/>
+        <Route path='/modify_roles' element={
+          (!loggedIn)
+            ? <Navigate to="/login" replace />
+            : (isAdmin)
+              ? <ModifyRole/>
               : <Navigate to="/" replace />
         }/>
         <Route path='/report' element={
