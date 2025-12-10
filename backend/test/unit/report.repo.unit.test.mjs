@@ -324,4 +324,271 @@ describe('ReportRepository.createReport', () => {
         expect(result).toBeNull();
     });
 });
+/*
+describe('assignReportToExternalMaintainer', () => {
+    it('crea conversazione interna quando report assegnato a ufficio esterno', async () => {
+        const { AppDataSourcePostgres } = await import('../../config/data-source.js');
+        const report = { id: 1, status: 'assigned', assignedExternal: false };
+        reportRepoStub.findOneBy.mockResolvedValueOnce(report);
+        reportRepoStub.save.mockResolvedValue({ ...report, assignedExternal: true });
+
+        // Mock conversazione pubblica esistente
+        const publicConvRepo = {
+            findOne: jest.fn().mockResolvedValue({
+                id: 20,
+                participants: [{ id: 10 }],
+                isInternal: false
+            })
+        };
+
+        const origGetRepo = AppDataSourcePostgres.getRepository;
+        AppDataSourcePostgres.getRepository = jest.fn((entity) => {
+            if (entity?.name === 'Conversation') return publicConvRepo;
+            return reportRepoStub;
+        });
+
+        // Mock per createConversation che deve essere chiamato con isInternal: true
+        createConversationMock.mockResolvedValueOnce({ id: 100, isInternal: true });
+
+        const result = await reportRepository.assignReportToExternalMaintainer(1, 50);
+
+        // Verifica che sia stata creata una conversazione interna
+        expect(createConversationMock).toHaveBeenCalledWith({
+            report: expect.objectContaining({ id: 1 }),
+            participants: [],
+            isInternal: true
+        });
+
+        expect(result.assignedExternal).toBe(true);
+        AppDataSourcePostgres.getRepository = origGetRepo;
+    });
+
+    it('aggiunge staff interno alla conversazione interna', async () => {
+        const { AppDataSourcePostgres } = await import('../../config/data-source.js');
+        const report = { id: 1, status: 'assigned', assignedExternal: false };
+        reportRepoStub.findOneBy.mockResolvedValueOnce(report);
+        reportRepoStub.save.mockResolvedValue({ ...report, assignedExternal: true });
+
+        const publicConvRepo = {
+            findOne: jest.fn().mockResolvedValue({
+                id: 20,
+                participants: [],
+                isInternal: false
+            })
+        };
+
+        const origGetRepo = AppDataSourcePostgres.getRepository;
+        AppDataSourcePostgres.getRepository = jest.fn((entity) => {
+            if (entity?.name === 'Conversation') return publicConvRepo;
+            return reportRepoStub;
+        });
+
+        createConversationMock.mockResolvedValueOnce({ id: 101, isInternal: true });
+        addParticipantToConversationMock.mockResolvedValueOnce({ id: 101, participants: [{ id: 50 }] });
+
+        await reportRepository.assignReportToExternalMaintainer(1, 50);
+
+        // Verifica che lo staff interno sia stato aggiunto alla conversazione interna
+        expect(addParticipantToConversationMock).toHaveBeenCalledWith(101, 50);
+
+        AppDataSourcePostgres.getRepository = origGetRepo;
+    });
+
+    it('crea messaggio di sistema nella conversazione interna', async () => {
+        const { AppDataSourcePostgres } = await import('../../config/data-source.js');
+        const report = { id: 1, status: 'assigned', assignedExternal: false };
+        reportRepoStub.findOneBy.mockResolvedValueOnce(report);
+        reportRepoStub.save.mockResolvedValue({ ...report, assignedExternal: true });
+
+        const publicConvRepo = {
+            findOne: jest.fn().mockResolvedValue({
+                id: 20,
+                participants: [],
+                isInternal: false
+            })
+        };
+
+        const origGetRepo = AppDataSourcePostgres.getRepository;
+        AppDataSourcePostgres.getRepository = jest.fn((entity) => {
+            if (entity?.name === 'Conversation') return publicConvRepo;
+            return reportRepoStub;
+        });
+
+        createConversationMock.mockResolvedValueOnce({ id: 102, isInternal: true });
+        createSystemMessageMock.mockResolvedValueOnce('system_msg_internal');
+
+        await reportRepository.assignReportToExternalMaintainer(1, 50);
+
+        // Verifica che sia stato creato un messaggio di sistema nella conversazione interna
+        expect(createSystemMessageMock).toHaveBeenCalledWith(
+            102,
+            'Report has been assigned to external office'
+        );
+
+        // Verifica che il messaggio sia stato broadcastato
+        expect(broadcastToConversationMock).toHaveBeenCalledWith(102, 'system_msg_internal');
+
+        AppDataSourcePostgres.getRepository = origGetRepo;
+    });
+
+    it('aggiunge staff interno anche alla conversazione pubblica', async () => {
+        const { AppDataSourcePostgres } = await import('../../config/data-source.js');
+        const report = { id: 1, status: 'assigned', assignedExternal: false };
+        reportRepoStub.findOneBy.mockResolvedValueOnce(report);
+        reportRepoStub.save.mockResolvedValue({ ...report, assignedExternal: true });
+
+        const publicConvRepo = {
+            findOne: jest.fn().mockResolvedValue({
+                id: 20,
+                participants: [{ id: 10 }],
+                isInternal: false
+            })
+        };
+
+        const origGetRepo = AppDataSourcePostgres.getRepository;
+        AppDataSourcePostgres.getRepository = jest.fn((entity) => {
+            if (entity?.name === 'Conversation') return publicConvRepo;
+            return reportRepoStub;
+        });
+
+        createConversationMock.mockResolvedValueOnce({ id: 103, isInternal: true });
+
+        await reportRepository.assignReportToExternalMaintainer(1, 50);
+
+        // Verifica che lo staff interno sia stato aggiunto ANCHE alla conversazione pubblica
+        expect(addParticipantToConversationMock).toHaveBeenCalledWith(20, 50);
+
+        AppDataSourcePostgres.getRepository = origGetRepo;
+    });
+
+    it('ritorna null se report non trovato', async () => {
+        reportRepoStub.findOneBy.mockResolvedValueOnce(null);
+        const result = await reportRepository.assignReportToExternalMaintainer(999, 50);
+        expect(result).toBeNull();
+    });
+});
+
+describe('externalStart - Aggiunge manutentore esterno a conversazione interna', () => {
+    it('aggiunge manutentore esterno ai partecipanti della conversazione interna', async () => {
+        const { AppDataSourcePostgres } = await import('../../config/data-source.js');
+        const report = { id: 1, status: 'assigned', assignedExternal: true, categoryId: 5 };
+        reportRepoStub.findOne.mockResolvedValueOnce(report);
+        reportRepoStub.save.mockResolvedValue({ ...report, status: 'in_progress' });
+
+        // Mock conversazione interna
+        const internalConvRepo = {
+            findOne: jest.fn().mockResolvedValue({
+                id: 200,
+                participants: [{ id: 50 }],
+                isInternal: true
+            })
+        };
+
+        const categoryRepo = {
+            findOne: jest.fn().mockResolvedValue({
+                id: 5,
+                externalOfficeId: 10
+            })
+        };
+
+        const userOfficeRepo = {
+            findOne: jest.fn().mockResolvedValue({
+                userId: 60,
+                officeId: 10
+            })
+        };
+
+        const officeRepo = {
+            findOneBy: jest.fn().mockResolvedValue({
+                id: 10,
+                isExternal: true
+            })
+        };
+
+        const origGetRepo = AppDataSourcePostgres.getRepository;
+        AppDataSourcePostgres.getRepository = jest.fn((entity) => {
+            if (entity?.name === 'Conversation') return internalConvRepo;
+            if (entity?.name === 'Categories') return categoryRepo;
+            if (entity?.name === 'UserOffice') return userOfficeRepo;
+            if (entity?.name === 'Office') return officeRepo;
+            return reportRepoStub;
+        });
+
+        await reportRepository.externalStart({ reportId: 1, externalMaintainerId: 60 });
+
+        // Verifica che il manutentore esterno sia stato aggiunto alla conversazione interna
+        expect(addParticipantToConversationMock).toHaveBeenCalledWith(200, 60);
+
+        // Verifica messaggio di sistema nella conversazione interna
+        expect(createSystemMessageMock).toHaveBeenCalledWith(
+            200,
+            expect.stringContaining('Report has been started by external maintainer')
+        );
+
+        AppDataSourcePostgres.getRepository = origGetRepo;
+    });
+});
+
+describe('Isolamento conversazioni interne/pubbliche nei report', () => {
+    it('la conversazione interna ha isInternal: true', async () => {
+        const { AppDataSourcePostgres } = await import('../../config/data-source.js');
+        const report = { id: 1, status: 'assigned', assignedExternal: false };
+        reportRepoStub.findOneBy.mockResolvedValueOnce(report);
+        reportRepoStub.save.mockResolvedValue({ ...report, assignedExternal: true });
+
+        const publicConvRepo = {
+            findOne: jest.fn().mockResolvedValue({
+                id: 20,
+                participants: [],
+                isInternal: false
+            })
+        };
+
+        const origGetRepo = AppDataSourcePostgres.getRepository;
+        AppDataSourcePostgres.getRepository = jest.fn((entity) => {
+            if (entity?.name === 'Conversation') return publicConvRepo;
+            return reportRepoStub;
+        });
+
+        createConversationMock.mockResolvedValueOnce({ id: 300, isInternal: true });
+
+        await reportRepository.assignReportToExternalMaintainer(1, 50);
+
+        // Verifica che la conversazione interna sia stata creata con isInternal: true
+        expect(createConversationMock).toHaveBeenCalledWith(
+            expect.objectContaining({ isInternal: true })
+        );
+
+        AppDataSourcePostgres.getRepository = origGetRepo;
+    });
+
+    it('la conversazione pubblica ha isInternal: false', async () => {
+        const input = {
+            title: 'Title',
+            description: 'Desc',
+            categoryId: 5,
+            userId: 10,
+            latitude: 45.2,
+            longitude: 9.19,
+            photos: []
+        };
+
+        createConversationMock.mockResolvedValueOnce({ id: 42, isInternal: false });
+
+        await reportRepository.createReport(input);
+
+        // Verifica che la conversazione pubblica creata alla creazione del report sia isInternal: false
+        expect(createConversationMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                report: expect.any(Object),
+                participants: expect.any(Array)
+            })
+        );
+
+        // La conversazione pubblica NON dovrebbe avere isInternal: true
+        expect(createConversationMock).not.toHaveBeenCalledWith(
+            expect.objectContaining({ isInternal: true })
+        );
+    });
+});*/
 
