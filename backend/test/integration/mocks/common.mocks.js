@@ -34,7 +34,7 @@ export function createAuthorizationMock(options = {}) {
             }
 
             // Handle special case for /assigned route
-            if (return401OnAssigned && req.path && req.path.includes('/assigned')) {
+            if (return401OnAssigned && req.path?.includes('/assigned')) {
                 return next(new UnauthorizedError('UNAUTHORIZED'));
             }
 

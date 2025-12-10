@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router';
 function VerifyEmail({ user, onVerified }) {
   const [status, setStatus] = useState({ isVerified: false, loading: true, error: null, success: null });
   const [codeInput, setCodeInput] = useState('');
+  const [resendDisabled, setResendDisabled] = useState(false);
+  const [info, setInfo] = useState(null);
   const navigate = useNavigate();
   const recipientEmail = user.email;
   const getErrorMessage = (err) => {
@@ -41,7 +43,11 @@ function VerifyEmail({ user, onVerified }) {
       }
       return { ok: true };
     } catch (err) {
-      return { error: getErrorMessage(err) };
+      const msg = getErrorMessage(err);
+      if (String(msg).toLowerCase().includes('expired')) {
+        setInfo('Your verification code has expired. We sent you a new code by email.');
+      }
+      return { error: msg };
     }
   }, {});
 
@@ -103,6 +109,25 @@ function VerifyEmail({ user, onVerified }) {
                       Verify
                     </Button>
                   </Col>
+                  <Col sm="auto">
+                    <Button
+                      color="secondary"
+                      type="button"
+                      disabled={resendDisabled}
+                      onClick={async () => {
+                        try {
+                          setResendDisabled(true);
+                          await API.resendVerification();
+                          setInfo('A new verification code has been sent to your email.');
+                        } catch (e) {
+                          setInfo(getErrorMessage(e));
+                          setResendDisabled(false);
+                        }
+                      }}
+                    >
+                      Resend code
+                    </Button>
+                  </Col>
                 </Row>
               </Form>
             </>
@@ -113,6 +138,7 @@ function VerifyEmail({ user, onVerified }) {
           {!status.isVerified ? (
             <Alert color="warning">Your email is not verified yet. Please enter the code sent to your email: <strong>{recipientEmail}</strong>, Check also your spam</Alert>
           ) : null}
+          {info && <Alert color="info" className="mt-2">{info}</Alert>}
           {state.error && <Alert color="danger">{String(state.error)}</Alert>}
         </>
       )}

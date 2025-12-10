@@ -1,4 +1,4 @@
-import { Double, EntitySchema } from "typeorm";
+import { EntitySchema } from "typeorm";
 
 export const Report = new EntitySchema({
   name: 'Reports',

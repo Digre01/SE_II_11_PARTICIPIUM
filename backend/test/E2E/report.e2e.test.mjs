@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const { AppDataSourcePostgres } = await import('../../config/data-source.js');
 const { seedDatabase } = await import('../../database/seeder.js');
@@ -95,51 +95,6 @@ describe('POST /api/v1/reports (E2E)', () => {
     expect(res.status).toBe(400);
     expect(res.body.message).toMatch(/between 1 and 3 photos/i);
   });
-
-  //This test need to be revisited because the photos legnth is checked before putting in the body
-  
-  /*
-  it('fails with more than 3 photos', async () => {
-    let req = request(app)
-      .post('/api/v1/reports')
-      .set('Cookie', cookie)
-      .field('title', 'Too many')
-      .field('description', 'Desc')
-      .field('categoryId', '7')
-      .field('latitude', '11.2')
-      .field('longitude', '33.4');
-    req = attachFakeImage(req, 'a.jpg');
-    req = attachFakeImage(req, 'b.jpg');
-    req = attachFakeImage(req, 'c.jpg');
-    req = attachFakeImage(req, 'd.jpg'); // 4th file
-
-    const res = await req;
-    expect(res.status).toBe(400);
-    // Either multer's limit message or route message
-    expect(
-      /up to 3 photos|between 1 and 3 photos/i.test(res.body.error || '')
-    ).toBe(true);
-  });
-
-  it('creates report with 1 photo', async () => {
-    let req = request(app)
-        .post('/api/v1/reports')
-        .set('Cookie', cookie)
-        .field('title', 'Single photo')
-        .field('description', 'Desc')
-        .field('categoryId', '5')
-        .field('latitude', '45.1')
-        .field('longitude', '9.2');
-
-    req = attachFakeImage(req, 'a.jpg');
-    const res = await req;
-    expect(res.status).toBe(201);
-    expect(res.body.message).toBe('Report created successfully');
-    expect(Array.isArray(res.body.photos)).toBe(true);
-    expect(res.body.photos.length).toBe(1);
-    deleteReturnedPhotos(res.body.photos);
-  });
-  */
 
   it('creates report with 2 photos', async () => {
     let req = request(app)
