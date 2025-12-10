@@ -5,6 +5,7 @@ import crypto from "crypto";
 import userService from "../services/userService.js";
 import {mapUserToDTO} from "../mappers/userMappers.js";
 import { BadRequestError } from "../errors/BadRequestError.js";
+import { sendVerificationEmail } from '../utils/email.js';
 
 async function getUserByUsernameOrEmail(identifier) {
     const isEmail = identifier.includes('@');
@@ -48,11 +49,25 @@ async function verifyEmail(userId, code) {
     const record = await userRepository.getEmailVerification(userId);
     if (!record) throw new Error('Verification not found');
     if (record.expiresAt && new Date(record.expiresAt).getTime() < Date.now()) {
-        userRepository.deleteUser(userId);
-        throw new Error('Verification code expired');
+        // Auto-resend a new code on expiry
+        const { code: newCode } = await createEmailVerification(userId);
+        const user = await userRepository.getUserById(userId);
+        const email = user?.email;
+        if (email) {
+            try { await sendVerificationEmail(email, newCode); } catch {}
+        }
+        throw new BadRequestError('Verification code expired. A new code has been sent to your email.');
     }
     if (record.code !== code) throw new Error('Invalid verification code');
 
+    await userRepository.markEmailVerified(userId);
+    const user = await userRepository.getUserById(userId);
+    return mapUserToDTO(user);
+}
+
+
+// used for STAFF signup
+async function markEmailVerified(userId) {
     await userRepository.markEmailVerified(userId);
     const user = await userRepository.getUserById(userId);
     return mapUserToDTO(user);
@@ -64,44 +79,35 @@ async function isEmailVerified(userId) {
     return { isVerified: Boolean(user.isVerified) };
 }
 
-//used for STAFF signup
-async function markEmailVerified(userId) {
-    await userRepository.markEmailVerified(userId);
-    const user = await userRepository.getUserById(userId);
-    return mapUserToDTO(user);
-}
-
 
 async function assignRole(userId, roleId, isExternal) {
-    // Se isExternal è true, accetta solo un ruolo
-    if (isExternal && Array.isArray(roleId) && roleId.length > 1) {
+
+    const rolesToAssign = Array.isArray(roleId) ? roleId : [roleId];
+
+    if (isExternal && rolesToAssign.length > 1) {
         throw new BadRequestError('An external maintainer can only have one role');
     }
 
-    // Support assigning a single roleId or multiple roleIds (array)
-    if (Array.isArray(roleId)) {
-        const results = [];
-        for (const r of roleId) {
-            const userOffice = await userRepository.assignRoleToUser(userId, r, isExternal);
-            results.push({
-                userId: userOffice.userId,
-                officeId: userOffice.officeId ?? null,
-                roleId: userOffice.roleId ?? null,
-                role: userOffice.role ? { id: userOffice.role.id, name: userOffice.role.name } : null,
-                office: userOffice.office ? { id: userOffice.office.id, name: userOffice.office.name } : null
-            });
-        }
-        return results;
-    } else {
-        const userOffice = await userRepository.assignRoleToUser(userId, roleId, isExternal);
-        return {
+    const results = [];
+
+    for (const r of rolesToAssign) {
+        const userOffice = await userRepository.assignRoleToUser(userId, r, isExternal);
+
+        const formattedResult = {
             userId: userOffice.userId,
             officeId: userOffice.officeId ?? null,
             roleId: userOffice.roleId ?? null,
-            role: userOffice.role ? { id: userOffice.role.id, name: userOffice.role.name } : null,
-            office: userOffice.office ? { id: userOffice.office.id, name: userOffice.office.name } : null
+            role: userOffice.role
+                ? { id: userOffice.role.id, name: userOffice.role.name }
+                : null,
+            office: userOffice.office
+                ? { id: userOffice.office.id, name: userOffice.office.name }
+                : null
         };
+        results.push(formattedResult);
     }
+
+    return Array.isArray(roleId) ? results : results[0];
 }
 
 async function addUserRoles(userId, roleIds, isExternal) {
@@ -130,6 +136,33 @@ async function getPfpUrl(userId) {
 }
     
 
+async function resendEmailVerification(userId) {
+    const { code } = await createEmailVerification(userId);
+    const user = await userRepository.getUserById(userId);
+    const email = user?.email;
+    if (!email) throw new BadRequestError('User email not available');
+    const result = await sendVerificationEmail(email, code);
+    return { emailSent: Boolean(result?.sent), emailReason: result?.reason };
+}
 
-const userController = { getUserByUsernameOrEmail, createUser, assignRole, getAvailableStaffForRoleAssignment, getAssignedStaffForRoleModification, getAllRoles, getAllOffices, configAccount, getPfpUrl, addUserRoles, removeUserRole, getUserRoles, setUserRoles };
+const userController = { 
+    getUserByUsernameOrEmail, 
+    createUser, 
+    assignRole, 
+    getAvailableStaffForRoleAssignment, 
+    getAssignedStaffForRoleModification, 
+    getAllRoles, 
+    getAllOffices, 
+    configAccount, 
+    getPfpUrl, 
+    addUserRoles, 
+    removeUserRole, 
+    getUserRoles, 
+    setUserRoles,
+    createEmailVerification,
+    verifyEmail,
+    isEmailVerified,
+    markEmailVerified,
+    resendEmailVerification,
+};
 export default userController;

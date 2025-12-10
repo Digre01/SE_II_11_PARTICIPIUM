@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Row, Col, Card, Button } from 'design-react-kit';
-import Map from './Map.jsx';
+import ReportsMap from './ReportsMap.jsx';
 import ReportsPage from './reportsPage/ReportsPage.jsx';
 import StaffReports from './StaffReports.jsx';
 
@@ -67,7 +67,7 @@ export default function HomePage({ user, loggedIn, isAdmin, isCitizen, isStaff, 
       </Col>
     </Row>
   ) : (
-    <Map user={user} loggedIn={loggedIn} onPointChange={(point) => console.log('Selected point:', point)} />
+    <ReportsMap user={user} loggedIn={loggedIn} onPointChange={(point) => console.log('Selected point:', point)} />
   );
 }
 

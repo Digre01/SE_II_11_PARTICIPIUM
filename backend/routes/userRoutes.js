@@ -10,10 +10,14 @@ import { sendVerificationEmail } from '../utils/email.js';
 const router = Router();
 
 //login
-router.post('/login', passport.authenticate('local'), function(
-    req,
-    res) {
-        res.status(201).json(req.user);
+router.post('/login', passport.authenticate('local'), function(req, res) {
+    const user = req.user;
+    const prevSession = req.session;
+    req.session.regenerate((err) => {
+        if (err) return res.status(500).json({ error: 'Session error' });
+        Object.assign(req.session, prevSession);
+        res.status(201).json(user);
+    });
 });
 
 // GET /api/v1/sessions/me/roles - Roles for the current logged-in user (STAFF or ADMIN)
@@ -203,8 +207,16 @@ router.post('/current/verify_email', async function(req, res, next) {
         }
         const { code } = req.body || {};
         if (!code) return next(new BadRequestError('code is required'));
-        const user = await userController.verifyEmail(Number(req.user.id), code);
-        return res.status(200).json({ message: 'Email verified', user });
+        try {
+            const user = await userController.verifyEmail(Number(req.user.id), code);
+            return res.status(200).json({ message: 'Email verified', user });
+        } catch (err) {
+            const msg = err?.message || String(err);
+            if (msg.toLowerCase().includes('expired')) {
+                return res.status(410).json({ message: msg, expired: true });
+            }
+            throw err;
+        }
     } catch (err) {
         next(err);
     }
@@ -237,6 +249,19 @@ router.delete('/current', (
     req.logout(() => {
         res.end();
     });
+});
+
+// Resend verification code for the current authenticated user
+router.post('/current/resend_verification', async function(req, res, next) {
+    try {
+        if (!req.isAuthenticated?.() || !req.user?.id) {
+            return next(new UnauthorizedError('Not authenticated'));
+        }
+        const result = await userController.resendEmailVerification(Number(req.user.id));
+        return res.status(200).json({ message: 'Verification code resent', ...result });
+    } catch (err) {
+        next(err);
+    }
 });
 
 export default router;

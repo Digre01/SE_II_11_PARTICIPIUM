@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import { AppDataSourcePostgres } from "./config/data-source.js";
 import app from "./app.js";
-import http from "http";
+import http from "node:http";
 import { setupWebSocket } from "./wsHandler.js";
 
 dotenv.config();

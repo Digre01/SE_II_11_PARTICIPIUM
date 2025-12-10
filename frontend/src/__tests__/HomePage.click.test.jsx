@@ -15,13 +15,6 @@ describe('HomePage map interactions', () => {
   });
 
   it('selecting a point on the map sets selected marker and triggers navigation when Create Report is clicked', async () => {
-    render(
-      (await import('react-router')).default ? null : null // no-op to satisfy top-level await ordering
-    );
-
-    render(
-      (await import('react-router')).default ? null : null
-    );
 
     render((await import('../components/HomePage')).default(), { wrapper: (await import('react-router-dom')).MemoryRouter });
 
