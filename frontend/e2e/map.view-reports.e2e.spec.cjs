@@ -42,7 +42,7 @@ test.describe('Map - view approved reports', () => {
       const counts = [];
       for (const c of clusterEls) {
         const txt = (await c.textContent()) || '';
-        const n = parseInt(txt.replace(/\D/g, ''), 10) || 0;
+        const n = Number.parseInt(txt.replace(/\D/g, ''), 10) || 0;
         if (n > 0) counts.push(n);
       }
       counts.sort((a, b) => b - a);
