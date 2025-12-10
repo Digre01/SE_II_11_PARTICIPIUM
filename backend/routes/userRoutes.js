@@ -10,10 +10,14 @@ import { sendVerificationEmail } from '../utils/email.js';
 const router = Router();
 
 //login
-router.post('/login', passport.authenticate('local'), function(
-    req,
-    res) {
-        res.status(201).json(req.user);
+router.post('/login', passport.authenticate('local'), function(req, res) {
+    const user = req.user;
+    const prevSession = req.session;
+    req.session.regenerate((err) => {
+        if (err) return res.status(500).json({ error: 'Session error' });
+        Object.assign(req.session, prevSession);
+        res.status(201).json(user);
+    });
 });
 
 // GET /api/v1/sessions/me/roles - Roles for the current logged-in user (STAFF or ADMIN)
