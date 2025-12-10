@@ -480,7 +480,7 @@ describe('PATCH /api/v1/reports/:id/assign_external', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockRepo.assignReportToExternalMaintainer.mockResolvedValue({ id: 1, assignedExternal: true });
-    
+
     mockController.assignReportToExternalMaintainer.mockImplementation(({ reportId }) => {
       return mockRepo.assignReportToExternalMaintainer(reportId);
     });
@@ -522,7 +522,6 @@ describe('PATCH /api/v1/reports/:id/assign_external - Internal conversations', (
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Mock per simulare le operazioni sulle conversazioni
     mockConversationRepo = {
       findOne: jest.fn(),
     };
@@ -532,19 +531,15 @@ describe('PATCH /api/v1/reports/:id/assign_external - Internal conversations', (
     mockCreateSystemMessage = jest.fn();
     mockBroadcast = jest.fn();
 
-    // Configura il repository per restituire un report valido
     mockRepo.assignReportToExternalMaintainer.mockImplementation(async (reportId, internalStaffId) => {
-      // Simula la logica del repository
       const report = { id: Number(reportId), assignedExternal: false };
 
-      // Simula trovare la conversazione pubblica esistente
       const publicConversation = {
         id: 100,
         participants: [{ id: 5 }],
         isInternal: false
       };
 
-      // Simula creazione conversazione interna
       const internalConversation = {
         id: 200,
         participants: [],
@@ -568,7 +563,7 @@ describe('PATCH /api/v1/reports/:id/assign_external - Internal conversations', (
     });
   });
 
-  it('crea conversazione interna con isInternal: true quando assegna a ufficio esterno', async () => {
+  it('creates an internal conversation with isInternal: true when assigning to external office', async () => {
     const res = await request(app)
         .patch('/api/v1/reports/1/assign_external')
         .set('X-Test-Role', 'staff');
@@ -576,21 +571,21 @@ describe('PATCH /api/v1/reports/:id/assign_external - Internal conversations', (
     expect(res.status).toBe(200);
     expect(res.body.assignedExternal).toBe(true);
 
-    // Verifica che il controller sia stato chiamato con l'ID dello staff member
+    // Verify that the controller was called with the staff member ID
     expect(mockController.assignReportToExternalMaintainer).toHaveBeenCalledWith({
       reportId: '1',
-      internalStaffMemberId: 10 // ID dall'utente mockato
+      internalStaffMemberId: 10 // ID from mocked user
     });
   });
 
-  it('passa correttamente internalStaffMemberId dal token JWT', async () => {
+  it('correctly passes internalStaffMemberId from JWT token', async () => {
     const res = await request(app)
         .patch('/api/v1/reports/5/assign_external')
         .set('X-Test-Role', 'staff');
 
     expect(res.status).toBe(200);
 
-    // Verifica che l'ID dell'utente autenticato venga passato correttamente
+    // Verify that the authenticated user's ID is passed correctly
     expect(mockController.assignReportToExternalMaintainer).toHaveBeenCalledWith(
         expect.objectContaining({
           reportId: '5',
@@ -599,7 +594,7 @@ describe('PATCH /api/v1/reports/:id/assign_external - Internal conversations', (
     );
   });
 
-  it('rifiuta richiesta da cittadino (solo staff autorizzato)', async () => {
+  it('rejects request from citizen (only staff allowed)', async () => {
     const res = await request(app)
         .patch('/api/v1/reports/1/assign_external')
         .set('Authorization', 'Bearer test'); // Citizen user
@@ -608,7 +603,7 @@ describe('PATCH /api/v1/reports/:id/assign_external - Internal conversations', (
     expect(mockRepo.assignReportToExternalMaintainer).not.toHaveBeenCalled();
   });
 
-  it('rifiuta richiesta da admin (solo staff autorizzato)', async () => {
+  it('rejects request from admin (only staff allowed)', async () => {
     const res = await request(app)
         .patch('/api/v1/reports/1/assign_external')
         .set('X-Test-Role', 'admin');
@@ -617,7 +612,7 @@ describe('PATCH /api/v1/reports/:id/assign_external - Internal conversations', (
     expect(mockRepo.assignReportToExternalMaintainer).not.toHaveBeenCalled();
   });
 
-  it('restituisce 404 se report non esiste', async () => {
+  it('returns 404 if report does not exist', async () => {
     mockRepo.assignReportToExternalMaintainer.mockResolvedValueOnce(null);
 
     const res = await request(app)
@@ -628,7 +623,7 @@ describe('PATCH /api/v1/reports/:id/assign_external - Internal conversations', (
     expect(res.body.message).toMatch(/Not found/i);
   });
 
-  it('gestisce errori del repository correttamente', async () => {
+  it('properly handles repository errors', async () => {
     mockRepo.assignReportToExternalMaintainer.mockRejectedValueOnce(
         new Error('Database connection failed')
     );
@@ -641,17 +636,17 @@ describe('PATCH /api/v1/reports/:id/assign_external - Internal conversations', (
   });
 });
 
-describe('PATCH /api/v1/reports/:id/assign_external - Verifica isolamento conversazioni', () => {
+describe('PATCH /api/v1/reports/:id/assign_external - Conversation isolation check', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('lo staff member può accedere sia alla conversazione pubblica che interna', async () => {
-    // Simula che il repository aggiunga lo staff a entrambe le conversazioni
+  it('staff member can access both the public and internal conversation', async () => {
+    // Simulate repository adding the staff member to both conversations
     mockRepo.assignReportToExternalMaintainer.mockResolvedValueOnce({
       id: 1,
       assignedExternal: true,
-      // Metadata per tracking delle conversazioni (non parte del modello reale)
+      // Metadata for conversation tracking (not part of actual model)
       _test_public_conversation: { id: 100, isInternal: false, participants: [10, 5] },
       _test_internal_conversation: { id: 200, isInternal: true, participants: [10] }
     });
@@ -661,21 +656,17 @@ describe('PATCH /api/v1/reports/:id/assign_external - Verifica isolamento conver
         .set('X-Test-Role', 'staff');
 
     expect(res.status).toBe(200);
-
-    // In un test completo, verificheresti che:
-    // - La conversazione pubblica include cittadino + staff
-    // - La conversazione interna include solo staff (e poi manutentori esterni)
   });
 
-  it('verifica che solo utenti autorizzati possano creare conversazioni interne', async () => {
-    // Citizen tenta di assegnare a ufficio esterno (dovrebbe fallire)
+  it('checks that only authorized users can create internal conversations', async () => {
+    // Citizen attempts to assign to external office (should fail)
     const citizenRes = await request(app)
         .patch('/api/v1/reports/1/assign_external')
         .set('Authorization', 'Bearer test');
 
     expect(citizenRes.status).toBe(403);
 
-    // Staff può creare conversazioni interne
+    // Staff can create internal conversations
     mockRepo.assignReportToExternalMaintainer.mockResolvedValueOnce({
       id: 1,
       assignedExternal: true
@@ -689,13 +680,13 @@ describe('PATCH /api/v1/reports/:id/assign_external - Verifica isolamento conver
   });
 });
 
-describe('Integration flow - Creazione conversazione interna completa', () => {
-  it('test del flusso completo: assegnazione -> conversazione interna -> messaggio sistema', async () => {
-    // Setup: simula l'intero flusso
+describe('Integration flow - Complete internal conversation creation', () => {
+  it('full flow test: assignment -> internal conversation -> system message', async () => {
+    // Setup: simulate the entire flow
     const fullFlowMock = jest.fn().mockResolvedValue({
       id: 1,
       assignedExternal: true,
-      // Metadata per tracking del flusso
+      // Flow tracking metadata
       _test_flow: {
         publicConversationUpdated: true,
         internalConversationCreated: true,
@@ -714,7 +705,8 @@ describe('Integration flow - Creazione conversazione interna completa', () => {
     expect(res.status).toBe(200);
     expect(res.body.assignedExternal).toBe(true);
 
-    // Verifica che il flusso sia stato completato
+    // Verify that the flow was completed
     expect(fullFlowMock).toHaveBeenCalledWith('1', 10);
   });
 });
+
