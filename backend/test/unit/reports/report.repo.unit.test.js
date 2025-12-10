@@ -5,9 +5,15 @@ import {
     categoryRepoStub,
     photoRepoStub,
     conversationRepoStub,
+    userOfficeRepoStub,
+    officeRepoStub,
     savedReports,
     photoEntities
 } from '../mocks/reports.mock.js';
+let addParticipantToConversationMock;
+beforeAll(async () => {
+    ({ addParticipantToConversation: addParticipantToConversationMock } = await import('../../../repositories/conversationRepository.js'));
+});
 
 const { reportRepository } = await import('../../../repositories/reportRepository.mjs');
 
@@ -478,5 +484,101 @@ describe('ReportRepository.assignReportToExternalMaintainer', () => {
 
         await reportRepository.assignReportToExternalMaintainer('42');
         expect(reportRepoStub.findOneBy).toHaveBeenCalledWith({ id: 42 });
+    });
+});
+
+describe('ReportRepository._externalChangeStatus', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        savedReports.length = 0;
+    });
+    it('changes status of externally assigned report (success)', async () => {
+        const mockReport = { id: 20, assignedExternal: true, status: 'assigned', categoryId: 222 };
+        reportRepoStub.findOne.mockResolvedValue(mockReport);
+        categoryRepoStub.findOne.mockResolvedValue({ id: 222, externalOfficeId: 555, externalOffice: { id: 555 } });
+        userOfficeRepoStub.findOne.mockResolvedValue({ userId: 77, officeId: 555 });
+        officeRepoStub.findOneBy.mockResolvedValue({ id: 555, isExternal: true });
+        conversationRepoStub.findOne.mockResolvedValue({ id: 321, participants: [], isInternal: false });
+        reportRepoStub.save.mockImplementation(async (entity) => {
+            savedReports.push(entity);
+            return entity;
+        });
+        const result = await reportRepository._externalChangeStatus({ reportId: 20, status: 'resolved', externalMaintainerId: 77 });
+        expect(reportRepoStub.findOne).toHaveBeenCalledWith({ where: { id: 20 }, relations: ['category'] });
+        expect(result.status).toBe('resolved');
+        expect(reportRepoStub.save).toHaveBeenCalledWith(mockReport);
+    });
+
+    it('returns null when report not found', async () => {
+        reportRepoStub.findOne.mockResolvedValue(null);
+        const result = await reportRepository._externalChangeStatus({ reportId: 999, status: 'resolved' });
+        expect(result).toBeNull();
+        expect(reportRepoStub.save).not.toHaveBeenCalled();
+    });
+
+    it('returns null when report not assigned to external maintainer', async () => {
+        const mockReport = { id: 30, assignedExternal: false, status: 'assigned' };
+        reportRepoStub.findOne.mockResolvedValue(mockReport);
+        const result = await reportRepository._externalChangeStatus({ reportId: 30, status: 'resolved' });
+        expect(result).toBeNull();
+        expect(reportRepoStub.save).not.toHaveBeenCalled();
+    });
+    it('adds external maintainer to a conversation when changing status', async () => {
+        const mockReport = { id: 40, assignedExternal: true, status: 'assigned', categoryId: 222 };
+        reportRepoStub.findOne.mockResolvedValue(mockReport);
+        categoryRepoStub.findOne.mockResolvedValue({ id: 222, externalOfficeId: 555 });
+        userOfficeRepoStub.findOne.mockResolvedValue({ userId: 77, officeId: 555 });
+        officeRepoStub.findOneBy.mockResolvedValue({ id: 555, isExternal: true });
+        conversationRepoStub.findOne.mockResolvedValue({ id: 654, participants: [], isInternal: false });
+        reportRepoStub.save.mockImplementation(async (entity) => entity);
+        const result = await reportRepository._externalChangeStatus({ reportId: 40, status: 'suspended', externalMaintainerId: 77 });
+        expect(result.status).toBe('suspended');
+        expect(addParticipantToConversationMock).toBeDefined();
+        expect(typeof addParticipantToConversationMock).toBe('function');
+        expect(addParticipantToConversationMock).toHaveBeenCalledWith(654, 77);
+    });
+    it('starts a new report correctly', async () => {
+        const mockReport = { id: 50, assignedExternal: true, status: 'pending', categoryId: 222 };
+        reportRepoStub.findOne.mockResolvedValue(mockReport);
+        categoryRepoStub.findOne.mockResolvedValue({ id: 222, externalOfficeId: 555 });
+        userOfficeRepoStub.findOne.mockResolvedValue({ userId: 88, officeId: 555 });
+        officeRepoStub.findOneBy.mockResolvedValue({ id: 555, isExternal: true });
+        conversationRepoStub.findOne.mockResolvedValue({ id: 777, participants: [], isInternal: true });
+        reportRepoStub.save.mockImplementation(async (entity) => entity);
+        const result = await reportRepository.externalStart({ reportId: 50, externalMaintainerId: 88 });
+        expect(result.status).toBe('in_progress');
+    });
+    it('finishes a report correctly', async () => {
+        const mockReport = { id: 60, assignedExternal: true, status: 'in_progress', categoryId: 222 };
+        reportRepoStub.findOne.mockResolvedValue(mockReport);
+        categoryRepoStub.findOne.mockResolvedValue({ id: 222, externalOfficeId: 555 });
+        userOfficeRepoStub.findOne.mockResolvedValue({ userId: 101, officeId: 555 });
+        officeRepoStub.findOneBy.mockResolvedValue({ id: 555, isExternal: true });
+        conversationRepoStub.findOne.mockResolvedValue({ id: 888, participants: [], isInternal: false });
+        reportRepoStub.save.mockImplementation(async (entity) => entity);
+        const result = await reportRepository.externalFinish({ reportId: 60, externalMaintainerId: 101 });
+        expect(result.status).toBe('resolved');
+    });
+    it('suspends a report correctly', async () => {
+        const mockReport = { id: 70, assignedExternal: true, status: 'in_progress', categoryId: 222 };
+        reportRepoStub.findOne.mockResolvedValue(mockReport);
+        categoryRepoStub.findOne.mockResolvedValue({ id: 222, externalOfficeId: 555 });
+        userOfficeRepoStub.findOne.mockResolvedValue({ userId: 99, officeId: 555 });
+        officeRepoStub.findOneBy.mockResolvedValue({ id: 555, isExternal: true });
+        conversationRepoStub.findOne.mockResolvedValue({ id: 889, participants: [], isInternal: false });
+        reportRepoStub.save.mockImplementation(async (entity) => entity);
+        const result = await reportRepository.externalSuspend({ reportId: 70, externalMaintainerId: 99 });
+        expect(result.status).toBe('suspended');
+    });
+    it('resumes a report correctly', async () => {
+        const mockReport = { id: 80, assignedExternal: true, status: 'suspended', categoryId: 222 }; 
+        reportRepoStub.findOne.mockResolvedValue(mockReport);
+        categoryRepoStub.findOne.mockResolvedValue({ id: 222, externalOfficeId: 555 });
+        userOfficeRepoStub.findOne.mockResolvedValue({ userId: 102, officeId: 555 });
+        officeRepoStub.findOneBy.mockResolvedValue({ id: 555, isExternal: true });
+        conversationRepoStub.findOne.mockResolvedValue({ id: 890, participants: [], isInternal: false });
+        reportRepoStub.save.mockImplementation(async (entity) => entity);
+        const result = await reportRepository.externalResume({ reportId: 80, externalMaintainerId: 102 });
+        expect(result.status).toBe('assigned');
     });
 });

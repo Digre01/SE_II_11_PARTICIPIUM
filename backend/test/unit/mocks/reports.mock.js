@@ -15,6 +15,8 @@ export const userRepoStub = repoStub('Users');
 export const categoryRepoStub = repoStub('Categories');
 export const photoRepoStub = repoStub('Photos');
 export const conversationRepoStub = repoStub("Conversation");
+export const userOfficeRepoStub = repoStub('UserOffice');
+export const officeRepoStub = repoStub('Offices');
 
 export const savedReports = [];
 export const photoEntities = [];
@@ -49,11 +51,14 @@ await jest.unstable_mockModule('../../../entities/Conversation.js', () => ({
 jest.unstable_mockModule('../../../config/data-source.js', () => ({
     AppDataSourcePostgres: {
         getRepository: jest.fn((entity) => {
-            if (entity?.options?.name === 'Report') return reportRepoStub;
-            if (entity?.options?.name === 'Users') return userRepoStub;
-            if (entity?.options?.name === 'Categories') return categoryRepoStub;
-            if (entity?.options?.name === 'Photos') return photoRepoStub;
-            if (entity?.options?.name === 'Conversation') return conversationRepoStub;
+            const name = entity?.options?.name;
+            if (name === 'Report' || name === 'Reports') return reportRepoStub;
+            if (name === 'Users') return userRepoStub;
+            if (name === 'Categories') return categoryRepoStub;
+            if (name === 'Photos') return photoRepoStub;
+            if (name === 'Conversation') return conversationRepoStub;
+            if (name === 'UserOffice') return userOfficeRepoStub;
+            if (name === 'Offices') return officeRepoStub;
             return reportRepoStub;
         }),
     },
