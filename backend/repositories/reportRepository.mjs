@@ -88,7 +88,8 @@ export class ReportRepository {
 		return await this.repo.find({
 			where: [
 				{ status: 'assigned' },
-				{ status: 'suspended' }
+				{ status: 'suspended' },
+				{ status: 'in_progress' }
 			],
 			relations: ['photos', 'category', 'user']
 		});

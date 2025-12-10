@@ -109,17 +109,20 @@ const fetchReportPhotos = async (reportId) => {
 
 // GET /api/v1/reports/assigned + /api/v1/reports/suspended (public map)
 const fetchAssignedReports = async () => {
-  const [assignedRes, suspendedRes] = await Promise.all([
+  const [assignedRes, suspendedRes, inProgressRes] = await Promise.all([
     fetch(SERVER_URL + '/api/v1/reports/assigned', { credentials: 'include' }),
-    fetch(SERVER_URL + '/api/v1/reports/suspended', { credentials: 'include' })
+    fetch(SERVER_URL + '/api/v1/reports/suspended', { credentials: 'include' }),
+    fetch(SERVER_URL + '/api/v1/reports/in_progress', { credentials: 'include' })
   ]);
   if (!assignedRes.ok) throw await assignedRes.text();
   if (!suspendedRes.ok) throw await suspendedRes.text();
-  const [assigned, suspended] = await Promise.all([
+  if (!inProgressRes.ok) throw await inProgressRes.text();
+  const [assigned, suspended, inProgress] = await Promise.all([
     assignedRes.json(),
-    suspendedRes.json()
+    suspendedRes.json(),
+    inProgressRes.json()
   ]);
-  return [...assigned, ...suspended];
+  return [...assigned, ...suspended, ...inProgress];
 };
 
 // GET /api/v1/reports/:id

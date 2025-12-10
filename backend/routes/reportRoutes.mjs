@@ -56,12 +56,13 @@ router.get('/', authorizeUserType(['staff']), async (req, res, next) => {
 });
 
 // GET /api/v1/reports/assigned and /api/v1/reports/suspended (public map layer)
-router.get(['/assigned', '/suspended'], authorizeUserType(['citizen']), async (req, res, next) => {
+router.get(['/assigned', '/suspended', '/in_progress'], authorizeUserType(['citizen']), async (req, res, next) => {
   try {
     const reports = await getAcceptedReports();
     // Filter by requested path to avoid duplicates when frontend merges both endpoints
     const isAssignedPath = req.path.endsWith('/assigned');
-    const filtered = reports.filter(r => isAssignedPath ? r.status === 'assigned' : r.status === 'suspended');
+    const isInProgressPath = req.path.endsWith('/in_progress');
+    const filtered = reports.filter(r => isAssignedPath ? r.status === 'assigned' : isInProgressPath ? r.status === 'in_progress' : r.status === 'suspended');
     const dto = filtered.map(r => ({
       id: r.id,
       title: r.title,
