@@ -163,4 +163,139 @@ test.describe('Conversation Page', () => {
     const input = page.locator('input[placeholder="Type your message..."]');
     expect(await input.count()).toBe(0);
   });
+
+  test('internal conversation shows internal banner', async ({ page }) => {
+    await page.route('**/api/v1/sessions/current', route => route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ id: 42, username: 'staff1', userType: 'staff' })
+    }));
+
+    await page.route('**/api/v1/notifications/500/read', route => route.fulfill({
+      status: 200, contentType: 'application/json', body: JSON.stringify({ updated: 0 })
+    }));
+
+    await page.route('**/api/v1/conversations/500/messages', route => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{
+          id: 5000,
+          content: 'Internal note',
+          createdAt: new Date().toISOString(),
+          sender: { id: 42, username: 'staff1' },
+          conversation: { isInternal: true, report: { title: 'Report X', status: 'open' } }
+        }])
+      });
+    });
+
+    await page.goto('/conversations/500');
+    await page.waitForTimeout(300);
+    expect(await page.locator('text=Internal comments').count()).toBeGreaterThan(0);
+  });
+
+  test('staff can send message in internal conversation (POST invoked)', async ({ page }) => {
+    await page.route('**/api/v1/sessions/current', route => route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ id: 42, username: 'staff1', userType: 'staff' })
+    }));
+
+    await page.route('**/api/v1/conversations', route => route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify([{ id: 600, isInternal: true, report: { status: 'open' } }])
+    }));
+
+    let getCount = 0;
+    let postCalled = false;
+    await page.route('**/api/v1/conversations/600/messages', async route => {
+      const method = route.request().method().toUpperCase();
+      if (method === 'GET') {
+        getCount += 1;
+        // prima GET: empty, dopo POST the app will re-fetch and we return the sent message
+        if (getCount === 1) {
+          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+        } else {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify([{
+              id: 6001,
+              content: 'Internal staff msg',
+              createdAt: new Date().toISOString(),
+              sender: { id: 42, username: 'staff1' }
+            }])
+          });
+        }
+      } else if (method === 'POST') {
+        postCalled = true;
+        await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ id: 6002, content: 'Internal staff msg', sender: { id: 42 } }) });
+      } else {
+        await route.continue();
+      }
+    });
+
+    await page.goto('/conversations/600');
+    await page.waitForTimeout(300);
+    const input = page.locator('input[placeholder="Type your message..."]');
+    await input.fill('Internal staff msg');
+    await page.click('button[aria-label="Send"]');
+    await page.waitForSelector('text=Internal staff msg', { timeout: 3000 });
+    expect(postCalled).toBeTruthy();
+  });
+
+  test('citizen sees internal banner but has no send form', async ({ page }) => {
+    await page.route('**/api/v1/sessions/current', route => route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ id: 99, username: 'alice', userType: 'citizen' })
+    }));
+
+    await page.route('**/api/v1/conversations/700/messages', route => route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify([{
+        id: 7001,
+        content: 'Internal only',
+        createdAt: new Date().toISOString(),
+        sender: { id: 42, username: 'staff1' },
+        conversation: { isInternal: true, report: { title: 'Report Y', status: 'open' } }
+      }])
+    }));
+
+    await page.goto('/conversations/700');
+    await page.waitForTimeout(300);
+    expect(await page.locator('text=Internal comments').count()).toBeGreaterThan(0);
+    const input = page.locator('input[placeholder="Type your message..."]');
+    expect(await input.count()).toBe(0);
+  });
+
+
+// javascript
+// Aggiungere al file `frontend/e2e/notifications.e2e.spec.cjs`
+
+  const { test: test2, expect: expect2 } = require('@playwright/test');
+
+  test2('conversations list shows internal child and navigates to it', async ({ page }) => {
+    await page.route('**/api/v1/sessions/current', route => route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ id: 42, username: 'staff1', userType: 'staff' })
+    }));
+
+    // Return both external and internal conversations for the same report
+    await page.route('**/api/v1/conversations', route => route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify([
+        { id: 800, isInternal: false, report: { id: 1, title: 'Report Z', status: 'open' } },
+        { id: 801, isInternal: true, report: { id: 1, title: 'Report Z', status: 'open' } }
+      ])
+    }));
+
+    await page.goto('/conversations');
+    await page.waitForTimeout(300);
+    // internal child should render with label
+    const internalItem = page.locator('text=Internal comments').first();
+    expect(await internalItem.count()).toBeGreaterThan(0);
+
+    // click it and ensure navigation
+    await internalItem.click();
+    await page.waitForURL('**/conversations/801', { timeout: 3000 });
+    expect(page.url()).toContain('/conversations/801');
+  });
 });
