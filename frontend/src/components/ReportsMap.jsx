@@ -132,7 +132,7 @@ function ClusteredReports({ reports, reportsPinIcon }) {
   return null;
 }
 
-export default function Map({ user, loggedIn, onPointChange }) {
+export default function ReportsMap({ user, loggedIn, onPointChange }) {
   const center = [45.0703, 7.6869];
   const initialZoom = 12; // start wider
   const targetZoom = 15;  // animate to this
