@@ -413,3 +413,63 @@ describe('PATCH /api/v1/reports/:id/assign_external', () => {
     expect(mockRepo.assignReportToExternalMaintainer).not.toHaveBeenCalled();
   });
 });
+
+// --- External maintainer status flow tests
+describe('PATCH /api/v1/reports/:id/external/*', () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('PATCH /external/start -> 200 sets in_progress', async () => {
+    mockRepo.externalStart.mockResolvedValueOnce({ id: 50, status: 'in_progress' });
+    const res = await request(app)
+      .patch('/api/v1/reports/50/external/start')
+      .set('Authorization', 'Bearer token')
+      .set('X-Test-Role', 'external');
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('in_progress');
+    expect(mockRepo.externalStart).toHaveBeenCalledWith({ reportId: '50', externalMaintainerId: 10 });
+  });
+
+  it('PATCH /external/finish -> 200 sets resolved', async () => {
+    mockRepo.externalFinish.mockResolvedValueOnce({ id: 60, status: 'resolved' });
+    const res = await request(app)
+      .patch('/api/v1/reports/60/external/finish')
+      .set('Authorization', 'Bearer token')
+      .set('X-Test-Role', 'external');
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('resolved');
+    expect(mockRepo.externalFinish).toHaveBeenCalledWith({ reportId: '60', externalMaintainerId: 10 });
+  });
+
+  it('PATCH /external/suspend -> 200 sets suspended', async () => {
+    mockRepo.externalSuspend.mockResolvedValueOnce({ id: 70, status: 'suspended' });
+    const res = await request(app)
+      .patch('/api/v1/reports/70/external/suspend')
+      .set('Authorization', 'Bearer token')
+      .set('X-Test-Role', 'external');
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('suspended');
+    expect(mockRepo.externalSuspend).toHaveBeenCalledWith({ reportId: '70', externalMaintainerId: 10 });
+  });
+
+  it('PATCH /external/resume -> 200 sets assigned', async () => {
+    mockRepo.externalResume.mockResolvedValueOnce({ id: 80, status: 'assigned' });
+    const res = await request(app)
+      .patch('/api/v1/reports/80/external/resume')
+      .set('Authorization', 'Bearer token')
+      .set('X-Test-Role', 'external');
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('assigned');
+    expect(mockRepo.externalResume).toHaveBeenCalledWith({ reportId: '80', externalMaintainerId: 10 });
+  });
+
+  it('returns 404 when repo returns null', async () => {
+    mockRepo.externalStart.mockResolvedValueOnce(null);
+    const res = await request(app)
+      .patch('/api/v1/reports/999/external/start')
+      .set('Authorization', 'Bearer token')
+      .set('X-Test-Role', 'external');
+    expect(res.status).toBe(404);
+  });
+});

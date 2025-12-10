@@ -16,6 +16,7 @@ export function createAuthorizationMock(options = {}) {
 
             if (effectiveUserType) {
                 req.user = { id: 10, userType: effectiveUserType };
+                req.isAuthenticated = () => true;
                 const normalized = (allowed || []).map(a => String(a).toUpperCase());
                 const caller = String(effectiveUserType).toUpperCase();
                 if (!normalized.includes(caller)) {
@@ -26,6 +27,7 @@ export function createAuthorizationMock(options = {}) {
 
             if (req.header('Authorization')) {
                 req.user = { id: 10, userType: 'citizen' };
+                req.isAuthenticated = () => true;
                 const normalized = (allowed || []).map(a => String(a).toUpperCase());
                 if (!normalized.includes('CITIZEN')) {
                     return next(new InsufficientRightsError('Forbidden'));
@@ -97,5 +99,13 @@ export async function setupAuthorizationMock(options = {}) {
 export async function setupUploadMiddlewareMock() {
     await jest.unstable_mockModule('../../../middlewares/uploadMiddleware.js', () => ({
         default: createUploadMiddlewareMock()
+    }));
+}
+
+// Setup email utils mock to avoid nodemailer dependency in tests
+export async function setupEmailUtilsMock() {
+    await jest.unstable_mockModule('../../../utils/email.js', () => ({
+        sendVerificationEmail: jest.fn().mockResolvedValue(true),
+        sendNotificationEmail: jest.fn().mockResolvedValue(true),
     }));
 }

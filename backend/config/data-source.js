@@ -23,5 +23,7 @@ export const AppDataSourcePostgres = new DataSource({
   database: process.env.PG_DB || "se_ii_db",
   entities: [Users, Report, UserOffice, Categories, Photos, Office, Roles, Message, Conversation, Notification],
   synchronize: true,
+  // In test runs, drop schema to avoid sync conflicts with existing data
+  dropSchema: process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID ? true : false,
   logging: false,
 });
