@@ -102,7 +102,7 @@ describe('E2E: setUserRoles story (multiple roles + cancellation)', () => {
     // verify persisted via repository
     const userOffices = await userRepository.getUserRoles(staff.id);
     const persistedRoleIds = userOffices.map(u => u.role?.id || u.roleId);
-    expect(persistedRoleIds.sort()).toEqual([r1.id, r2.id].sort());
+    expect(persistedRoleIds.sort((a, b) => a - b)).toEqual([r1.id, r2.id].sort((a, b) => a - b));
 
     // cleanup created mapping
     const userOfficeRepo = dataSource.getRepository('UserOffice');
@@ -221,7 +221,7 @@ describe('E2E: setUserRoles story (multiple roles + cancellation)', () => {
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     const persistedRoleIds = (await userRepository.getUserRoles(staff.id)).map(u => u.role?.id || u.roleId);
-    expect(persistedRoleIds.sort()).toEqual(ids.sort());
+    expect(persistedRoleIds.sort((a, b) => a - b)).toEqual(ids.sort((a, b) => a - b));
 
     // cleanup mapping
     const userOfficeRepo = dataSource.getRepository('UserOffice');
