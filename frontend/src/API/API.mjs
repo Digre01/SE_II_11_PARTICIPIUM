@@ -3,46 +3,46 @@ export const SERVER_URL = "http://localhost:3000";
 // Sign up a new user
 //{ username, email, name, surname, password, userType }
 export async function signUp(userData) {
-  const response = await fetch(`${SERVER_URL}/api/v1/sessions/signup`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    credentials: "include",
-    body: JSON.stringify(userData),
-  });
-  if(response.ok) {
-    return await response.json();
-  } else {
-    const errDetails = await response; //works but need to be changed lol
-    throw errDetails;
-  }
+    const response = await fetch(`${SERVER_URL}/api/v1/sessions/signup`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+         },
+        credentials: "include",
+        body: JSON.stringify(userData),
+    });
+    if(response.ok) {
+        return await response.json();
+    } else {
+        const errDetails = await response; //works but need to be changed lol
+        throw errDetails;
+    }
 }
 
 const logIn = async (credentials) => {
-  const response = await fetch(SERVER_URL + '/api/v1/sessions/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
-    body: JSON.stringify(credentials),
-  });
+    const response = await fetch(SERVER_URL + '/api/v1/sessions/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(credentials),
+    });
 
-  if(response.ok) {
-    return await response.json();
-  } else {
-    throw await response.text();
-  }
+    if(response.ok) {
+        return await response.json();
+    } else {
+        throw await response.text();
+    }
 }
 
 const logOut = async() => {
-  const response = await fetch(SERVER_URL + '/api/v1/sessions/current', {
-    method: 'DELETE',
-    credentials: 'include'
-  });
-  if (response.ok)
-    return null;
+    const response = await fetch(SERVER_URL + '/api/v1/sessions/current', {
+        method: 'DELETE',
+        credentials: 'include'
+    });
+    if (response.ok)
+        return null;
 }
 // PATCH /api/v1/sessions/:id/config
 // Update account (multipart/form-data)
@@ -98,6 +98,14 @@ const fetchReports = async () => {
   if (response.ok) return await response.json();
   throw await response.text();
 };
+
+const fetchReportPhotos = async (reportId) => {
+  const response = await fetch(`${SERVER_URL}/api/v1/reports/${reportId}/photos`, {
+    method: 'GET',
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+}
 
 // GET /api/v1/reports/assigned + /api/v1/reports/suspended (public map)
 const fetchAssignedReports = async () => {
@@ -182,9 +190,63 @@ export async function assignRole(userId, roleId, isExternal) {
   }
 }
 
+// GET /api/v1/sessions/:id/roles
+export async function fetchUserRoles(userId) {
+  const response = await fetch(`${SERVER_URL}/api/v1/sessions/${userId}/roles`, {
+    method: 'GET',
+    credentials: 'include'
+  });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+}
+
+// GET /api/v1/sessions/me/roles
+export async function fetchMyRoles() {
+  const response = await fetch(`${SERVER_URL}/api/v1/sessions/me/roles`, {
+    method: 'GET',
+    credentials: 'include'
+  });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+}
+
+// PUT /api/v1/sessions/:id/roles
+export async function setUserRoles(userId, rolesPayload) {
+  const response = await fetch(`${SERVER_URL}/api/v1/sessions/${userId}/roles`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify({ roles: rolesPayload })
+  });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw await response.text();
+  }
+}
+
+
 // GET available staff for role assignment
 export async function fetchAvailableStaff() {
   const response = await fetch(`${SERVER_URL}/api/v1/sessions/available_staff`, {
+    method: 'GET',
+    credentials: 'include'
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+}
+
+// GET assigned staff (already have at least one role)
+export async function fetchAssignedStaff() {
+  const response = await fetch(`${SERVER_URL}/api/v1/sessions/assigned_staff`, {
     method: 'GET',
     credentials: 'include'
   });
@@ -214,12 +276,12 @@ export async function fetchOffices() {
 
 // GET offices
 export async function fetchOffice(id) {
-  const response = await fetch(`${SERVER_URL}/api/v1/offices/${id}`, {
-    method: 'GET',
-    credentials: 'include'
-  });
-  if (response.ok) return await response.json();
-  throw await response.text();
+    const response = await fetch(`${SERVER_URL}/api/v1/offices/${id}`, {
+        method: 'GET',
+        credentials: 'include'
+    });
+    if (response.ok) return await response.json();
+    throw await response.text();
 }
 
 // PATCH /api/v1/reports/:id/suspend
@@ -263,12 +325,12 @@ const finishReport = async (id) => {
 
 // PATCH /api/v1/reports/:id/assign_external
 const assignReportToExternalMaintainer = async (id) => {
-  const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/assign_external`, {
-    method: 'PATCH',
-    credentials: 'include'
-  });
-  if (response.ok) return await response.json();
-  throw await response.text();
+    const response = await fetch(SERVER_URL + `/api/v1/reports/${id}/assign_external`, {
+        method: 'PATCH',
+        credentials: 'include'
+    });
+    if (response.ok) return await response.json();
+    throw await response.text();
 }
 
 // POST /api/v1/notifications/:conversationId/read
@@ -315,17 +377,38 @@ const sendMessage = async (conversationId, content) => {
   throw await response.text();
 };
 
-const fetchReportPhotos = async (reportId) => {
-  const response = await fetch(`${SERVER_URL}/api/v1/reports/${reportId}/photos`, {
-    method: 'GET',
+// POST /api/v1/sessions/current/verify_email
+const verifyEmail = async (code) => {
+  const response = await fetch(SERVER_URL + `/api/v1/sessions/current/verify_email`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code })
   });
   if (response.ok) return await response.json();
   throw await response.text();
-}
+};
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations,
-  fetchMessages, fetchReports, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchRoles,
-  fetchOffices, fetchOffice, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts,
-  markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, sendMessage,
-  assignReportToExternalMaintainer, fetchReportPhotos };
+// GET /api/v1/sessions/current/email_verified
+const checkEmailVerified = async () => {
+  const response = await fetch(SERVER_URL + `/api/v1/sessions/current/email_verified`, {
+    method: 'GET',
+    credentials: 'include'
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+
+// POST /api/v1/sessions/current/resend_verification
+const resendVerification = async () => {
+  const response = await fetch(SERVER_URL + `/api/v1/sessions/current/resend_verification`, {
+    method: 'POST',
+    credentials: 'include'
+  });
+  if (response.ok) return await response.json();
+  throw await response.text();
+};
+
+
+const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages, fetchReports, fetchReportPhotos, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchAssignedStaff, fetchRoles, fetchOffices, fetchOffice, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, assignReportToExternalMaintainer, sendMessage, fetchMyRoles, fetchUserRoles, setUserRoles, verifyEmail, checkEmailVerified, resendVerification };
 export default API;
