@@ -80,7 +80,7 @@ sections:
 - Technical Debt management:
   - Strategy adopted:
 
-    First, we added a 30-minute task to the sprint planning to be completed at the beginning of the sprint, ensuring that we could start writing code with the quality gate already passed. The remaining hours allocated to technical debt management were instead grouped into a task to be completed at the end of the sprint, so that we could showcase a version of the software that met the quality gate during the demo. The strategy for this task was to first address the issues that prevented us from meeting the quality gate and then resolve as many additional issues as possible, starting from those with the highest severity.
+    First, we added a 30-minutes task to the sprint planning to be completed at the beginning of the sprint, ensuring that we could start writing code with the quality gate already passed. The remaining hours allocated to technical debt management were instead grouped into a task to be completed at the end of the sprint, so that we could showcase a version of the software that met the quality gate during the demo. The strategy for this task was to first address the issues that prevented us from meeting the quality gate and then resolve as many additional issues as possible, starting from those with the highest severity.
     
   - Total hours estimated estimated at sprint planning: 5h 30m
   - Total hours spent: 4h 30m
@@ -90,15 +90,19 @@ sections:
 ## ASSESSMENT
 
 - What caused your errors in estimation (if any)?
+  - We overestimated the hours for story 24.
 
 - What lessons did you learn (both positive and negative) in this sprint?
+  - During this sprint, the work load is not evenly spread, but it's more concentrated in the last week/days (mainly due to academical reasons). This delay led to some mistakes in hours management and tracking.
 
-- Which improvement goals set in the previous retrospective were you able to achieve? 
+- Which improvement goals set in the previous retrospective were you able to achieve?
+  - During this sprint planning, we improved in estimate story points, maintaining a reasonable ratio between story points and hours estimated.
   
 - Which ones you were not able to achieve? Why?
+  - None.
 
 - Improvement goals for the next sprint and how to achieve them (technical tasks, team coordination, etc.)
-
-> Propose one or two
+  - During sprint planning, we have to consider our academical commitments in order to assign tasks evenly during the two weeks.
 
 - One thing you are proud of as a Team!!
+  - Despite the work load was not evenly spread, we managed to complete all tasks maintaining a great team coordination.
