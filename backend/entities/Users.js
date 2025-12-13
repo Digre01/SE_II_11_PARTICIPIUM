@@ -27,7 +27,8 @@ export const Users = new EntitySchema({
     },
     telegramId: {
       type: String,
-      nullable: true
+      nullable: true,
+      unique: true
     },
     photoId: {
       type: Number,
@@ -59,6 +60,15 @@ export const Users = new EntitySchema({
       nullable: true
     },
     verificationCodeExpires: { 
+      type: Date,
+      nullable: true
+    },
+    // Telegram linking verification
+    telegramVerificationCode: {
+      type: String,
+      nullable: true
+    },
+    telegramVerificationExpires: {
       type: Date,
       nullable: true
     },

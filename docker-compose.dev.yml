@@ -68,7 +68,26 @@ services:
     environment:
       - ADMINER_DESIGN=galkaev
 
+  # Telegram Bot
+  telegram:
+    build:
+      context: ./telegram
+      dockerfile: ../docker/telegram/Dockerfile
+    container_name: telegram_dev
+    # Telegram bot usually does not expose HTTP ports
+    volumes:
+      - ./telegram:/app
+      - telegram_node_modules:/app/node_modules  # remove for prod
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    # Use nodemon for live-reload during development if available; otherwise fallback to npm start
+    command: sh -lc "npm install && (npx nodemon || npm start)"
+
 volumes:
   db_data:
   frontend_node_modules: #need to be removed when prod code
   backend_node_modules: #need to be removed when prod code
+  telegram_node_modules: #need to be removed when prod code

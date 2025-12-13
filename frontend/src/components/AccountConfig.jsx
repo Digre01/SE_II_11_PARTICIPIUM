@@ -266,6 +266,29 @@ export default function AccountConfig({ user, loggedIn }) {
                         infoText={telegramHelp}
                         wrapperClassName="col-12 col-md-6"
                     />
+                    <Col className="col-12 col-md-6 d-flex align-items-end">
+                        {Boolean(user?.telegramId) && (
+                            <Button
+                                color="secondary"
+                                outline
+                                type="button"
+                                className="ms-md-3 mt-2 mt-md-0"
+                                disabled={!telegram.trim() || saving}
+                                onClick={async () => {
+                                    setError(''); setSuccess(''); setErrorOpen(true); setSuccessOpen(true);
+                                    try {
+                                        const { code, expiresAt } = await API.requestTelegramCode(telegram.trim());
+                                        const exp = new Date(expiresAt);
+                                        setSuccess(`Telegram verification code: ${code}. Expires at ${exp.toLocaleTimeString()}. Open Telegram and send /verify ${code} from @${telegram.trim()}.`);
+                                    } catch (err) {
+                                        setError(typeof err === 'string' ? err : 'Unable to generate Telegram code.');
+                                    }
+                                }}
+                            >
+                                Generate Telegram code
+                            </Button>
+                        )}
+                    </Col>
                 </Row>
 				<Row>
                         <div className="form-check form-switch mt-3 mt-md-0">

@@ -7,6 +7,7 @@ import {Office} from "../entities/Offices.js";
 import {ConflictError} from "../errors/ConflictError.js";
 import { InsufficientRightsError } from "../errors/InsufficientRightsError.js";
 import { Photos } from "../entities/Photos.js";
+import { BadRequestError } from "../errors/BadRequestError.js";
 
 class UserRepository {
     get repo() {
@@ -206,7 +207,14 @@ class UserRepository {
         }
 
         if (telegramId !== undefined) {
-            user.telegramId = telegramId || null;
+            const value = telegramId || null;
+            if (value) {
+                const existing = await userRepo.findOne({ where: { telegramId: String(value) } });
+                if (existing && existing.id !== user.id) {
+                    throw new ConflictError('Telegram ID already in use');
+                }
+            }
+            user.telegramId = value;
         }
         if (emailNotifications !== undefined) {
             user.emailNotifications = Boolean(emailNotifications);
@@ -221,6 +229,55 @@ class UserRepository {
 
         await userRepo.save(user);
         return user;
+    }
+
+    // Request a telegram verification code for the authenticated user
+    async requestTelegramVerificationCode(userId) {
+        const userRepo = AppDataSourcePostgres.getRepository(Users);
+        const user = await userRepo.findOneBy({ id: Number(userId) });
+        if (!user) throw new NotFoundError(`User with id '${userId}' not found`);
+
+        const username = user.telegramId;
+        if (!username) throw new BadRequestError('TelegramId is required');
+
+        const existing = await userRepo.findOne({ where: { telegramId: username } });
+        if (existing && existing.id !== user.id) {
+            throw new ConflictError('Telegram username already linked to another account');
+        }
+
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+        user.telegramVerificationCode = code;
+        user.telegramVerificationExpires = expiresAt;
+        await userRepo.save(user);
+
+        return { code, expiresAt };
+    }
+
+    async verifyTelegramCode(senderUsername, code) {
+        const userRepo = AppDataSourcePostgres.getRepository(Users);
+        const username = String(senderUsername || '').trim();
+        const codeStr = String(code || '').trim();
+        if (!username || !codeStr) throw new BadRequestError('username and code are required');
+
+        const user = await userRepo.findOne({ where: { telegramVerificationCode: codeStr, telegramId: username } });
+        if (!user) throw new NotFoundError('Verification not found');
+
+        if (user.telegramVerificationExpires && new Date(user.telegramVerificationExpires).getTime() < Date.now()) {
+            user.telegramVerificationCode = null;
+            user.telegramVerificationExpires = null;
+            await userRepo.save(user);
+            throw new BadRequestError('Verification code expired');
+        }
+
+        // Link username (uniqueness enforced by column + earlier check)
+        user.telegramId = username;
+        user.telegramVerificationCode = null;
+        user.telegramVerificationExpires = null;
+        await userRepo.save(user);
+
+        return { linked: true, userId: user.id, telegramId: user.telegramId };
     }
 
     //Get PFP of the user

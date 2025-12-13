@@ -134,6 +134,14 @@ async function getPfpUrl(userId) {
     const photoUrl = await userRepository.getPfpUrl(userId);
     return photoUrl;
 }
+// Telegram linking: request a verification code for the current user
+async function requestTelegramCode(userId) {
+    return await userRepository.requestTelegramVerificationCode(userId);
+}
+// Telegram linking: verify code coming from bot
+async function verifyTelegramCode(senderUsername, code) {
+    return await userRepository.verifyTelegramCode(senderUsername, code);
+}
     
 
 async function resendEmailVerification(userId) {
@@ -164,5 +172,7 @@ const userController = {
     isEmailVerified,
     markEmailVerified,
     resendEmailVerification,
+    requestTelegramCode,
+    verifyTelegramCode,
 };
 export default userController;
