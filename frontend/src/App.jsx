@@ -289,7 +289,7 @@ function App() {
             : <ConversationPage user={user} loggedIn={loggedIn} handleNotificationsUpdate={handleNotificationsUpdate} wsMessage={wsMessage} />
         } />
 
-        <Route path='/telegram_verify' element={
+        <Route path='/verify_telegram' element={
           <TelegramVerify user={user} loggedIn={loggedIn} />
         } />
 

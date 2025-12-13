@@ -1,9 +1,10 @@
 import 'dotenv/config';
-import fs from 'fs'; 
 import { Telegraf, Scenes, session, Markup } from 'telegraf';
 import { point } from '@turf/helpers';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
-import turinData from './data/turin_boundaries.json';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import API from './API.js';
 import { Categories } from './models.js';
 
@@ -13,37 +14,84 @@ if (!token) {
   process.exit(1);
 }
 
+// ------------------------------------------------------------------
+// 1. DATA LOADING & UTILS
+// ------------------------------------------------------------------
 
-const categories = (process.env.CATEGORIES?.split(',').map(s => s.trim()).filter(Boolean)) 
-  || Object.values(Categories);
+const categories_names = Object.values(Categories);
+const categoryIdByName = new Map(Object.entries(Categories).map(([id, name]) => [name, Number(id)]));
+const categoryIdByNameLC = new Map(Object.entries(Categories).map(([id, name]) => [name.toLowerCase(), Number(id)]));
 
 let turinPolygon = null;
 
 try {
-
-  
-  
-  turinPolygon = turinData.geojson;
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const boundariesPath = path.join(__dirname, 'data', 'turin_boundaries.json');
+  const raw = fs.readFileSync(boundariesPath, 'utf-8');
+  const turinData = JSON.parse(raw);
+  const cityBoundary = Array.isArray(turinData)
+    ? (turinData.find(d => d.addresstype === 'city') || turinData[0])
+    : turinData;
+  turinPolygon = cityBoundary?.geojson || null;
   console.log('Turin boundaries loaded successfully.');
 } catch (error) {
   console.warn('⚠️ Warning: Could not load turin_boundaries.json. Location check will be skipped.');
-  console.error(error.message);
 }
 
-
 function isInTurin(lat, lon) {
-  if (!turinPolygon){
-    return true;
-  }
-
+  if (!turinPolygon) return true;
   const userLocation = point([lon, lat]);
-  
   return booleanPointInPolygon(userLocation, turinPolygon);
 }
 
+const verifiedUsers = new Set();
 
 // ------------------------------------------------------------------
-// 3. WIZARD SCENE
+// 2. VERIFY WIZARD
+// ------------------------------------------------------------------
+const verifyWizard = new Scenes.WizardScene(
+  'verify-wizard',
+  
+  // STEP 1: Ask for code
+  async (ctx) => {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'; //telegram does not like localhost >:(
+    const verifyUrl = `${frontendUrl}/verify_telegram`;
+    
+    await ctx.reply(`Insert your code now.\n\nIf you don't have one, generate it here (copy and paste on the browser): \n ${verifyUrl}`);
+    return ctx.wizard.next();
+  },
+
+  // STEP 2: Receive code and Verify
+  async (ctx) => {
+    const code = ctx.message?.text?.trim();
+
+    if (!code) {
+      await ctx.reply('Invalid input. Please send the text code or type /cancel to stop.');
+      return; 
+    }
+
+    const username = ctx.from?.username;
+    if (!username) {
+      await ctx.reply('Your Telegram account has no public username. Please set a username in Telegram settings and try again.');
+      return ctx.scene.leave();
+    }
+
+    try {
+      await ctx.reply('Verifying...');
+      await API.verifyTelegram(username, code);
+      verifiedUsers.add(username);
+      await ctx.reply('✅ Verification successful! You can now use /newreport.', Markup.removeKeyboard());
+      return ctx.scene.leave();
+    } catch (err) {
+      await ctx.reply(`❌ Verification failed: ${err.message || err}. \nPlease try /verify again.`);
+      return ctx.scene.leave();
+    }
+  }
+);
+
+// ------------------------------------------------------------------
+// 3. REPORT WIZARD
 // ------------------------------------------------------------------
 const newReportWizard = new Scenes.WizardScene(
   'new-report',
@@ -60,12 +108,12 @@ const newReportWizard = new Scenes.WizardScene(
     const loc = ctx.message?.location;
     if (!loc) {
       await ctx.reply('I did not receive a location. Send a location using the Location function.');
-      return; // stay on this step
+      return;
     }
 
     if (!isInTurin(loc.latitude, loc.longitude)) {
       await ctx.reply('⚠️ The location is outside the administrative boundaries of Turin. Please select a point inside the city.');
-      return; // stay on this step
+      return;
     }
 
     ctx.wizard.state.report.location = { lat: loc.latitude, lon: loc.longitude };
@@ -94,20 +142,31 @@ const newReportWizard = new Scenes.WizardScene(
     }
     ctx.wizard.state.report.description = description;
     await ctx.reply('Choose a category:', Markup.keyboard(
-      categories.map(c => [c])
+      categories_names.map(c => [c])
     ).oneTime().resize());
     return ctx.wizard.next();
   },
 
   // STEP 5: Category
   async (ctx) => {
-    const cat = ctx.message?.text?.trim();
-    if (!cat || !categories.includes(cat)) {
+    const catRaw = ctx.message?.text?.trim();
+    if (!catRaw) {
       await ctx.reply('Select a category from the proposed list.');
       return;
     }
-    ctx.wizard.state.report.category = cat;
-    await ctx.reply('You can attach up to 3 photos. Send a photo now, or type "skip" to skip.');
+    const catLC = catRaw.toLowerCase();
+    const matchedName = categories_names.find(n => n.toLowerCase() === catLC);
+    
+    if (!matchedName) {
+      await ctx.reply('Select a category from the proposed list.');
+      return;
+    }
+    
+    const cid = categoryIdByNameLC.get(catLC) ?? categoryIdByName.get(matchedName);
+    ctx.wizard.state.report.categoryId = cid;
+    ctx.wizard.state.report.categoryName = matchedName;
+    
+    await ctx.reply('Attach at least 1 photo (max 3). Send a photo now.');
     return ctx.wizard.next();
   },
 
@@ -115,11 +174,16 @@ const newReportWizard = new Scenes.WizardScene(
   async (ctx) => {
     const state = ctx.wizard.state.report;
     const msg = ctx.message;
+    const textInput = msg?.text?.trim().toLowerCase();
 
-    // Check skip
-    if (msg?.text && msg.text.toLowerCase() === 'skip') {
+    // Check for "Skip" button or command
+    if (textInput === 'skip') {
+      if ((state.photos?.length || 0) < 1) {
+        await ctx.reply('You must attach at least 1 photo before proceeding. Please send a photo.');
+        return;
+      }
       await ctx.reply('Do you want to make the report anonymous? (Yes/No)', Markup.keyboard([
-        ['Yes'], ['No']
+        ['Yes', 'No']
       ]).oneTime().resize());
       return ctx.wizard.next();
     }
@@ -127,22 +191,32 @@ const newReportWizard = new Scenes.WizardScene(
     // Check photo
     if (msg?.photo?.length) {
       const photoSizes = msg.photo;
-      const best = photoSizes[photoSizes.length - 1]; // Highest resolution
+      const best = photoSizes[photoSizes.length - 1]; 
       state.photos.push({ file_id: best.file_id });
 
-      if (state.photos.length < 3) {
-        await ctx.reply(`Photo added (${state.photos.length}/3). Send another photo or type "skip".`);
-        return; // stay on same step
+      const count = state.photos.length;
+
+      if (count < 3) {
+        await ctx.reply(
+          `Photo added (${count}/3). Send another photo or click "Skip" to finish.`,
+          Markup.keyboard([['Skip']]).oneTime().resize()
+        );
+        return; 
       }
       
       // Reached limit
       await ctx.reply('You have reached the limit of 3 photos. Do you want to make the report anonymous? (Yes/No)', Markup.keyboard([
-        ['Yes'], ['No']
+        ['Yes', 'No']
       ]).oneTime().resize());
       return ctx.wizard.next();
     } else {
-      await ctx.reply('Please send a photo or type "skip" to proceed.');
-      return; // stay
+      const count = state.photos?.length || 0;
+      if (count < 1) {
+        await ctx.reply('Please send at least 1 photo to continue.');
+      } else {
+        await ctx.reply('Please send a photo or click "Skip" to proceed.', Markup.keyboard([['Skip']]).oneTime().resize());
+      }
+      return;
     }
   },
 
@@ -150,19 +224,16 @@ const newReportWizard = new Scenes.WizardScene(
   async (ctx) => {
     const txt = ctx.message?.text?.trim().toLowerCase();
     if (!txt || !['yes', 'no'].includes(txt)) {
-      await ctx.reply('Answer "Yes" or "No".');
+      await ctx.reply('Answer "Yes" or "No".', Markup.keyboard([['Yes', 'No']]).oneTime().resize());
       return;
     }
     ctx.wizard.state.report.anonymous = (txt === 'yes');
 
     const r = ctx.wizard.state.report;
-    // Show summary
     const summary = [
-      'Report summary:',
+      '📝 Report summary:',
       `Title: ${r.title}`,
-      `Description: ${r.description}`,
-      `Category: ${r.category}`,
-      `Location: lat ${r.location.lat.toFixed(5)}, lon ${r.location.lon.toFixed(5)}`,
+      `Category: ${r.categoryName}`,
       `Photos: ${r.photos.length}`,
       `Anonymous: ${r.anonymous ? 'Yes' : 'No'}`
     ].join('\n');
@@ -170,76 +241,49 @@ const newReportWizard = new Scenes.WizardScene(
     await ctx.reply(summary);
 
     try {
-      const result = await API.createReportFromWizard(bot, r);
-      await ctx.reply(`Thank you! Your report has been registered with id ${result.id}.`);
+      await API.createReportFromWizard(bot, r);
+      await ctx.reply(`Thank you! Your report has been registered successfully!`, Markup.removeKeyboard());
     } catch (err) {
-      await ctx.reply(`Failed to submit the report: ${err}`);
+      await ctx.reply(`Failed to submit the report: ${err}`, Markup.removeKeyboard());
     }
     return ctx.scene.leave();
   }
 );
 
 // ------------------------------------------------------------------
-// 4. BOT SETUP
+// 4. BOT SETUP & GLOBAL CANCEL
 // ------------------------------------------------------------------
-const stage = new Scenes.Stage([newReportWizard]);
-const bot = new Telegraf(token);
 
+const stage = new Scenes.Stage([newReportWizard, verifyWizard]);
+
+stage.command('cancel', async (ctx) => {
+  await ctx.reply('🚫 Operation canceled.', Markup.removeKeyboard());
+  return ctx.scene.leave();
+});
+
+const bot = new Telegraf(token);
 bot.use(session());
 bot.use(stage.middleware());
 
-// Simple verification state per username (in-memory fallback). Backend is source of truth.
-const verifiedUsers = new Set();
-
 bot.start((ctx) => {
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  const verifyUrl = `${frontendUrl}/telegram_verify`;
-  return ctx.reply(
-    'Welcome! To link your account, open the verification page and generate your code, then send /verify <code> here. After verification you can use /newreport.',
-    Markup.inlineKeyboard([
-      [Markup.button.url('Open verification page', verifyUrl)]
-    ])
-  );
+  const introText = 'Welcome! \n1. /verify - Link your account\n2. /newreport - Report an issue\n3. /cancel - Stop current action';
+  return ctx.reply(introText);
 });
 
-bot.command('verify', async (ctx) => {
-  const txt = ctx.message?.text || '';
-  const parts = txt.trim().split(/\s+/);
-  if (parts.length < 2) {
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const verifyUrl = `${frontendUrl}/telegram_verify`;
-    return ctx.reply(
-      'Usage: /verify <code>\nIf you need a code, open the verification page to generate one:',
-      Markup.inlineKeyboard([[Markup.button.url('Get code', verifyUrl)]])
-    );
-  }
-  const code = parts[1];
-  const username = ctx.from?.username;
-  if (!username) {
-    return ctx.reply('Your Telegram account has no public username. Please set a username in Telegram settings and try again.');
-  }
-  try {
-    const res = await fetch(`${API.SERVER_URL}/api/v1/telegram/verify`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, code })
-    });
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(errText);
-    }
-    const data = await res.json();
-    verifiedUsers.add(username);
-    await ctx.reply('Verification successful! You can now use /newreport.');
-  } catch (err) {
-    await ctx.reply(`Verification failed: ${err.message || err}`);
-  }
+// Enters the verify wizard
+bot.command('verify', (ctx) => {
+  ctx.scene.enter('verify-wizard');
+});
+
+// Fallback cancel if used outside of a scene
+bot.command('cancel', (ctx) => {
+  ctx.reply('Nothing to cancel.', Markup.removeKeyboard());
 });
 
 function ensureVerified(ctx) {
   const username = ctx.from?.username;
   if (!username || !verifiedUsers.has(username)) {
-    ctx.reply('You must verify your account first with /verify <code>.');
+    ctx.reply('You must verify your account first with /verify.');
     return false;
   }
   return true;
@@ -254,6 +298,15 @@ bot.command('newreport', (ctx) => {
   return ctx.scene.enter('new-report');
 });
 
+bot.command('me', async (ctx) => {
+  try {
+    const user = await API.fetchCurrentUser();
+    await ctx.reply(`Logged in as: ${user.name} ${user.surname} (${user.username})`);
+  } catch (err) {
+    await ctx.reply(`Not authenticated. Use /verify.`);
+  }
+});
+
 bot.catch((err, ctx) => {
   console.error('Bot error', err);
   ctx.reply('An error occurred. Try again later.');
@@ -263,6 +316,5 @@ bot.launch().then(() => {
   console.log('Bot started');
 });
 
-// Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));

@@ -7,6 +7,8 @@ import upload from '../middlewares/uploadMiddleware.js';
 import fs from 'fs';
 import { sendVerificationEmail } from '../utils/email.js';
 import { UnauthorizedError } from '../errors/UnauthorizedError.js';
+import { userRepository } from "../repositories/userRepository.js";
+import { mapUserToDTO } from "../mappers/userMappers.js";
 
 const router = Router();
 
@@ -281,7 +283,17 @@ router.post('/telegram/verify', async function(req, res, next) {
     try {
         const { username, code } = req.body || {};
         const result = await userController.verifyTelegramCode(username, code);
-        return res.status(200).json(result);
+
+        // Auto-login the user into this session so bot requests are authenticated
+        const user = await userRepository.getUserById(Number(result.userId));
+        if (!user) {
+            return next(new UnauthorizedError('Linked user not found'));
+        }
+        const dto = mapUserToDTO(user);
+        req.login(dto, (err) => {
+            if (err) return next(err);
+            return res.status(200).json(result);
+        });
     } catch (err) {
         next(err);
     }
