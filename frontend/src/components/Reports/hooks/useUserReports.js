@@ -1,21 +1,17 @@
 import { useEffect, useState } from "react";
 import API from "../../../API/API.mjs";
 
-export function useOfficeReports(selectedOfficeId, isExternal) {
+export function useUserReports(userId) {
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (!selectedOfficeId) {
-            setReports([]);
-            return;
-        }
+        if (!userId) return;
 
-        const fetchReports = async () => {
+        const fetchUserReports = async () => {
             try {
                 setLoading(true);
-                const category = await API.fetchOfficeCategory(selectedOfficeId, isExternal);
-                const data = await API.fetchReports(category.id);
+                const data = await API.fetchReportsByTechnician(userId);
 
                 const filtered = data.filter(r =>
                     ["assigned", "in_progress", "suspended"].includes(
@@ -32,8 +28,8 @@ export function useOfficeReports(selectedOfficeId, isExternal) {
             }
         };
 
-        fetchReports();
-    }, [selectedOfficeId, isExternal]);
+        fetchUserReports();
+    }, [userId]);
 
-    return { reports, setReports, loading };
+    return reports;
 }

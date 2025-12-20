@@ -12,6 +12,10 @@ export async function getReport(id) {
   return await reportRepository.getReportById(id);
 }
 
+export async function getReportsByTechnician(userId) {
+  return await reportRepository.getReportsByTechnician(userId)
+}
+
 export async function getReportsByCategory(categoryId) {
   return await reportRepository.getReportsByCategory(categoryId)
 }

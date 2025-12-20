@@ -431,5 +431,20 @@ const fetchOfficeCategory = async (officeId, isExternal) => {
   throw await response.text();
 }
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages, fetchReports, fetchReportPhotos, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchAssignedStaff, fetchRoles, fetchOffices, fetchOffice, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, assignReportToExternalMaintainer, sendMessage, fetchMyRoles, fetchUserRoles, setUserRoles, verifyEmail, checkEmailVerified, resendVerification, fetchOfficeCategory };
+const fetchReportsByTechnician = async (userId) => {
+    const response = await fetch(`${SERVER_URL}/api/v1/reports/technician/${userId}`, {
+        method: 'GET',
+        credentials: 'include'
+    });
+  if (response.ok) return await response.json();
+  throw await response.text();
+}
+
+const API = {
+  signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages,
+  fetchReports, fetchReportPhotos, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchAssignedStaff,
+  fetchRoles, fetchOffices, fetchOffice, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts,
+  markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, assignReportToExternalMaintainer,
+  sendMessage, fetchMyRoles, fetchUserRoles, setUserRoles, verifyEmail, checkEmailVerified, resendVerification,
+  fetchOfficeCategory, fetchReportsByTechnician };
 export default API;

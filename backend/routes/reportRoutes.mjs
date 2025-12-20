@@ -5,7 +5,7 @@ import {
   getReport,
   reviewReport,
   getAcceptedReports,
-  getReportsByCategory
+  getReportsByCategory, getReportsByTechnician
 } from "../controllers/reportController.mjs";
 import upload from '../middlewares/uploadMiddleware.js';
 import { authorizeUserType, authorizeRole } from '../middlewares/userAuthorization.js';
@@ -66,6 +66,19 @@ router.get(
             ? await getReportsByCategory(categoryId)
             : await getAllReports();
 
+        res.json(reports);
+      } catch (err) {
+        next(err);
+      }
+    }
+);
+
+router.get(
+    '/technician/:userId',
+    authorizeUserType(['staff']),
+    async (req, res, next) => {
+      try {
+        const reports = await getReportsByTechnician(req.params.userId);
         res.json(reports);
       } catch (err) {
         next(err);

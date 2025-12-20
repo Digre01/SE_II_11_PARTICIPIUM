@@ -18,7 +18,7 @@ import {
   LinkListItem
 } from 'design-react-kit';
 import { Link } from 'react-router-dom';
-import { LogoutButton } from '../authComponents/loginForm';
+import { LogoutButton } from '../authComponents/LoginForm.jsx';
 
 function AuthHeader({ user, loggedIn, isAdmin, isReportsAllowed, handleLogout, notificationCount }) {
   const [isOpen, setIsOpen] = useState(false);

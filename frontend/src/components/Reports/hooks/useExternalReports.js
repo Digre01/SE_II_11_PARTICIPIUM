@@ -1,4 +1,4 @@
-export function useFilteredReports(reports, user, isExternal) {
+export function useExternalReports(reports, user, isExternal) {
     return reports.filter(r => {
         const statusMatch = ["assigned", "in_progress", "suspended"].includes(
             String(r.status || "").toLowerCase()

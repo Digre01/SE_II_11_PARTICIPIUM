@@ -1,7 +1,7 @@
 import { Table, Card } from "react-bootstrap";
 import { ReportCard, ReportRow } from "./ReportsRowCard.jsx";
 
-export function ReportsTable({ reports, user, onAction, onRowClick, title, headerContent }) {
+export function ReportsTable({ reports, user, isExternal, onAction, onRowClick, title, headerContent }) {
     return (
         <Card className="shadow-sm p-4">
 
@@ -17,7 +17,7 @@ export function ReportsTable({ reports, user, onAction, onRowClick, title, heade
                 <p className="text-center text-muted py-4">No reports available.</p>
             ) : (
                 <>
-                    {/* Desktop table */}
+
                     <Table responsive hover className="d-none d-md-table">
                         <thead>
                         <tr>
@@ -26,7 +26,7 @@ export function ReportsTable({ reports, user, onAction, onRowClick, title, heade
                             <th>Latitude</th>
                             <th>Longitude</th>
                             <th>Status</th>
-                            <th className="text-end">Actions</th>
+                            <th>Actions</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -36,6 +36,7 @@ export function ReportsTable({ reports, user, onAction, onRowClick, title, heade
                                 idx={idx}
                                 report={r}
                                 user={user}
+                                isExternal={isExternal}
                                 onAction={onAction}
                                 onRowClick={onRowClick}
                             />
@@ -43,13 +44,13 @@ export function ReportsTable({ reports, user, onAction, onRowClick, title, heade
                         </tbody>
                     </Table>
 
-                    {/* Mobile cards */}
                     <div className="d-md-none">
                         {reports.map(r => (
                             <ReportCard
                                 key={r.id}
                                 report={r}
                                 user={user}
+                                isExternal={isExternal}
                                 onAction={onAction}
                                 onCardClick={onRowClick}
                             />

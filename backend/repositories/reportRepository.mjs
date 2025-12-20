@@ -87,6 +87,10 @@ export class ReportRepository {
 		return await this.repo.find({ where: { categoryId } });
 	}
 
+	async getReportsByTechnician(technicianId) {
+		return await this.repo.findBy({technicianId})
+	}
+
 	async getAcceptedReports() {
 		// Include both 'assigned' and 'suspended' statuses
 		return await this.repo.find({

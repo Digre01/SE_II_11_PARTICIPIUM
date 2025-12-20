@@ -18,15 +18,10 @@ export const getStatusVariant = (status) => {
     }
 };
 
-export const getActionButtons = (report, user, onAction) => {
+export const getActionButtons = (report, user, onAction, isExternal) => {
     const status = String(report.status).toLowerCase();
     const isUserTechnician = report.technicianId === user?.id;
 
-    // determine if the current user is part of the report's external office
-    const userOfficeIds = Array.isArray(user?.officeId) ? user.officeId : (user?.officeId ? [user.officeId] : []);
-    const isUserExternalForReport = !!(report?.category?.externalOfficeId && userOfficeIds.includes(report.category.externalOfficeId));
-
-    // Helper function per creare bottoni
     const createButton = (key, variant, action, label) => (
         <Button
             key={key}
@@ -46,7 +41,7 @@ export const getActionButtons = (report, user, onAction) => {
             createButton("suspend", "warning", "suspend", "SUSPEND")
         ];
         // do not show the assign button to users that belong to the report's external office
-        if (!isUserExternalForReport) buttons.push(createButton("assign", "primary", "assign", "ASSIGN TO EXTERNAL"));
+        if (!isExternal) buttons.push(createButton("assign", "primary", "assign", "ASSIGN TO EXTERNAL"));
         return buttons;
     }
 

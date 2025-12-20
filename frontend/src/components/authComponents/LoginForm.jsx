@@ -25,7 +25,6 @@ function LoginForm(props) {
             const result = await props.handleLogin(credentials);
             const loggedUser = result.user;
             const isVerified = Boolean(loggedUser?.isVerified);
-            console.log(loggedUser.isVerified);
             if (!isVerified) {
                 navigate(`/verify_mail`);
             } else {

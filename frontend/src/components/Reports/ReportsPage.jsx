@@ -6,6 +6,7 @@ import { Alert } from "design-react-kit";
 import { useUserOffices } from "./hooks/useUserOffices.js";
 import { useOfficeReports } from "./hooks/useOfficeReports.js";
 import { useReportActions } from "./hooks/useReportActions.js";
+import {useUserReports} from "./hooks/useUserReports.js";
 
 function ReportsPage({ user }) {
     const [modalOpen, setModalOpen] = useState(false);
@@ -18,9 +19,7 @@ function ReportsPage({ user }) {
 
     const { userOffices, isExternal } = useUserOffices(user);
     const { reports, setReports } = useOfficeReports(selectedOfficeId, isExternal);
-
-    const userReports = reports.filter(r => r.technicianId === user.id)
-    isExternal && reports.filter(r => r.assignedExternal)
+    const userReports = useUserReports(user.id)
 
     const { handleAction } = useReportActions({
         selectedOfficeId,
@@ -57,7 +56,6 @@ function ReportsPage({ user }) {
                     color={alertColor}
                     icon="it-info-circle"
                     className="mb-4"
-                    dismissible
                     toggle={() => setAlertVisible(false)}
                 >
                     {alertMessage}
@@ -68,6 +66,7 @@ function ReportsPage({ user }) {
                 <ReportsTable
                     reports={userReports}
                     user={user}
+                    isExternal={isExternal}
                     onAction={handleAction}
                     onRowClick={handleOpenModal}
                     title="Reports assigned to you"
@@ -76,8 +75,9 @@ function ReportsPage({ user }) {
 
             <Container className="my-4">
                 <ReportsTable
-                    reports={reports}
+                    reports={isExternal ? reports.filter(r => r.assignedExternal) : reports}
                     user={user}
+                    isExternal={isExternal}
                     onAction={handleAction}
                     onRowClick={handleOpenModal}
                     headerContent={
