@@ -1,8 +1,7 @@
-import { reportRepository } from "../repositories/reportRepository.mjs";
+import {reportRepository} from "../repositories/reportRepository.mjs";
 
 export async function createReport(reportData) {
-  const report = await reportRepository.createReport(reportData);
-  return report;
+  return await reportRepository.createReport(reportData);
 }
 
 export async function getAllReports() {
@@ -11,6 +10,10 @@ export async function getAllReports() {
 
 export async function getReport(id) {
   return await reportRepository.getReportById(id);
+}
+
+export async function getReportsByCategory(categoryId) {
+  return await reportRepository.getReportsByCategory(categoryId)
 }
 
 export async function getAcceptedReports(){

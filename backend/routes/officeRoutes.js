@@ -21,4 +21,22 @@ router.get('/:id', async function(req, res, next) {
     } catch (err) { next(err); }
 });
 
+// GET /api/v1/offices/:id/categories
+router.get("/:id/categories", async (req, res, next) => {
+    try {
+        const officeId = req.params.id;
+        const isExternal = req.query.isExternal === 'true';
+
+        console.log("officeId:", officeId, "isExternal:", isExternal);
+
+        const categories = await officeController.getOfficeCategories(officeId, isExternal);
+
+        res.json(categories);
+    } catch (err) {
+        next(err);
+    }
+});
+
+
+
 export default router;

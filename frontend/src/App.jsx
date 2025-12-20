@@ -18,7 +18,7 @@ import SignUpForm from "./components/authComponents/signUpForm.jsx";
 import VerifyEmail from "./components/authComponents/VerifyEmail.jsx";
 import ConversationsPage from './components/messageComponents/ConversationsPage.jsx';
 import ConversationPage from './components/messageComponents/ConversationPage.jsx';
-import ReportsPage from './components/reportsPage/ReportsPage.jsx';
+import ReportsPage from './components/Reports/ReportsPage.jsx';
 import NotFoundPage from './components/NotFoundPage.jsx';
 
 

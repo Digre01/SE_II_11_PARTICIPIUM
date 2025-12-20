@@ -83,6 +83,10 @@ export class ReportRepository {
 		return await this.repo.findOne({ where: { id: Number(id) }, relations: ['photos', 'category'] });
 	}
 
+	async getReportsByCategory(categoryId) {
+		return await this.repo.find({ where: { categoryId } });
+	}
+
 	async getAcceptedReports() {
 		// Include both 'assigned' and 'suspended' statuses
 		return await this.repo.find({

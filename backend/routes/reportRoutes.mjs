@@ -1,5 +1,12 @@
 import { Router } from "express";
-import { createReport, getAllReports, getReport, reviewReport, getAcceptedReports } from "../controllers/reportController.mjs";
+import {
+  createReport,
+  getAllReports,
+  getReport,
+  reviewReport,
+  getAcceptedReports,
+  getReportsByCategory
+} from "../controllers/reportController.mjs";
 import upload from '../middlewares/uploadMiddleware.js';
 import { authorizeUserType, authorizeRole } from '../middlewares/userAuthorization.js';
 import { BadRequestError } from '../errors/BadRequestError.js';
@@ -48,12 +55,24 @@ router.post('/',
 
 // GET /api/v1/reports (list)
 // Only staff members with the 'Municipal Public Relations Officer' role can access
-router.get('/', authorizeUserType(['staff']), async (req, res, next) => {
-  try {
-    const reports = await getAllReports();
-    res.json(reports);
-  } catch (err) { next(err); }
-});
+router.get(
+    '/',
+    authorizeUserType(['staff']),
+    async (req, res, next) => {
+      try {
+        const { categoryId } = req.query;
+
+        const reports = categoryId
+            ? await getReportsByCategory(categoryId)
+            : await getAllReports();
+
+        res.json(reports);
+      } catch (err) {
+        next(err);
+      }
+    }
+);
+
 
 // GET /api/v1/reports/assigned and /api/v1/reports/suspended (public map layer)
 router.get(['/assigned', '/suspended', '/in_progress'], authorizeUserType(['citizen']), async (req, res, next) => {
