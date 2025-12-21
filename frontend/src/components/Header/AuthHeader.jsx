@@ -28,7 +28,7 @@ function AuthHeader({ user, loggedIn, isAdmin, isReportsAllowed, handleLogout, n
   return (
     <Header theme="dark" type="slim" className="shadow-sm app-header">
       <HeaderContent expand="lg">
-        <HeaderBrand tag={Link} to="/" className="text-decoration-none text-dark fw-bold fs-4">
+        <HeaderBrand tag={Link} to="/" className="text-decoration-none fw-bold fs-4">
           PARTICIPIUM
         </HeaderBrand>
         <HeaderToggler
