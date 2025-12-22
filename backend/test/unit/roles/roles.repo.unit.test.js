@@ -1,48 +1,42 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-
-// Mock data-source and entity
-const findMock = jest.fn();
-const findOneByMock = jest.fn();
-
-await jest.unstable_mockModule('../../config/data-source.js', () => ({
-  AppDataSourcePostgres: {
-    getRepository: () => ({
-      find: findMock,
-      findOneBy: findOneByMock,
-    })
-  }
-}));
-
-await jest.unstable_mockModule('../../entities/Roles.js', () => ({
-  Roles: class {}
-}));
+import {rolesRepoStub} from "../mocks/shared.mocks.js";
 
 const { rolesRepository } = await import('../../../repositories/rolesRepository.js');
 
 describe('rolesRepository', () => {
   beforeEach(() => {
-    findMock.mockReset();
-    findOneByMock.mockReset();
+    jest.clearAllMocks();
   });
 
   it('findAll chiama find e ritorna i ruoli', async () => {
-    findMock.mockResolvedValue([{ id: 1, name: 'admin' }, { id: 2, name: 'user' }]);
+    const mockRoles = [
+        { id: 1, name: 'admin' },
+      { id: 2, name: 'user' }
+    ];
+    rolesRepoStub.find.mockResolvedValue(mockRoles)
+
     const result = await rolesRepository.findAll();
-    expect(findMock).toHaveBeenCalled();
+
+    expect(rolesRepoStub.find).toHaveBeenCalled();
     expect(result).toEqual([{ id: 1, name: 'admin' }, { id: 2, name: 'user' }]);
   });
 
   it('findById chiama findOneBy con id e ritorna il ruolo', async () => {
-    findOneByMock.mockResolvedValue({ id: 2, name: 'user' });
+    const mockRole = { id: 2, name: 'user' };
+    rolesRepoStub.findOneBy.mockResolvedValue(mockRole)
+
     const result = await rolesRepository.findById(2);
-    expect(findOneByMock).toHaveBeenCalledWith({ id: 2 });
+
+    expect(rolesRepoStub.findOneBy).toHaveBeenCalledWith({ id: 2 });
     expect(result).toEqual({ id: 2, name: 'user' });
   });
 
   it('findById ritorna null se non trovato', async () => {
-    findOneByMock.mockResolvedValue(null);
+    rolesRepoStub.findOneBy.mockResolvedValue(null);
+
     const result = await rolesRepository.findById(99);
-    expect(findOneByMock).toHaveBeenCalledWith({ id: 99 });
+
+    expect(rolesRepoStub.findOneBy).toHaveBeenCalledWith({ id: 99 });
     expect(result).toBeNull();
   });
 });

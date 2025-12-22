@@ -23,6 +23,7 @@ export const userOfficeRepoStub = repoStub('UserOffice');
 export const officeRepoStub = repoStub('Offices');
 export const messageRepoStub = repoStub('Message');
 export const notificationRepoStub = repoStub('Notification');
+export const rolesRepoStub = repoStub('Roles');
 
 // ---- MOCK: data-source ----
 await jest.unstable_mockModule('../../../config/data-source.js', () => ({
@@ -40,6 +41,7 @@ await jest.unstable_mockModule('../../../config/data-source.js', () => ({
             if (name === 'UserOffice') return userOfficeRepoStub;
             if (name === 'Message') return messageRepoStub;
             if (name === 'Notification') return notificationRepoStub;
+            if (name === 'Roles') return rolesRepoStub;
         }),
     },
 }));
@@ -83,4 +85,8 @@ await jest.unstable_mockModule('../../../entities/Offices.js', () => ({
 
 await jest.unstable_mockModule('../../../entities/Notification.js', () => ({
     Notification: { options: { name: 'Notification' } },
+}));
+
+await jest.unstable_mockModule('../../../entities/Roles.js', () => ({
+    Roles: { options: { name: 'Roles' } },
 }));
