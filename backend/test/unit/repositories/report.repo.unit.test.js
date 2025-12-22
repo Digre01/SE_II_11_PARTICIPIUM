@@ -9,7 +9,7 @@ import {
     userOfficeRepoStub,
     officeRepoStub,
     conversationRepoStub
-} from '../mocks/reports.mock.js';
+} from '../mocks/shared.mocks.js';
 import {addParticipantToConversationMock} from "../mocks/external.mocks.js";
 
 const { reportRepository } = await import('../../../repositories/reportRepository.mjs');

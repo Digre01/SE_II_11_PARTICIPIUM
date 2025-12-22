@@ -1,5 +1,10 @@
 import { jest } from '@jest/globals';
 
+await jest.unstable_mockModule('../../../wsHandler.js', () => ({
+    broadcastToConversation: jest.fn().mockResolvedValue(undefined)
+}));
+
+
 // ---- Shared mock repo factory ----
 export const repoStub = (name) => ({
     findOneBy: jest.fn(),

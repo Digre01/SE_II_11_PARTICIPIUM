@@ -1,10 +1,5 @@
 import { jest } from '@jest/globals';
 
-// ---- MOCK: WebSocket handler ----
-await jest.unstable_mockModule('../../../wsHandler.js', () => ({
-    broadcastToConversation: jest.fn(),
-}));
-
 // ---- MOCK: messageRepository ----
 await jest.unstable_mockModule('../../../repositories/messageRepository.js', () => ({
     createSystemMessage: jest.fn().mockResolvedValue({
@@ -27,4 +22,22 @@ await jest.unstable_mockModule('../../../repositories/conversationRepository.js'
     getConversationsForUser: getConversationsForUserMock,
     createConversation: createConversationMock,
     addParticipantToConversation: addParticipantToConversationMock,
+}));
+
+export const nodemailerMock = {
+    createTransport: jest.fn(() => ({
+        sendMail: jest.fn().mockResolvedValue({
+            messageId: 'test-message-id',
+            accepted: ['test@example.com'],
+            rejected: [],
+            response: '250 Message accepted'
+        }),
+        verify: jest.fn().mockResolvedValue(true),
+        close: jest.fn()
+    }))
+};
+
+await jest.unstable_mockModule('../../../utils/email.js', () => ({
+    default: nodemailerMock,
+    createTransport: nodemailerMock.createTransport
 }));
