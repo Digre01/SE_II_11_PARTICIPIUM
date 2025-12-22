@@ -7,6 +7,9 @@ export const repoStub = (name) => ({
     create: jest.fn(),
     save: jest.fn(),
     find: jest.fn(),
+    createQueryBuilder: jest.fn(),
+    getMany: jest.fn(),
+    getConversationsForUser: jest.fn()
 });
 
 // ---- Individual repository stubs you will use in tests ----
@@ -31,7 +34,7 @@ await jest.unstable_mockModule('../../../entities/Categories.js', () => ({
     Categories: { options: { name: 'Categories' } },
 }));
 
-await jest.unstable_mockModule('../../../entities/Report.js', () => ({
+await jest.unstable_mockModule('../../../entities/Reports.js', () => ({
     Report: { options: { name: 'Report' } },
 }));
 
@@ -52,10 +55,13 @@ await jest.unstable_mockModule('../../../entities/Offices.js', () => ({
 }));
 
 // ---- MOCK: data-source ----
+// ---- MOCK: data-source ----
 await jest.unstable_mockModule('../../../config/data-source.js', () => ({
     AppDataSourcePostgres: {
         getRepository: jest.fn((entity) => {
-            const name = entity?.options?.name;
+            // Gestisce sia entità (con options.name) che stringhe
+            const name = entity?.options?.name || entity;
+
             if (name === 'Report' || name === 'Reports') return reportRepoStub;
             if (name === 'Users') return userRepoStub;
             if (name === 'Categories') return categoryRepoStub;

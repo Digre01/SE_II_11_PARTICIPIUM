@@ -1,11 +1,8 @@
-import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { categoryRepoStub} from "../mocks/shared.mocks.js";
+import {describe, it, expect, beforeEach, jest} from "@jest/globals";
+import { categoryRepoStub } from "../mocks/shared.mocks.js";
+import { createMockRes, createMockNext } from "../mocks/test-utils.mocks.js";
 
 const { getAllCategories } = await import('../../../controllers/categoryController.mjs');
-
-function createMockRes() {
-  return { json: jest.fn() };
-}
 
 describe('categoryController.getAllCategories', () => {
   beforeEach(() => {
@@ -22,7 +19,7 @@ describe('categoryController.getAllCategories', () => {
 
     const req = {};
     const res = createMockRes();
-    const next = jest.fn();
+    const next = createMockNext();
 
     await getAllCategories(req, res, next);
 
@@ -36,7 +33,7 @@ describe('categoryController.getAllCategories', () => {
 
     const req = {};
     const res = createMockRes();
-    const next = jest.fn();
+    const next = createMockNext();
 
     await getAllCategories(req, res, next);
 
@@ -49,7 +46,7 @@ describe('categoryController.getAllCategories', () => {
 
     const req = {};
     const res = createMockRes();
-    const next = jest.fn();
+    const next = createMockNext();
 
     await getAllCategories(req, res, next);
 

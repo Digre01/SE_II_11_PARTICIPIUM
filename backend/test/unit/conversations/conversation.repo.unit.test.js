@@ -1,39 +1,5 @@
-// backend/test/unit/conversation.repo.unit.test.js
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-
-const fakeConversation = Symbol('FakeConversation');
-
-await jest.unstable_mockModule('../../entities/Conversation.js', () => ({
-  Conversation: fakeConversation
-}));
-
-const mockCreateQueryBuilder = jest.fn();
-const mockCreate = jest.fn();
-const mockSave = jest.fn();
-const mockFindOne = jest.fn();
-const mockFindOneBy = jest.fn();
-
-await jest.unstable_mockModule('../../config/data-source.js', () => ({
-  AppDataSourcePostgres: {
-    getRepository: jest.fn((entity) => {
-      if (entity === fakeConversation) {
-        return {
-          createQueryBuilder: mockCreateQueryBuilder,
-          create: mockCreate,
-          save: mockSave,
-          findOne: mockFindOne,
-        };
-      }
-      // For 'Users' string
-      if (entity === 'Users') {
-        return {
-          findOneBy: mockFindOneBy
-        };
-      }
-      return {};
-    })
-  }
-}));
+import { conversationRepoStub, userRepoStub } from "../mocks/shared.mocks.js";
 
 const {
   getConversationsForUser,
@@ -49,8 +15,10 @@ describe('conversationRepository', () => {
   });
 
   it('getConversationsForUser chiama query builder', async () => {
-    const getMany = jest.fn().mockResolvedValue([{ id: 1 }]);
-    mockCreateQueryBuilder.mockReturnValue({
+    const mockConversations = [{ id: 1 }];
+    const getMany = jest.fn().mockResolvedValue(mockConversations);
+
+    conversationRepoStub.createQueryBuilder.mockReturnValue({
       leftJoinAndSelect: () => ({
         leftJoinAndSelect: () => ({
           where: () => ({
@@ -59,68 +27,101 @@ describe('conversationRepository', () => {
         })
       })
     });
+
     const result = await getConversationsForUser(42);
+
     expect(AppDataSourcePostgres.getRepository).toHaveBeenCalledWith(Conversation);
     expect(getMany).toHaveBeenCalled();
-    expect(result).toEqual([{ id: 1 }]);
+    expect(result).toEqual(mockConversations);
   });
 
   it('createConversation crea e salva', async () => {
-    mockCreate.mockReturnValue({ report: 1, participants: [2], isInternal: false });
-    mockSave.mockResolvedValue({ id: 99 });
+    const mockConversationData = { report: 1, participants: [2], isInternal: false };
+    const mockSavedConversation = { id: 99 };
+
+    conversationRepoStub.create.mockReturnValue(mockConversationData);
+    conversationRepoStub.save.mockResolvedValue(mockSavedConversation);
+
     const result = await createConversation({ report: 1, participants: [2] });
-    expect(mockCreate).toHaveBeenCalledWith({ report: 1, participants: [2], isInternal: false });
-    expect(mockSave).toHaveBeenCalledWith({ report: 1, participants: [2], isInternal: false });
-    expect(result).toEqual({ id: 99 });
+
+    expect(conversationRepoStub.create).toHaveBeenCalledWith(mockConversationData);
+    expect(conversationRepoStub.save).toHaveBeenCalledWith(mockConversationData);
+    expect(result).toEqual(mockSavedConversation);
   });
 
   it('addParticipantToConversation aggiunge utente se non presente', async () => {
-    mockFindOne.mockResolvedValue({
+    const mockConversation = {
       id: 1,
       participants: [{ id: 2 }]
-    });
-    mockFindOneBy.mockResolvedValue({ id: 3 });
-    mockSave.mockResolvedValue({ id: 1, participants: [{ id: 2 }, { id: 3 }] });
+    };
+    const mockUser = { id: 3 };
+    const mockUpdatedConversation = {
+      id: 1,
+      participants: [{ id: 2 }, { id: 3 }]
+    };
+
+    conversationRepoStub.findOne.mockResolvedValue(mockConversation);
+    userRepoStub.findOneBy.mockResolvedValue(mockUser);
+    conversationRepoStub.save.mockResolvedValue(mockUpdatedConversation);
+
     const result = await addParticipantToConversation(1, 3);
-    expect(mockFindOne).toHaveBeenCalledWith({ where: { id: 1 }, relations: ['participants'] });
-    expect(mockFindOneBy).toHaveBeenCalledWith({ id: 3 });
-    expect(mockSave).toHaveBeenCalled();
-    expect(result).toEqual({ id: 1, participants: [{ id: 2 }, { id: 3 }] });
+
+    expect(conversationRepoStub.findOne).toHaveBeenCalledWith({
+      where: { id: 1 },
+      relations: ['participants']
+    });
+    expect(userRepoStub.findOneBy).toHaveBeenCalledWith({ id: 3 });
+    expect(conversationRepoStub.save).toHaveBeenCalled();
+    expect(result).toEqual(mockUpdatedConversation);
   });
 
   it('addParticipantToConversation non aggiunge se già presente', async () => {
-    mockFindOne.mockResolvedValue({
+    const mockConversation = {
       id: 1,
       participants: [{ id: 2 }, { id: 3 }]
-    });
+    };
+
+    conversationRepoStub.findOne.mockResolvedValue(mockConversation);
+
     const result = await addParticipantToConversation(1, 3);
-    expect(mockFindOne).toHaveBeenCalledWith({ where: { id: 1 }, relations: ['participants'] });
-    expect(result).toEqual({ id: 1, participants: [{ id: 2 }, { id: 3 }] });
+
+    expect(conversationRepoStub.findOne).toHaveBeenCalledWith({
+      where: { id: 1 },
+      relations: ['participants']
+    });
+    expect(result).toEqual(mockConversation);
   });
 
   it('addParticipantToConversation lancia errore se conversazione non trovata', async () => {
-    mockFindOne.mockResolvedValue(null);
+    conversationRepoStub.findOne.mockResolvedValue(null);
+
     await expect(addParticipantToConversation(1, 3)).rejects.toThrow('Conversation not found');
   });
 
   it('addParticipantToConversation lancia errore se user non trovato', async () => {
-    mockFindOne.mockResolvedValue({ id: 1, participants: [] });
-    mockFindOneBy.mockResolvedValue(null);
+    const mockConversation = { id: 1, participants: [] };
+
+    conversationRepoStub.findOne.mockResolvedValue(mockConversation);
+    userRepoStub.findOneBy.mockResolvedValue(null);
+
     await expect(addParticipantToConversation(1, 3)).rejects.toThrow('User not found');
   });
 
   it('createConversation crea conversazione interna quando isInternal è true', async () => {
-    mockCreate.mockReturnValue({
+    const mockInternalConversationData = {
       report: 1,
       participants: [2, 3],
       isInternal: true
-    });
-    mockSave.mockResolvedValue({
+    };
+    const mockSavedInternalConversation = {
       id: 100,
       report: 1,
       participants: [2, 3],
       isInternal: true
-    });
+    };
+
+    conversationRepoStub.create.mockReturnValue(mockInternalConversationData);
+    conversationRepoStub.save.mockResolvedValue(mockSavedInternalConversation);
 
     const result = await createConversation({
       report: 1,
@@ -128,47 +129,42 @@ describe('conversationRepository', () => {
       isInternal: true
     });
 
-    expect(mockCreate).toHaveBeenCalledWith({
-      report: 1,
-      participants: [2, 3],
-      isInternal: true
-    });
+    expect(conversationRepoStub.create).toHaveBeenCalledWith(mockInternalConversationData);
     expect(result.isInternal).toBe(true);
     expect(result.id).toBe(100);
   });
 
   it('createConversation crea conversazione pubblica di default (isInternal false)', async () => {
-    mockCreate.mockReturnValue({
+    const mockPublicConversationData = {
       report: 1,
       participants: [2],
       isInternal: false
-    });
-    mockSave.mockResolvedValue({
+    };
+    const mockSavedPublicConversation = {
       id: 101,
       isInternal: false
-    });
+    };
+
+    conversationRepoStub.create.mockReturnValue(mockPublicConversationData);
+    conversationRepoStub.save.mockResolvedValue(mockSavedPublicConversation);
 
     const result = await createConversation({
       report: 1,
       participants: [2]
     });
 
-    expect(mockCreate).toHaveBeenCalledWith({
-      report: 1,
-      participants: [2],
-      isInternal: false
-    });
+    expect(conversationRepoStub.create).toHaveBeenCalledWith(mockPublicConversationData);
     expect(result.isInternal).toBe(false);
   });
 
   it('getConversationsForUser può recuperare sia conversazioni interne che pubbliche', async () => {
-    const mockConversations = [
+    const mockMixedConversations = [
       { id: 1, isInternal: true, report: { id: 10 } },
       { id: 2, isInternal: false, report: { id: 10 } }
     ];
 
-    const getMany = jest.fn().mockResolvedValue(mockConversations);
-    mockCreateQueryBuilder.mockReturnValue({
+    const getMany = jest.fn().mockResolvedValue(mockMixedConversations);
+    conversationRepoStub.createQueryBuilder.mockReturnValue({
       leftJoinAndSelect: () => ({
         leftJoinAndSelect: () => ({
           where: () => ({
@@ -186,17 +182,21 @@ describe('conversationRepository', () => {
   });
 
   it('addParticipantToConversation può aggiungere partecipante a conversazione interna', async () => {
-    mockFindOne.mockResolvedValue({
+    const mockInternalConversation = {
       id: 1,
       isInternal: true,
       participants: [{ id: 2 }]
-    });
-    mockFindOneBy.mockResolvedValue({ id: 3 });
-    mockSave.mockResolvedValue({
+    };
+    const mockUser = { id: 3 };
+    const mockUpdatedInternalConversation = {
       id: 1,
       isInternal: true,
       participants: [{ id: 2 }, { id: 3 }]
-    });
+    };
+
+    conversationRepoStub.findOne.mockResolvedValue(mockInternalConversation);
+    userRepoStub.findOneBy.mockResolvedValue(mockUser);
+    conversationRepoStub.save.mockResolvedValue(mockUpdatedInternalConversation);
 
     const result = await addParticipantToConversation(1, 3);
 
@@ -206,13 +206,12 @@ describe('conversationRepository', () => {
   });
 
   it('getConversationsForUser restituisce solo conversazioni dove utente è partecipante', async () => {
-
-    const userConversations = [
-      { id: 1, isInternal: false, participants: [{ id: 5 }] }, // Conversazione pubblica
+    const mockUserConversations = [
+      { id: 1, isInternal: false, participants: [{ id: 5 }] },
     ];
 
-    const getMany = jest.fn().mockResolvedValue(userConversations);
-    mockCreateQueryBuilder.mockReturnValue({
+    const getMany = jest.fn().mockResolvedValue(mockUserConversations);
+    conversationRepoStub.createQueryBuilder.mockReturnValue({
       leftJoinAndSelect: () => ({
         leftJoinAndSelect: () => ({
           where: () => ({
@@ -226,6 +225,5 @@ describe('conversationRepository', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0].isInternal).toBe(false);
-    // Le conversazioni interne non vengono restituite se l'utente non è partecipante
   });
 });
