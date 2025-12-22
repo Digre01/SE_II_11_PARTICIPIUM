@@ -24,6 +24,26 @@ export const officeRepoStub = repoStub('Offices');
 export const messageRepoStub = repoStub('Message');
 export const notificationRepoStub = repoStub('Notification');
 
+// ---- MOCK: data-source ----
+await jest.unstable_mockModule('../../../config/data-source.js', () => ({
+    AppDataSourcePostgres: {
+        getRepository: jest.fn((entity) => {
+            // Gestisce sia entità (con options.name) che stringhe
+            const name = entity?.options?.name || entity;
+
+            if (name === 'Offices') return officeRepoStub;
+            if (name === 'Report' || name === 'Reports') return reportRepoStub;
+            if (name === 'Users') return userRepoStub;
+            if (name === 'Categories') return categoryRepoStub;
+            if (name === 'Photos') return photoRepoStub;
+            if (name === 'Conversation') return conversationRepoStub;
+            if (name === 'UserOffice') return userOfficeRepoStub;
+            if (name === 'Message') return messageRepoStub;
+            if (name === 'Notification') return notificationRepoStub;
+        }),
+    },
+}));
+
 // ---- Shared data arrays ----
 export const savedReports = [];
 export const photoEntities = [];
@@ -58,29 +78,9 @@ await jest.unstable_mockModule('../../../entities/UserOffice.js', () => ({
 }));
 
 await jest.unstable_mockModule('../../../entities/Offices.js', () => ({
-    Offices: { options: { name: 'Offices' } },
+    Office: { options: { name: 'Offices' } },
 }));
 
 await jest.unstable_mockModule('../../../entities/Notification.js', () => ({
     Notification: { options: { name: 'Notification' } },
-}));
-
-// ---- MOCK: data-source ----
-await jest.unstable_mockModule('../../../config/data-source.js', () => ({
-    AppDataSourcePostgres: {
-        getRepository: jest.fn((entity) => {
-            // Gestisce sia entità (con options.name) che stringhe
-            const name = entity?.options?.name || entity;
-
-            if (name === 'Report' || name === 'Reports') return reportRepoStub;
-            if (name === 'Users') return userRepoStub;
-            if (name === 'Categories') return categoryRepoStub;
-            if (name === 'Photos') return photoRepoStub;
-            if (name === 'Conversation') return conversationRepoStub;
-            if (name === 'UserOffice') return userOfficeRepoStub;
-            if (name === 'Offices') return officeRepoStub;
-            if (name === 'Message') return messageRepoStub;
-            if (name === 'Notification') return notificationRepoStub;
-        }),
-    },
 }));

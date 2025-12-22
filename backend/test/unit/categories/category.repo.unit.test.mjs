@@ -1,7 +1,12 @@
-import {describe, it, expect, beforeEach, jest} from '@jest/globals';
+import {describe, it, expect, beforeEach, jest, beforeAll} from '@jest/globals';
 import { categoryRepoStub } from "../mocks/shared.mocks.js";
 
-const { categoryRepository } = await import('../../../repositories/categoryRepository.mjs');
+let categoryRepository;
+
+beforeAll(async () => {
+  ({ categoryRepository } =
+      await import('../../../repositories/categoryRepository.mjs'));
+});
 
 describe('CategoryRepository.getAllCategories', () => {
   beforeEach(() => {
