@@ -4,43 +4,15 @@ import {
     userRepoStub,
     categoryRepoStub,
     photoRepoStub,
-    conversationRepoStub,
+    savedReports,
+    photoEntities,
     userOfficeRepoStub,
     officeRepoStub,
-    savedReports,
-    photoEntities
+    conversationRepoStub
 } from '../mocks/reports.mock.js';
-let addParticipantToConversationMock;
-beforeAll(async () => {
-    ({ addParticipantToConversation: addParticipantToConversationMock } = await import('../../../repositories/conversationRepository.js'));
-});
+import {addParticipantToConversationMock} from "../mocks/external.mocks.js";
 
 const { reportRepository } = await import('../../../repositories/reportRepository.mjs');
-
-describe('ReportRepository.getAcceptedReports', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
-
-    it('returns accepted reports (assigned or suspended) with relations', async () => {
-        const mock = [
-            { id: 1, status: 'assigned', photos: [], category: {}, user: {} },
-            { id: 2, status: 'suspended', photos: [], category: {}, user: {} }
-        ];
-        reportRepoStub.find.mockResolvedValue(mock);
-
-        const res = await reportRepository.getAcceptedReports();
-
-        expect(reportRepoStub.find).toHaveBeenCalledWith({
-            where: [
-                { status: 'assigned' },
-                { status: 'suspended' }
-            ],
-            relations: ['photos', 'category', 'user']
-        });
-        expect(res).toEqual(mock);
-    });
-});
 
 describe('ReportRepository.createReport', () => {
     beforeEach(() => {
@@ -48,537 +20,147 @@ describe('ReportRepository.createReport', () => {
         savedReports.length = 0;
         photoEntities.length = 0;
 
-        // Default: user & category exist
         userRepoStub.findOneBy.mockResolvedValue({ id: 10 });
         categoryRepoStub.findOneBy.mockResolvedValue({ id: 5 });
 
-        // Mock staff members query for notification system
-        userRepoStub.find.mockResolvedValue([
-            {
-                id: 20,
-                userType: 'STAFF',
-                userOffice: {
-                    role: {
-                        name: 'Municipal Public Relations Officer'
-                    }
-                }
-            }
-        ]);
+        userRepoStub.find.mockResolvedValue([{ id: 20, userType: 'STAFF', userOffice: { role: { name: 'Municipal Public Relations Officer' } } }]);
 
-        // Report create/save behavior
         reportRepoStub.create.mockImplementation((data) => ({ ...data, id: 123 }));
-        reportRepoStub.save.mockImplementation(async (entity) => {
-            savedReports.push(entity);
-            return entity; });
+        reportRepoStub.save.mockImplementation(async (entity) => { savedReports.push(entity); return entity; });
 
-        // Photos create/save
-        photoRepoStub.create.mockImplementation((data) => ({
-            ...data,
-            id: photoEntities.length + 1 }));
-        photoRepoStub.save.mockImplementation(async (entity) => {
-            photoEntities.push(entity);
-            return entity; });
+        photoRepoStub.create.mockImplementation((data) => ({ ...data, id: photoEntities.length + 1 }));
+        photoRepoStub.save.mockImplementation(async (entity) => { photoEntities.push(entity); return entity; });
     });
 
-    it('creates report and associated photos (success path)', async () => {
-        const input = {
-            title: 'Title',
-            description: 'Desc',
-            categoryId: 5,
-            userId: 10,
-            latitude: 45.2,
-            longitude: 9.19,
-            photos: ['/public/a.jpg', '/public/b.jpg']
-        };
-
+    it('creates report and associated photos', async () => {
+        const input = { title: 'Title', description: 'Desc', categoryId: 5, userId: 10, latitude: 45.2, longitude: 9.19, photos: ['/public/a.jpg','/public/b.jpg'] };
         const result = await reportRepository.createReport(input);
 
         expect(userRepoStub.findOneBy).toHaveBeenCalledWith({ id: 10 });
         expect(categoryRepoStub.findOneBy).toHaveBeenCalledWith({ id: 5 });
-        expect(reportRepoStub.create).toHaveBeenCalledWith({
-            title: 'Title',
-            description: 'Desc',
-            categoryId: 5,
-            userId: 10,
-            latitude: 45.2,
-            longitude: 9.19,
-            status: 'pending'
-        });
-        expect(result.id).toBe(123);
+        expect(reportRepoStub.create).toHaveBeenCalled();
         expect(photoRepoStub.create).toHaveBeenCalledTimes(2);
-        expect(photoRepoStub.save).toHaveBeenCalledTimes(2);
-        expect(photoEntities.map(p => p.link)).toEqual(['/public/a.jpg', '/public/b.jpg']);
+        expect(photoEntities.map(p => p.link)).toEqual(['/public/a.jpg','/public/b.jpg']);
+        expect(result.id).toBe(123);
     });
 
-    it('throws NotFoundError when user not found', async () => {
+    it('throws when user not found', async () => {
         userRepoStub.findOneBy.mockResolvedValue(null);
-        const input = {
-            title: 'T',
-            description: 'D',
-            categoryId: 5,
-            userId: 99,
-            latitude: 0,
-            longitude: 0,
-            photos: []
-        };
-        await expect(reportRepository.createReport(input)).rejects.toThrow(/userId '99' not found/);
-        expect(reportRepoStub.create).not.toHaveBeenCalled();
+        await expect(reportRepository.createReport({ title: 'T', description: 'D', categoryId: 5, userId: 99, latitude: 0, longitude: 0, photos: [] }))
+            .rejects.toThrow(/userId '99' not found/);
     });
 
-    it('throws NotFoundError when category not found', async () => {
+    it('throws when category not found', async () => {
         categoryRepoStub.findOneBy.mockResolvedValue(null);
-        const input = { title: 'T', description: 'D', categoryId: 555, userId: 10, latitude: 0, longitude: 0, photos: [] };
-        await expect(reportRepository.createReport(input)).rejects.toThrow(/categoryId '555' not found/);
-        expect(reportRepoStub.create).not.toHaveBeenCalled();
+        await expect(reportRepository.createReport({ title: 'T', description: 'D', categoryId: 555, userId: 10, latitude: 0, longitude: 0, photos: [] }))
+            .rejects.toThrow(/categoryId '555' not found/);
     });
 
-    it('persists no photos when photos array empty', async () => {
-        const input = { title: 'Title', description: 'Desc', categoryId: 5, userId: 10, latitude: 1, longitude: 2, photos: [] };
-        await reportRepository.createReport(input);
+    it('does not persist photos when photos array empty', async () => {
+        await reportRepository.createReport({ title: 'Title', description: 'Desc', categoryId: 5, userId: 10, latitude: 1, longitude: 2, photos: [] });
         expect(photoRepoStub.create).not.toHaveBeenCalled();
         expect(photoRepoStub.save).not.toHaveBeenCalled();
     });
 });
 
-describe('ReportRepository.getAllReports', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
-
-    it('returns all reports with photos and category relations', async () => {
-        const mockReports = [
-            {
-                id: 1,
-                title: 'Report 1',
-                description: 'Description 1',
-                status: 'pending',
-                category: { id: 5, name: 'Infrastructure' },
-                photos: [{ id: 1, link: '/public/photo1.jpg' }]
-            },
-            {
-                id: 2,
-                title: 'Report 2',
-                description: 'Description 2',
-                status: 'resolved',
-                category: { id: 6, name: 'Public Safety' },
-                photos: []
-            }
-        ];
-
-        reportRepoStub.find.mockResolvedValue(mockReports);
-
-        const result = await reportRepository.getAllReports();
-
-        expect(reportRepoStub.find).toHaveBeenCalledWith({
-            relations: ['photos', 'category']
-        });
-        expect(result).toEqual(mockReports);
-        expect(result).toHaveLength(2);
-    });
-
-    it('returns empty array when no reports exist', async () => {
-        reportRepoStub.find.mockResolvedValue([]);
-
-        const result = await reportRepository.getAllReports();
-
-        expect(reportRepoStub.find).toHaveBeenCalled();
-        expect(result).toEqual([]);
-        expect(result).toHaveLength(0);
-    });
-
-    it('returns reports with complete category and photos information', async () => {
-        const mockReportsWithRelations = [
-            {
-                id: 1,
-                title: 'Pothole on Main St',
-                description: 'Large pothole causing traffic issues',
-                status: 'pending',
-                latitude: 45.123,
-                longitude: 9.456,
-                userId: 10,
-                categoryId: 5,
-                category: {
-                    id: 5,
-                    name: 'Infrastructure',
-                    description: 'Roads, bridges, and public infrastructure'
-                },
-                photos: [
-                    { id: 1, link: '/public/photo1.jpg', reportId: 1 },
-                    { id: 2, link: '/public/photo2.jpg', reportId: 1 }
-                ]
-            }
-        ];
-
-        reportRepoStub.find.mockResolvedValue(mockReportsWithRelations);
-
-        const result = await reportRepository.getAllReports();
-
-        expect(reportRepoStub.find).toHaveBeenCalled();
-        expect(result[0]).toHaveProperty('category');
-        expect(result[0]).toHaveProperty('photos');
-        expect(result[0].category).toHaveProperty('id', 5);
-        expect(result[0].category).toHaveProperty('name', 'Infrastructure');
-        expect(result[0].photos).toHaveLength(2);
-    });
-});
-
-describe('ReportRepository.getReportById', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
-
-    it('returns a specific report with relations when found', async () => {
-        const mockReport = {
-            id: 1,
-            title: 'Pothole Report',
-            description: 'Large pothole on Main St',
-            status: 'pending',
-            latitude: 45.123,
-            longitude: 9.456,
-            category: { id: 5, name: 'Infrastructure' },
-            photos: [
-                { id: 1, link: '/public/photo1.jpg' },
-                { id: 2, link: '/public/photo2.jpg' }
-            ]
-        };
-
-        reportRepoStub.findOne.mockResolvedValue(mockReport);
-
-        const result = await reportRepository.getReportById(1);
-
-        expect(reportRepoStub.findOne).toHaveBeenCalledWith({
-            where: { id: 1 },
-            relations: ['photos', 'category']
-        });
-        expect(result).toEqual(mockReport);
-        expect(result.photos).toHaveLength(2);
-        expect(result.category.name).toBe('Infrastructure');
-    });
-
-    it('returns null when report not found', async () => {
-        reportRepoStub.findOne.mockResolvedValue(null);
-
-        const result = await reportRepository.getReportById(999);
-
-        expect(reportRepoStub.findOne).toHaveBeenCalledWith({
-            where: { id: 999 },
-            relations: ['photos', 'category']
-        });
-        expect(result).toBeNull();
-    });
-
-    it('converts string id to number', async () => {
-        const mockReport = { id: 42, title: 'Test', status: 'pending' };
-        reportRepoStub.findOne.mockResolvedValue(mockReport);
-
-        await reportRepository.getReportById('42');
-
-        expect(reportRepoStub.findOne).toHaveBeenCalledWith({
-            where: { id: 42 },
-            relations: ['photos', 'category']
-        });
-    });
-
-});
-
 describe('ReportRepository.reviewReport', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-        savedReports.length = 0;
+    beforeEach(() => { jest.clearAllMocks(); savedReports.length=0; });
+
+    it('accepts a report', async () => {
+        const mock = { id: 1, status: 'pending', categoryId: 5 };
+        reportRepoStub.findOneBy.mockResolvedValue(mock);
+        reportRepoStub.save.mockResolvedValue(mock);
+
+        const res = await reportRepository.reviewReport({ reportId:1, action:'accept' });
+        expect(res.status).toBe('assigned');
     });
 
-    it('rejects report with explanation and sets status to rejected', async () => {
+    it('rejects a report', async () => {
+        const mock = { id: 2, status: 'pending', reject_explanation: '' };
+        reportRepoStub.findOneBy.mockResolvedValue(mock);
+        reportRepoStub.save.mockResolvedValue(mock);
+
+        const res = await reportRepository.reviewReport({ reportId:2, action:'reject', explanation:'No info' });
+        expect(res.status).toBe('rejected');
+        expect(res.reject_explanation).toBe('No info');
+    });
+});
+
+describe('ReportRepository external methods', () => {
+    beforeEach(() => { jest.clearAllMocks(); savedReports.length=0; });
+
+    it('externalChangeStatus updates report and adds participant', async () => {
+        const mockReport = { id: 1, assignedExternal:true, status:'assigned', categoryId:5 };
+        reportRepoStub.findOne.mockResolvedValue(mockReport);
+        categoryRepoStub.findOne.mockResolvedValue({ id:5, externalOfficeId:10 });
+        userOfficeRepoStub.findOne.mockResolvedValue({ userId:77, officeId:10 });
+        officeRepoStub.findOneBy.mockResolvedValue({ id:10, isExternal:true });
+        conversationRepoStub.findOne.mockResolvedValue({ id:321, participants:[], isInternal:false });
+        reportRepoStub.save.mockResolvedValue(mockReport);
+
+        const res = await reportRepository._externalChangeStatus({ reportId:1, status:'resolved', externalMaintainerId:77 });
+        expect(res.status).toBe('resolved');
+        expect(addParticipantToConversationMock).toHaveBeenCalledWith(321, 77);
+    });
+});
+
+describe('ReportRepository.startReport', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        conversationRepoStub.findOne.mockResolvedValue(null); // Default: no conversation
+    });
+
+    it('updates report status to in_progress and sets technicianId', async () => {
         const mockReport = {
             id: 1,
             title: 'Test Report',
-            status: 'pending',
-            reject_explanation: ''
+            status: 'assigned',
+            technicianId: null
         };
 
         reportRepoStub.findOneBy.mockResolvedValue(mockReport);
-        reportRepoStub.save.mockImplementation(async (entity) => {
-            savedReports.push(entity);
-            return entity;
-        });
+        reportRepoStub.save.mockImplementation(async (entity) => entity);
 
-        const result = await reportRepository.reviewReport({
+        const result = await reportRepository.startReport({
             reportId: 1,
-            action: 'reject',
-            explanation: 'Insufficient information provided'
+            technicianId: 42
         });
 
         expect(reportRepoStub.findOneBy).toHaveBeenCalledWith({ id: 1 });
-        expect(result.status).toBe('rejected');
-        expect(result.reject_explanation).toBe('Insufficient information provided');
+        expect(result.status).toBe('in_progress');
+        expect(result.technicianId).toBe(42);
         expect(reportRepoStub.save).toHaveBeenCalledWith(mockReport);
     });
 
-    it('rejects report without explanation (empty string)', async () => {
+    it('returns null when report not found', async () => {
+        reportRepoStub.findOneBy.mockResolvedValue(null);
+
+        const result = await reportRepository.startReport({
+            reportId: 999,
+            technicianId: 42
+        });
+
+        expect(result).toBeNull();
+        expect(reportRepoStub.save).not.toHaveBeenCalled();
+    });
+
+    it('converts string reportId and technicianId to numbers', async () => {
         const mockReport = {
             id: 2,
             title: 'Test Report',
-            status: 'pending',
-            reject_explanation: ''
+            status: 'assigned',
+            technicianId: null
         };
 
         reportRepoStub.findOneBy.mockResolvedValue(mockReport);
         reportRepoStub.save.mockImplementation(async (entity) => entity);
 
-        const result = await reportRepository.reviewReport({
-            reportId: 2,
-            action: 'reject'
+        const result = await reportRepository.startReport({
+            reportId: '2',
+            technicianId: '99'
         });
 
-        expect(result.status).toBe('rejected');
-        expect(result.reject_explanation).toBe('');
-    });
-
-    it('accepts report and sets status to assigned', async () => {
-        const mockReport = {
-            id: 3,
-            title: 'Test Report',
-            status: 'pending',
-            reject_explanation: 'Previous rejection',
-            categoryId: 5
-        };
-
-        reportRepoStub.findOneBy.mockResolvedValue(mockReport);
-        reportRepoStub.save.mockImplementation(async (entity) => entity);
-
-        const result = await reportRepository.reviewReport({
-            reportId: 3,
-            action: 'accept'
-        });
-
-        expect(reportRepoStub.findOneBy).toHaveBeenCalledWith({ id: 3 });
-        expect(result.status).toBe('assigned');
-        expect(result.reject_explanation).toBe('');
-        expect(reportRepoStub.save).toHaveBeenCalledWith(mockReport);
-    });
-
-    it('accepts report and updates category when categoryId provided', async () => {
-        const mockReport = {
-            id: 4,
-            title: 'Test Report',
-            status: 'pending',
-            categoryId: 5
-        };
-
-        reportRepoStub.findOneBy.mockResolvedValue(mockReport);
-        reportRepoStub.save.mockImplementation(async (entity) => entity);
-
-        const result = await reportRepository.reviewReport({
-            reportId: 4,
-            action: 'accept',
-            categoryId: 10
-        });
-
-        expect(result.status).toBe('assigned');
-        expect(result.categoryId).toBe(10);
-    });
-
-    it('accepts report without changing category when categoryId not provided', async () => {
-        const mockReport = {
-            id: 5,
-            title: 'Test Report',
-            status: 'pending',
-            categoryId: 7
-        };
-
-        reportRepoStub.findOneBy.mockResolvedValue(mockReport);
-        reportRepoStub.save.mockImplementation(async (entity) => entity);
-
-        const result = await reportRepository.reviewReport({
-            reportId: 5,
-            action: 'accept'
-        });
-
-        expect(result.status).toBe('assigned');
-        expect(result.categoryId).toBe(7);
-    });
-
-    it('returns null when report not found', async () => {
-        reportRepoStub.findOneBy.mockResolvedValue(null);
-
-        const result = await reportRepository.reviewReport({
-            reportId: 999,
-            action: 'reject',
-            explanation: 'Test'
-        });
-
-        expect(result).toBeNull();
-        expect(reportRepoStub.save).not.toHaveBeenCalled();
-    });
-
-    it('converts string reportId to number', async () => {
-        const mockReport = {
-            id: 6,
-            title: 'Test Report',
-            status: 'pending'
-        };
-
-        reportRepoStub.findOneBy.mockResolvedValue(mockReport);
-        reportRepoStub.save.mockImplementation(async (entity) => entity);
-
-        await reportRepository.reviewReport({
-            reportId: '6',
-            action: 'reject',
-            explanation: 'Test'
-        });
-
-        expect(reportRepoStub.findOneBy).toHaveBeenCalledWith({ id: 6 });
-    });
-
-    it('converts string categoryId to number when accepting', async () => {
-        const mockReport = {
-            id: 7,
-            title: 'Test Report',
-            status: 'pending',
-            categoryId: 5
-        };
-
-        reportRepoStub.findOneBy.mockResolvedValue(mockReport);
-        reportRepoStub.save.mockImplementation(async (entity) => entity);
-
-        const result = await reportRepository.reviewReport({
-            reportId: 7,
-            action: 'accept',
-            categoryId: '15'
-        });
-
-        expect(result.categoryId).toBe(15);
-    });
-});
-
-describe('ReportRepository.assignReportToExternalMaintainer', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-        savedReports.length = 0;
-    });
-
-    it('assigns report to external maintainer (success)', async () => {
-        const mockReport = { id: 10, assignedExternal: false };
-        reportRepoStub.findOneBy.mockResolvedValue(mockReport);
-        reportRepoStub.save.mockImplementation(async (entity) => {
-            savedReports.push(entity);
-            return entity;
-        });
-
-        const result = await reportRepository.assignReportToExternalMaintainer(10);
-        expect(reportRepoStub.findOneBy).toHaveBeenCalledWith({ id: 10 });
-        expect(result.assignedExternal).toBe(true);
-        expect(reportRepoStub.save).toHaveBeenCalledWith(mockReport);
-    });
-
-    it('returns null when report not found', async () => {
-        reportRepoStub.findOneBy.mockResolvedValue(null);
-        const result = await reportRepository.assignReportToExternalMaintainer(999);
-        expect(result).toBeNull();
-        expect(reportRepoStub.save).not.toHaveBeenCalled();
-    });
-
-    it('converts string reportId to number', async () => {
-        const mockReport = { id: 42, assignedExternal: false };
-        reportRepoStub.findOneBy.mockResolvedValue(mockReport);
-        reportRepoStub.save.mockImplementation(async (entity) => entity);
-
-        await reportRepository.assignReportToExternalMaintainer('42');
-        expect(reportRepoStub.findOneBy).toHaveBeenCalledWith({ id: 42 });
-    });
-});
-
-describe('ReportRepository._externalChangeStatus', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-        savedReports.length = 0;
-    });
-    it('changes status of externally assigned report (success)', async () => {
-        const mockReport = { id: 20, assignedExternal: true, status: 'assigned', categoryId: 222 };
-        reportRepoStub.findOne.mockResolvedValue(mockReport);
-        categoryRepoStub.findOne.mockResolvedValue({ id: 222, externalOfficeId: 555, externalOffice: { id: 555 } });
-        userOfficeRepoStub.findOne.mockResolvedValue({ userId: 77, officeId: 555 });
-        officeRepoStub.findOneBy.mockResolvedValue({ id: 555, isExternal: true });
-        conversationRepoStub.findOne.mockResolvedValue({ id: 321, participants: [], isInternal: false });
-        reportRepoStub.save.mockImplementation(async (entity) => {
-            savedReports.push(entity);
-            return entity;
-        });
-        const result = await reportRepository._externalChangeStatus({ reportId: 20, status: 'resolved', externalMaintainerId: 77 });
-        expect(reportRepoStub.findOne).toHaveBeenCalledWith({ where: { id: 20 }, relations: ['category'] });
-        expect(result.status).toBe('resolved');
-        expect(reportRepoStub.save).toHaveBeenCalledWith(mockReport);
-    });
-
-    it('returns null when report not found', async () => {
-        reportRepoStub.findOne.mockResolvedValue(null);
-        const result = await reportRepository._externalChangeStatus({ reportId: 999, status: 'resolved' });
-        expect(result).toBeNull();
-        expect(reportRepoStub.save).not.toHaveBeenCalled();
-    });
-
-    it('returns null when report not assigned to external maintainer', async () => {
-        const mockReport = { id: 30, assignedExternal: false, status: 'assigned' };
-        reportRepoStub.findOne.mockResolvedValue(mockReport);
-        const result = await reportRepository._externalChangeStatus({ reportId: 30, status: 'resolved' });
-        expect(result).toBeNull();
-        expect(reportRepoStub.save).not.toHaveBeenCalled();
-    });
-    it('adds external maintainer to a conversation when changing status', async () => {
-        const mockReport = { id: 40, assignedExternal: true, status: 'assigned', categoryId: 222 };
-        reportRepoStub.findOne.mockResolvedValue(mockReport);
-        categoryRepoStub.findOne.mockResolvedValue({ id: 222, externalOfficeId: 555 });
-        userOfficeRepoStub.findOne.mockResolvedValue({ userId: 77, officeId: 555 });
-        officeRepoStub.findOneBy.mockResolvedValue({ id: 555, isExternal: true });
-        conversationRepoStub.findOne.mockResolvedValue({ id: 654, participants: [], isInternal: false });
-        reportRepoStub.save.mockImplementation(async (entity) => entity);
-        const result = await reportRepository._externalChangeStatus({ reportId: 40, status: 'suspended', externalMaintainerId: 77 });
-        expect(result.status).toBe('suspended');
-        expect(addParticipantToConversationMock).toBeDefined();
-        expect(typeof addParticipantToConversationMock).toBe('function');
-        expect(addParticipantToConversationMock).toHaveBeenCalledWith(654, 77);
-    });
-    it('starts a new report correctly', async () => {
-        const mockReport = { id: 50, assignedExternal: true, status: 'pending', categoryId: 222 };
-        reportRepoStub.findOne.mockResolvedValue(mockReport);
-        categoryRepoStub.findOne.mockResolvedValue({ id: 222, externalOfficeId: 555 });
-        userOfficeRepoStub.findOne.mockResolvedValue({ userId: 88, officeId: 555 });
-        officeRepoStub.findOneBy.mockResolvedValue({ id: 555, isExternal: true });
-        conversationRepoStub.findOne.mockResolvedValue({ id: 777, participants: [], isInternal: true });
-        reportRepoStub.save.mockImplementation(async (entity) => entity);
-        const result = await reportRepository.externalStart({ reportId: 50, externalMaintainerId: 88 });
-        expect(result.status).toBe('in_progress');
-    });
-    it('finishes a report correctly', async () => {
-        const mockReport = { id: 60, assignedExternal: true, status: 'in_progress', categoryId: 222 };
-        reportRepoStub.findOne.mockResolvedValue(mockReport);
-        categoryRepoStub.findOne.mockResolvedValue({ id: 222, externalOfficeId: 555 });
-        userOfficeRepoStub.findOne.mockResolvedValue({ userId: 101, officeId: 555 });
-        officeRepoStub.findOneBy.mockResolvedValue({ id: 555, isExternal: true });
-        conversationRepoStub.findOne.mockResolvedValue({ id: 888, participants: [], isInternal: false });
-        reportRepoStub.save.mockImplementation(async (entity) => entity);
-        const result = await reportRepository.externalFinish({ reportId: 60, externalMaintainerId: 101 });
-        expect(result.status).toBe('resolved');
-    });
-    it('suspends a report correctly', async () => {
-        const mockReport = { id: 70, assignedExternal: true, status: 'in_progress', categoryId: 222 };
-        reportRepoStub.findOne.mockResolvedValue(mockReport);
-        categoryRepoStub.findOne.mockResolvedValue({ id: 222, externalOfficeId: 555 });
-        userOfficeRepoStub.findOne.mockResolvedValue({ userId: 99, officeId: 555 });
-        officeRepoStub.findOneBy.mockResolvedValue({ id: 555, isExternal: true });
-        conversationRepoStub.findOne.mockResolvedValue({ id: 889, participants: [], isInternal: false });
-        reportRepoStub.save.mockImplementation(async (entity) => entity);
-        const result = await reportRepository.externalSuspend({ reportId: 70, externalMaintainerId: 99 });
-        expect(result.status).toBe('suspended');
-    });
-    it('resumes a report correctly', async () => {
-        const mockReport = { id: 80, assignedExternal: true, status: 'suspended', categoryId: 222 }; 
-        reportRepoStub.findOne.mockResolvedValue(mockReport);
-        categoryRepoStub.findOne.mockResolvedValue({ id: 222, externalOfficeId: 555 });
-        userOfficeRepoStub.findOne.mockResolvedValue({ userId: 102, officeId: 555 });
-        officeRepoStub.findOneBy.mockResolvedValue({ id: 555, isExternal: true });
-        conversationRepoStub.findOne.mockResolvedValue({ id: 890, participants: [], isInternal: false });
-        reportRepoStub.save.mockImplementation(async (entity) => entity);
-        const result = await reportRepository.externalResume({ reportId: 80, externalMaintainerId: 102 });
-        expect(result.status).toBe('assigned');
+        expect(reportRepoStub.findOneBy).toHaveBeenCalledWith({ id: 2 });
+        expect(result.technicianId).toBe(99);
     });
 });

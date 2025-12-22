@@ -10,7 +10,7 @@ export const repoStub = (name) => ({
     createQueryBuilder: jest.fn(),
     getMany: jest.fn(),
     getConversationsForUser: jest.fn(),
-    broadcastSpy: jest.fn()
+    broadcastSpy: jest.fn(),
 });
 
 // ---- Individual repository stubs you will use in tests ----
