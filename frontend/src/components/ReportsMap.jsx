@@ -53,6 +53,14 @@ function SearchAddress({ onPointChange }) {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const requestRef = useRef(null);
   const debounceRef = useRef(null);
+  const stopAll = (e) => {
+    // Stop event from reaching Leaflet map handlers, but do not prevent default
+    // so the input can still receive focus and clicks.
+    e.stopPropagation();
+    if (e.nativeEvent) {
+      e.nativeEvent.stopPropagation && e.nativeEvent.stopPropagation();
+    }
+  };
 
   useEffect(() => {
     if( !query || query.trim().length < 3 ) {
@@ -92,11 +100,11 @@ function SearchAddress({ onPointChange }) {
     function selectResult(item) {
       const lat = parseFloat(item.lat);
       const lng = parseFloat(item.lon);
-      const addr = item.address;
-      const formattedAddress = item.display_name || [
-        addr?.road || '',
-        addr?.house_number || ''
-      ].filter(Boolean).join(', ');
+      const addr = item.address || {};
+      const neighborhood = (addr.neighbourhood || addr.suburb || '').trim();
+      const cityLike = (addr.city || addr.town || addr.village || '').trim();
+      const street = String(addr.road || '').trim();
+      const formattedAddress = [street, neighborhood, cityLike].filter(Boolean).join(', ');
       setSelectedPoint({ lat, lng });
       setSelectedAddress(formattedAddress);
       setShowList(false);
@@ -108,14 +116,33 @@ function SearchAddress({ onPointChange }) {
       setSelectedPoint(null);
       setSelectedAddress('');
     }
+    function formatSuggestionLabel(item) {
+      const addr = item.address || {};
+      const street = String(addr.road || '').trim();
+      const neighborhood = String(addr.neighbourhood || addr.suburb || '').trim();
+      const cityLike = String(addr.city || addr.town || addr.village || '').trim();
+      const parts = [street, neighborhood, cityLike].filter(Boolean);
+      if (parts.length) return parts.join(', ');
+      const dn = String(item.display_name || '').trim();
+      return dn ? dn.split(',')[0] : '';
+    }
 
     return (
-    <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 1000, width: 'min(420px, 70vw)' }}>
+    <div
+      style={{ position: 'absolute', top: 12, left: 64, zIndex: 1000, width: 'min(420px, 70vw)' }}
+      onMouseDownCapture={stopAll}
+        onWheelCapture={stopAll}
+        onPointerDownCapture={stopAll}
+        onPointerUpCapture={stopAll}
+    >
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+            onMouseDownCapture={stopAll}
+            onClickCapture={stopAll}
+            onFocus={(e) => { /* prevent map interactions when focusing input */ }}
           onKeyDown={async (e) => {
             if (e.key === 'Enter') {
               e.preventDefault();
@@ -170,7 +197,7 @@ function SearchAddress({ onPointChange }) {
             <button
               key={`${r.place_id}`}
               type="button"
-              onClick={() => selectResult(r)}
+                onClick={(e) => { stopAll(e); selectResult(r); }}
               style={{
                 display: 'block',
                 width: '100%',
@@ -182,7 +209,7 @@ function SearchAddress({ onPointChange }) {
                 cursor: 'pointer'
               }}
             >
-              {r.display_name}
+              {formatSuggestionLabel(r)}
             </button>
           ))}
         </div>
@@ -190,7 +217,13 @@ function SearchAddress({ onPointChange }) {
 
       {selectedPoint && (
         <Marker position={selectedPoint} eventHandlers={{ add: ev => ev.target.openPopup() }}>
-          <Popup>{selectedAddress || `${selectedPoint.lat.toFixed(3)}, ${selectedPoint.lng.toFixed(3)}`}</Popup>
+          <Popup>{selectedAddress || `${selectedPoint.lat.toFixed(3)}, ${selectedPoint.lng.toFixed(3)}`}<br />
+            <button
+                  onClick={() => navigate('/report', { state: { lat: selectedPoint.lat, lng: selectedPoint.lng, address: selectedAddress || null } })}
+                >
+                  Create Report
+                </button>
+          </Popup>
         </Marker>
       )}
     </div>
@@ -258,7 +291,6 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
       {selectedPoint && (
         <Marker
           position={selectedPoint}
-          //icon={selectedPinIcon}
           eventHandlers={{ add: ev => ev.target.openPopup() }}
         >
           {isCitizen && (
