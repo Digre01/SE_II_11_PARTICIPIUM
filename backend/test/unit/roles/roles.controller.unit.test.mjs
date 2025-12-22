@@ -1,10 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-
-const rolesRepositoryMock = { findAll: jest.fn() };
-
-await jest.unstable_mockModule('../../repositories/rolesRepository.js', () => ({
-    rolesRepository: rolesRepositoryMock,
-}));
+import {rolesRepoStub} from "../mocks/shared.mocks.js";
 
 const { rolesRepository } = await import('../../../repositories/rolesRepository.js');
 
@@ -19,13 +14,13 @@ describe('userController - getAllRoles', () => {
             { id: 1, name: 'Admin' },
             { id: 2, name: 'Operator' },
         ];
-        rolesRepositoryMock.findAll.mockResolvedValue(fakeRoles);
+        rolesRepoStub.find.mockResolvedValue(fakeRoles);
 
         // Act
         const result = await rolesRepository.findAll();
 
         // Assert
-        expect(rolesRepositoryMock.findAll).toHaveBeenCalledTimes(1);
+        expect(rolesRepoStub.find).toHaveBeenCalledTimes(1);
         expect(result).toEqual(fakeRoles);
     });
 });
