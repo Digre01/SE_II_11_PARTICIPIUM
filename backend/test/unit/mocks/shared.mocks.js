@@ -9,7 +9,8 @@ export const repoStub = (name) => ({
     find: jest.fn(),
     createQueryBuilder: jest.fn(),
     getMany: jest.fn(),
-    getConversationsForUser: jest.fn()
+    getConversationsForUser: jest.fn(),
+    broadcastSpy: jest.fn()
 });
 
 // ---- Individual repository stubs you will use in tests ----
@@ -20,6 +21,7 @@ export const photoRepoStub = repoStub('Photos');
 export const conversationRepoStub = repoStub('Conversation');
 export const userOfficeRepoStub = repoStub('UserOffice');
 export const officeRepoStub = repoStub('Offices');
+export const messageRepoStub = repoStub('Message');
 
 // ---- Shared data arrays ----
 export const savedReports = [];
@@ -28,6 +30,10 @@ export const photoEntities = [];
 // ---- MOCK: All entities ----
 await jest.unstable_mockModule('../../../entities/Conversation.js', () => ({
     Conversation: { options: { name: 'Conversation' } },
+}));
+
+await jest.unstable_mockModule('../../../entities/Message.js', () => ({
+    Message: { options: { name: 'Message' } },
 }));
 
 await jest.unstable_mockModule('../../../entities/Categories.js', () => ({
@@ -55,7 +61,6 @@ await jest.unstable_mockModule('../../../entities/Offices.js', () => ({
 }));
 
 // ---- MOCK: data-source ----
-// ---- MOCK: data-source ----
 await jest.unstable_mockModule('../../../config/data-source.js', () => ({
     AppDataSourcePostgres: {
         getRepository: jest.fn((entity) => {
@@ -69,6 +74,7 @@ await jest.unstable_mockModule('../../../config/data-source.js', () => ({
             if (name === 'Conversation') return conversationRepoStub;
             if (name === 'UserOffice') return userOfficeRepoStub;
             if (name === 'Offices') return officeRepoStub;
+            if (name === 'Message') return messageRepoStub;
             return reportRepoStub;
         }),
     },
