@@ -23,7 +23,7 @@ describe('userController.setUserRoles', () => {
             userRepository: { setUserRoles: mockSetUserRoles }
         }));
 
-        const ctrlMod = await import('../../controllers/userController.js');
+        const ctrlMod = await import('../../../controllers/userController.js');
         const controller = ctrlMod.default || ctrlMod;
 
         const res = await controller.setUserRoles(1, [{ roleId: 1 }]);
@@ -41,7 +41,7 @@ describe('userController.setUserRoles', () => {
             userRepository: { setUserRoles: mockSetUserRoles }
         }));
 
-        const ctrlMod = await import('../../controllers/userController.js');
+        const ctrlMod = await import('../../../controllers/userController.js');
         const controller = ctrlMod.default || ctrlMod;
 
         await expect(controller.setUserRoles(1, [{ roleId: 2 }])).rejects.toThrow('repo failure');
@@ -55,7 +55,7 @@ describe('userController.setUserRoles', () => {
             userRepository: { setUserRoles: mockSetUserRoles }
         }));
 
-        const ctrlMod = await import('../../controllers/userController.js');
+        const ctrlMod = await import('../../../controllers/userController.js');
         const controller = ctrlMod.default || ctrlMod;
 
         // call with shorthand numeric array
@@ -84,7 +84,7 @@ jest.unstable_mockModule('../../config/data-source.js', () => ({
     },
 }));
 
-const { userRepository } = await import('../../repositories/userRepository.js');
+const { userRepository } = await import('../../../repositories/userRepository.js');
 
 describe('userRepository.setUserRoles', () => {
     beforeEach(() => {

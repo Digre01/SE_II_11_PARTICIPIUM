@@ -27,7 +27,7 @@ jest.unstable_mockModule('../../mappers/userMappers.js', () => ({ mapUserToDTO }
 
 let controller;
 beforeAll(async () => {
-    controller = (await import('../../controllers/userController.js')).default;
+    controller = (await import('../../../controllers/userController.js')).default;
 });
 
 describe('userController', () => {

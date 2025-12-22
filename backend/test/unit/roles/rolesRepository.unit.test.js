@@ -17,7 +17,7 @@ await jest.unstable_mockModule('../../entities/Roles.js', () => ({
   Roles: class {}
 }));
 
-const { rolesRepository } = await import('../../repositories/rolesRepository.js');
+const { rolesRepository } = await import('../../../repositories/rolesRepository.js');
 
 describe('rolesRepository', () => {
   beforeEach(() => {

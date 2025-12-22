@@ -34,12 +34,12 @@ const {
 	getMessagesForConversation,
 	createMessage,
 	createSystemMessage,
-} = await import('../../repositories/messageRepository.js');
+} = await import('../../../repositories/messageRepository.js');
 
-import { UnauthorizedError } from '../../errors/UnauthorizedError.js';
-import { NotFoundError } from '../../errors/NotFoundError.js';
-import { InsufficientRightsError } from '../../errors/InsufficientRightsError.js';
-import { BadRequestError } from '../../errors/BadRequestError.js';
+import { UnauthorizedError } from '../../../errors/UnauthorizedError.js';
+import { NotFoundError } from '../../../errors/NotFoundError.js';
+import { InsufficientRightsError } from '../../../errors/InsufficientRightsError.js';
+import { BadRequestError } from '../../../errors/BadRequestError.js';
 
 describe('Unit: messageRepository', () => {
 	beforeEach(() => {

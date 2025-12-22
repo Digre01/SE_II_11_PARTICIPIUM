@@ -30,7 +30,7 @@ jest.unstable_mockModule('../../config/data-source.js', () => ({
     },
 }));
 
-const {userRepository} = await import ("../../repositories/userRepository.js")
+const {userRepository} = await import ("../../../repositories/userRepository.js")
 
 describe("Role assignment: user repository", () => {
     describe("Basic userRepository functions", () => {

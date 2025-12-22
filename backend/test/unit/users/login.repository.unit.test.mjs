@@ -3,7 +3,6 @@ import {describe, it, expect, beforeEach, jest } from "@jest/globals";
 
 const repoStub = {
     findOneBy: jest.fn(),
-    find: jest.fn(),
     findOne: jest.fn(),
     save: jest.fn(),
 };
@@ -16,7 +15,7 @@ await jest.unstable_mockModule("../../config/data-source.js", () => {
     };
 });
 
-const { userRepository } = await import("../../repositories/userRepository.js");
+const { userRepository } = await import("../../../repositories/userRepository.js");
 
 describe("User Repository", () => {
     beforeEach(() => {
@@ -63,8 +62,8 @@ describe("User Repository", () => {
             };
             // username ok -> null, email already used -> user
             repoStub.findOneBy
-            .mockResolvedValueOnce(null)
-            .mockResolvedValueOnce(userData);
+                .mockResolvedValueOnce(null)
+                .mockResolvedValueOnce(userData);
             await expect(userRepository.createUser(...Object.values(userData))).rejects.toThrow("User with email existinguser@example.com already exists");
         });
     });
@@ -74,7 +73,7 @@ describe("User Repository", () => {
             const user = { id: 1, username: "testuser" };
             repoStub.findOne.mockResolvedValueOnce(user);
             const result = await userRepository.getUserById(1);
-            expect(repoStub.findOne).toHaveBeenCalledWith({ where: { id: 1 }, relations: ["userOffice", "userOffice.role"] });
+            expect(repoStub.findOne).toHaveBeenCalledWith({ where: { id: 1 }, relations: ['userOffice', 'userOffice.role'] });
             expect(result).toEqual(user);
         });
     });
@@ -84,7 +83,7 @@ describe("User Repository", () => {
             const user = { id: 1, username: "testuser" };
             repoStub.findOne.mockResolvedValueOnce(user);
             const result = await userRepository.getUserByUsername("testuser");
-            expect(repoStub.findOne).toHaveBeenCalledWith({ where: { username: "testuser" }, relations: ["userOffice", "userOffice.role"] });
+            expect(repoStub.findOne).toHaveBeenCalledWith({ where: { username: "testuser" }, relations: ['userOffice', 'userOffice.role'] });
             expect(result).toEqual(user);
         });
     });

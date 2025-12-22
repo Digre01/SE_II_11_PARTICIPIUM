@@ -6,7 +6,7 @@ await jest.unstable_mockModule('../../repositories/rolesRepository.js', () => ({
     rolesRepository: rolesRepositoryMock,
 }));
 
-const { rolesRepository } = await import('../../repositories/rolesRepository.js');
+const { rolesRepository } = await import('../../../repositories/rolesRepository.js');
 
 describe('userController - getAllRoles', () => {
     beforeEach(() => {

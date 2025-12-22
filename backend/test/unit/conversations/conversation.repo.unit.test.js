@@ -1,4 +1,4 @@
-// backend/test/unit/conversationRepository.unit.test.js
+// backend/test/unit/conversation.repo.unit.test.js
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
 const fakeConversation = Symbol('FakeConversation');
@@ -39,9 +39,9 @@ const {
   getConversationsForUser,
   createConversation,
   addParticipantToConversation
-} = await import('../../repositories/conversationRepository.js');
-const { AppDataSourcePostgres } = await import('../../config/data-source.js');
-const { Conversation } = await import('../../entities/Conversation.js');
+} = await import('../../../repositories/conversationRepository.js');
+const { AppDataSourcePostgres } = await import('../../../config/data-source.js');
+const { Conversation } = await import('../../../entities/Conversation.js');
 
 describe('conversationRepository', () => {
   beforeEach(() => {

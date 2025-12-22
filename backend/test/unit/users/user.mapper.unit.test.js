@@ -1,4 +1,4 @@
-import { mapUserToDTO } from '../../mappers/userMappers.js';
+import { mapUserToDTO } from '../../../mappers/userMappers.js';
 
 describe('mapUserToDTO', () => {
   it('maps user with single userOffice and role', () => {

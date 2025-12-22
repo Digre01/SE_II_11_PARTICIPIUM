@@ -14,7 +14,7 @@ await jest.unstable_mockModule('../../config/data-source.js', () => ({
     },
 }));
 
-const { userRepository } = await import('../../repositories/userRepository.js');
+const { userRepository } = await import('../../../repositories/userRepository.js');
 
 describe('UserRepository.createUser (staff)', () => {
     beforeEach(() => {

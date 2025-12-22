@@ -15,9 +15,9 @@ await jest.unstable_mockModule('../../config/data-source.js', () => ({
   }
 }));
 
-const { officeRepository } = await import('../../repositories/officeRepository.js');
-const { AppDataSourcePostgres } = await import('../../config/data-source.js');
-const { Office } = await import('../../entities/Offices.js');
+const { officeRepository } = await import('../../../repositories/officeRepository.js');
+const { AppDataSourcePostgres } = await import('../../../config/data-source.js');
+const { Office } = await import('../../../entities/Offices.js');
 
 describe('officeRepository', () => {
   beforeEach(() => {

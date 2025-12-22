@@ -8,7 +8,7 @@ await jest.unstable_mockModule('../../repositories/officeRepository.js', () => (
 }));
 
 // Importiamo il controller DOPO i mock
-const { officeRepository } = await import('../../repositories/officeRepository.js');
+const { officeRepository } = await import('../../../repositories/officeRepository.js');
 
 describe('userController - getAllOffices', () => {
     beforeEach(() => {

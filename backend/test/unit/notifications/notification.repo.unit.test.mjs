@@ -16,7 +16,7 @@ await jest.unstable_mockModule('../../config/data-source.js', () => ({
   }
 }));
 
-const { createNotification, getUnreadNotifications, markNotificationsAsReadForConversation, getUnreadCountByConversation } = await import('../../repositories/notificationRepository.js');
+const { createNotification, getUnreadNotifications, markNotificationsAsReadForConversation, getUnreadCountByConversation } = await import('../../../repositories/notificationRepository.js');
 
 describe('notificationRepository', () => {
   beforeEach(() => {

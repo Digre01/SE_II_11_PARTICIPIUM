@@ -1,4 +1,3 @@
-// backend/test/unit/conversationController.unit.test.js
 import { describe, it, expect, jest } from "@jest/globals";
 
 // Mock prima di importare il controller!
@@ -9,7 +8,7 @@ await jest.unstable_mockModule(
   })
 );
 
-const { getUserConversations } = await import('../../controllers/conversationController.js');
+const { getUserConversations } = await import('../../../controllers/conversationController.js');
 
 function createMockRes() {
   return { json: jest.fn() };
@@ -26,7 +25,7 @@ describe('conversationController', () => {
   });
 
   it('should call next on error', async () => {
-    const { getConversationsForUser } = await import('../../repositories/conversationRepository.js');
+    const { getConversationsForUser } = await import('../../../repositories/conversationRepository.js');
     getConversationsForUser.mockRejectedValueOnce(new Error('fail'));
     const req = { user: { id: 42 } };
     const res = createMockRes();

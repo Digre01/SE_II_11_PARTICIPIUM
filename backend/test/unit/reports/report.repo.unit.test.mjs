@@ -55,7 +55,7 @@ await jest.unstable_mockModule('../../repositories/conversationRepository.js', (
 }));
 
 
-const { reportRepository } = await import('../../repositories/reportRepository.mjs');
+const { reportRepository } = await import('../../../repositories/reportRepository.mjs');
 
 describe('ReportRepository.createReport', () => {
     beforeEach(() => {
@@ -172,7 +172,7 @@ describe('ReportRepository.createReport', () => {
 
     // --- reviewReport: accept ---
     it('reviewReport accetta un report', async () => {
-        const { AppDataSourcePostgres } = await import('../../config/data-source.js');
+        const { AppDataSourcePostgres } = await import('../../../config/data-source.js');
         const report = { id: 1, status: 'pending', reject_explanation: '' };
         reportRepoStub.findOneBy.mockResolvedValueOnce(report);
         reportRepoStub.save.mockResolvedValue({ ...report, status: 'assigned', reject_explanation: '' });
@@ -190,7 +190,7 @@ describe('ReportRepository.createReport', () => {
 
     // --- reviewReport: reject ---
     it('reviewReport rifiuta un report', async () => {
-        const { AppDataSourcePostgres } = await import('../../config/data-source.js');
+        const { AppDataSourcePostgres } = await import('../../../config/data-source.js');
         const report = { id: 2, status: 'pending', reject_explanation: '' };
         reportRepoStub.findOneBy.mockResolvedValueOnce(report);
         reportRepoStub.save.mockResolvedValue({ ...report, status: 'rejected', reject_explanation: 'motivo' });
@@ -207,7 +207,7 @@ describe('ReportRepository.createReport', () => {
 
     // --- startReport ---
     it('startReport aggiorna stato e aggiunge tecnico', async () => {
-        const { AppDataSourcePostgres } = await import('../../config/data-source.js');
+        const { AppDataSourcePostgres } = await import('../../../config/data-source.js');
         const report = { id: 1, status: 'assigned' };
         reportRepoStub.findOneBy.mockResolvedValueOnce(report);
         reportRepoStub.save.mockResolvedValue({ ...report, status: 'in_progress', technicianId: 7 });
@@ -230,7 +230,7 @@ describe('ReportRepository.createReport', () => {
 
     // --- finishReport ---
     it('finishReport aggiorna stato se tecnico corrisponde', async () => {
-        const { AppDataSourcePostgres } = await import('../../config/data-source.js');
+        const { AppDataSourcePostgres } = await import('../../../config/data-source.js');
         const report = { id: 1, status: 'in_progress', technicianId: 7 };
         reportRepoStub.findOneBy.mockResolvedValueOnce(report);
         reportRepoStub.save.mockResolvedValue({ ...report, status: 'resolved', technicianId: 7 });
@@ -240,8 +240,8 @@ describe('ReportRepository.createReport', () => {
             if (entity?.name === 'Conversation') return convRepo;
             return reportRepoStub;
         });
-        jest.spyOn(await import('../../repositories/messageRepository.js'), 'createSystemMessage').mockResolvedValue('msg');
-        jest.spyOn(await import('../../wsHandler.js'), 'broadcastToConversation').mockResolvedValue();
+        jest.spyOn(await import('../../../repositories/messageRepository.js'), 'createSystemMessage').mockResolvedValue('msg');
+        jest.spyOn(await import('../../../wsHandler.js'), 'broadcastToConversation').mockResolvedValue();
         const result = await reportRepository.finishReport({ reportId: 1, technicianId: 7 });
         expect(result).toEqual({ id: 1, status: 'resolved', technicianId: 7 });
         AppDataSourcePostgres.getRepository = origGetRepo;
@@ -258,7 +258,7 @@ describe('ReportRepository.createReport', () => {
 
     // --- suspendReport ---
     it('suspendReport aggiorna stato', async () => {
-        const { AppDataSourcePostgres } = await import('../../config/data-source.js');
+        const { AppDataSourcePostgres } = await import('../../../config/data-source.js');
         const report = { id: 1, status: 'in_progress' };
         reportRepoStub.findOneBy.mockResolvedValueOnce(report);
         reportRepoStub.save.mockResolvedValue({ ...report, status: 'suspended' });
@@ -268,8 +268,8 @@ describe('ReportRepository.createReport', () => {
             if (entity?.name === 'Conversation') return convRepo;
             return reportRepoStub;
         });
-        jest.spyOn(await import('../../repositories/messageRepository.js'), 'createSystemMessage').mockResolvedValue('msg');
-        jest.spyOn(await import('../../wsHandler.js'), 'broadcastToConversation').mockResolvedValue();
+        jest.spyOn(await import('../../../repositories/messageRepository.js'), 'createSystemMessage').mockResolvedValue('msg');
+        jest.spyOn(await import('../../../wsHandler.js'), 'broadcastToConversation').mockResolvedValue();
         const result = await reportRepository.suspendReport({ reportId: 1, technicianId: 7 });
         expect(result).toEqual({ id: 1, status: 'suspended' });
         AppDataSourcePostgres.getRepository = origGetRepo;
@@ -283,7 +283,7 @@ describe('ReportRepository.createReport', () => {
 
     // --- resumeReport ---
     it('resumeReport aggiorna stato in_progress se technicianId presente', async () => {
-        const { AppDataSourcePostgres } = await import('../../config/data-source.js');
+        const { AppDataSourcePostgres } = await import('../../../config/data-source.js');
         const report = { id: 1, status: 'suspended', technicianId: 7 };
         reportRepoStub.findOneBy.mockResolvedValueOnce(report);
         reportRepoStub.save.mockResolvedValue({ ...report, status: 'in_progress', technicianId: 7 });
@@ -293,15 +293,15 @@ describe('ReportRepository.createReport', () => {
             if (entity?.name === 'Conversation') return convRepo;
             return reportRepoStub;
         });
-        jest.spyOn(await import('../../repositories/messageRepository.js'), 'createSystemMessage').mockResolvedValue('msg');
-        jest.spyOn(await import('../../wsHandler.js'), 'broadcastToConversation').mockResolvedValue();
+        jest.spyOn(await import('../../../repositories/messageRepository.js'), 'createSystemMessage').mockResolvedValue('msg');
+        jest.spyOn(await import('../../../wsHandler.js'), 'broadcastToConversation').mockResolvedValue();
         const result = await reportRepository.resumeReport({ reportId: 1, technicianId: 7 });
         expect(result).toEqual({ id: 1, status: 'in_progress', technicianId: 7 });
         AppDataSourcePostgres.getRepository = origGetRepo;
     });
 
     it('resumeReport aggiorna stato assigned se technicianId assente', async () => {
-        const { AppDataSourcePostgres } = await import('../../config/data-source.js');
+        const { AppDataSourcePostgres } = await import('../../../config/data-source.js');
         const report = { id: 1, status: 'suspended', technicianId: null };
         reportRepoStub.findOneBy.mockResolvedValueOnce(report);
         reportRepoStub.save.mockResolvedValue({ ...report, status: 'assigned', technicianId: null });
@@ -311,8 +311,8 @@ describe('ReportRepository.createReport', () => {
             if (entity?.name === 'Conversation') return convRepo;
             return reportRepoStub;
         });
-        jest.spyOn(await import('../../repositories/messageRepository.js'), 'createSystemMessage').mockResolvedValue('msg');
-        jest.spyOn(await import('../../wsHandler.js'), 'broadcastToConversation').mockResolvedValue();
+        jest.spyOn(await import('../../../repositories/messageRepository.js'), 'createSystemMessage').mockResolvedValue('msg');
+        jest.spyOn(await import('../../../wsHandler.js'), 'broadcastToConversation').mockResolvedValue();
         const result = await reportRepository.resumeReport({ reportId: 1, technicianId: null });
         expect(result).toEqual({ id: 1, status: 'assigned', technicianId: null });
         AppDataSourcePostgres.getRepository = origGetRepo;

@@ -1,0 +1,69 @@
+import { jest } from '@jest/globals';
+
+// ---- Shared mock repo factory ----
+export const repoStub = (name) => ({
+    findOneBy: jest.fn(),
+    findOne: jest.fn(),
+    create: jest.fn(),
+    save: jest.fn(),
+    find: jest.fn(),
+});
+
+// ---- Individual repository stubs you will use in tests ----
+export const reportRepoStub = repoStub('Report');
+export const userRepoStub = repoStub('Users');
+export const categoryRepoStub = repoStub('Categories');
+export const photoRepoStub = repoStub('Photos');
+export const conversationRepoStub = repoStub('Conversation');
+export const userOfficeRepoStub = repoStub('UserOffice');
+export const officeRepoStub = repoStub('Offices');
+
+// ---- Shared data arrays ----
+export const savedReports = [];
+export const photoEntities = [];
+
+// ---- MOCK: All entities ----
+await jest.unstable_mockModule('../../../entities/Conversation.js', () => ({
+    Conversation: { options: { name: 'Conversation' } },
+}));
+
+await jest.unstable_mockModule('../../../entities/Categories.js', () => ({
+    Categories: { options: { name: 'Categories' } },
+}));
+
+await jest.unstable_mockModule('../../../entities/Report.js', () => ({
+    Report: { options: { name: 'Report' } },
+}));
+
+await jest.unstable_mockModule('../../../entities/Users.js', () => ({
+    Users: { options: { name: 'Users' } },
+}));
+
+await jest.unstable_mockModule('../../../entities/Photos.js', () => ({
+    Photos: { options: { name: 'Photos' } },
+}));
+
+await jest.unstable_mockModule('../../../entities/UserOffice.js', () => ({
+    UserOffice: { options: { name: 'UserOffice' } },
+}));
+
+await jest.unstable_mockModule('../../../entities/Offices.js', () => ({
+    Offices: { options: { name: 'Offices' } },
+}));
+
+// ---- MOCK: data-source ----
+await jest.unstable_mockModule('../../../config/data-source.js', () => ({
+    AppDataSourcePostgres: {
+        getRepository: jest.fn((entity) => {
+            const name = entity?.options?.name;
+            if (name === 'Report' || name === 'Reports') return reportRepoStub;
+            if (name === 'Users') return userRepoStub;
+            if (name === 'Categories') return categoryRepoStub;
+            if (name === 'Photos') return photoRepoStub;
+            if (name === 'Conversation') return conversationRepoStub;
+            if (name === 'UserOffice') return userOfficeRepoStub;
+            if (name === 'Offices') return officeRepoStub;
+            return reportRepoStub;
+        }),
+    },
+}));
