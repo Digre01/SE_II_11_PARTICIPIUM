@@ -30,12 +30,22 @@ async function reverseGeocode({ lat, lon, signal }) {
 async function GeocodeResearch({ query, signal }) {
   const url = new URL('https://nominatim.openstreetmap.org/search');
   url.searchParams.set('format', 'jsonv2');
-  url.searchParams.set('q', query);
   url.searchParams.set('viewbox', '7.5703,45.144,7.7783,45.0027'); // Bounding box for Turin
   url.searchParams.set('bounded', '1');
   url.searchParams.set('countrycodes', 'it');
   url.searchParams.set('addressdetails', '1');
-  url.searchParams.set('limit', '4');
+  url.searchParams.set('limit', '6');
+
+  const q = String(query || '').trim();
+  const hasNumber = /\d/.test(q);
+  if (hasNumber) {
+    // Structured search improves precision for house numbers within Turin
+    url.searchParams.set('street', q);
+    url.searchParams.set('city', 'Torino');
+  } else {
+    url.searchParams.set('q', q);
+  }
+
   const res = await fetch(url.toString(), {
     headers: { 'Accept-Language': 'it' },
     signal
@@ -44,7 +54,7 @@ async function GeocodeResearch({ query, signal }) {
   return res.json();
 }
 
-function SearchAddress({ onPointChange }) {
+function SearchAddress({ onPointChange, user }) {
   const map = useMap();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -53,6 +63,7 @@ function SearchAddress({ onPointChange }) {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const requestRef = useRef(null);
   const debounceRef = useRef(null);
+  const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
   const stopAll = (e) => {
     // Stop event from reaching Leaflet map handlers, but do not prevent default
     // so the input can still receive focus and clicks.
@@ -91,7 +102,7 @@ function SearchAddress({ onPointChange }) {
         setResults([]);
         setShowList(false);
       }
-    }, 300);
+    }, 500);
     return () => {
       if (debounceRef.current) { clearTimeout(debounceRef.current); }
     };
@@ -178,7 +189,12 @@ function SearchAddress({ onPointChange }) {
           }}
         />
         {selectedPoint && (
-          <button onClick={clearSelection} title="Pulisci selezione" style={{ padding: '8px 10px' }}>
+          <button onClick={clearSelection} title="Pulisci selezione" style={{ padding: '8px 10px' }}
+            onMouseDownCapture={stopAll}
+            onWheelCapture={stopAll}
+            onPointerDownCapture={stopAll}
+            onPointerUpCapture={stopAll}
+          >
             ✕
           </button>
         )}
@@ -216,7 +232,8 @@ function SearchAddress({ onPointChange }) {
       )}
 
       {selectedPoint && (
-        <Marker position={selectedPoint} eventHandlers={{ add: ev => ev.target.openPopup() }}>
+        <Marker position={selectedPoint} eventHandlers={{ add: ev => ev.target.openPopup() }}> 
+        {isCitizen && (
           <Popup>{selectedAddress || `${selectedPoint.lat.toFixed(3)}, ${selectedPoint.lng.toFixed(3)}`}<br />
             <button
                   onClick={() => navigate('/report', { state: { lat: selectedPoint.lat, lng: selectedPoint.lng, address: selectedAddress || null } })}
@@ -224,6 +241,7 @@ function SearchAddress({ onPointChange }) {
                   Create Report
                 </button>
           </Popup>
+        )}
         </Marker>
       )}
     </div>
