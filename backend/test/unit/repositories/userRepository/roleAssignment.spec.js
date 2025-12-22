@@ -44,6 +44,7 @@ describe("getAvailableStaffForRoleAssignment", () => {
 
 describe("assignRoleToUser", () => {
     it("assigns existing userOffice mapping (internal)", async () => {
+        userRepoStub.findOne.mockResolvedValue({ id: 1, userType: "STAFF" });
         rolesRepoStub.findOneBy.mockResolvedValue({ id: 1, officeId: 1 });
         const existingMapping = { userId: 1, roleId: 1, officeId: 1 };
         userOfficeRepoStub.findOneBy.mockResolvedValue(existingMapping);
@@ -55,6 +56,7 @@ describe("assignRoleToUser", () => {
     });
 
     it("assigns existing userOffice mapping (external)", async () => {
+        userRepoStub.findOne.mockResolvedValue({ id: 1, userType: "STAFF" });
         rolesRepoStub.findOneBy.mockResolvedValue({ id: 1, officeId: 1, officeIdExternal: 2 });
         const existingMapping = { userId: 1, roleId: 1, officeId: 2 };
         userOfficeRepoStub.findOneBy.mockResolvedValue(existingMapping);
@@ -66,6 +68,7 @@ describe("assignRoleToUser", () => {
     });
 
     it("creates new userOffice mapping (internal)", async () => {
+        userRepoStub.findOne.mockResolvedValue({ id: 1, userType: "STAFF" });
         rolesRepoStub.findOneBy.mockResolvedValue({ id: 1, officeId: 1 });
         userOfficeRepoStub.findOneBy.mockResolvedValue(null);
 

@@ -30,7 +30,6 @@ export const rolesRepoStub = repoStub('Roles');
 await jest.unstable_mockModule('../../../config/data-source.js', () => ({
     AppDataSourcePostgres: {
         getRepository: jest.fn((entity) => {
-            // Gestisce sia entità (con options.name) che stringhe
             const name = entity?.options?.name || entity;
 
             if (name === 'Offices') return officeRepoStub;

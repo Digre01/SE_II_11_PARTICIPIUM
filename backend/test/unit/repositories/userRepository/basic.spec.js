@@ -10,7 +10,6 @@ beforeEach(() => {
 });
 
 describe("Fetching users", () => {
-
     it("getUserById returns user", async () => {
         const result = await userRepository.getUserById(1);
 
@@ -18,7 +17,7 @@ describe("Fetching users", () => {
             where: { id: 1 },
             relations: ["userOffice", "userOffice.role"],
         });
-        expect(result).toEqual({ id: 1 });
+        expect(result).toEqual({ id: 1, userType: "STAFF" }); // coerente con resetUserRepositoryMocks
     });
 
     it("getUserByUsername returns user", async () => {
@@ -28,18 +27,17 @@ describe("Fetching users", () => {
             where: { username: "foo" },
             relations: ["userOffice", "userOffice.role"],
         });
-        expect(result).toEqual({ id: 1 });
+        expect(result).toEqual({ id: 1, userType: "STAFF" });
     });
 
     it("getUserByEmail returns user", async () => {
-
         const result = await userRepository.getUserByEmail("bar@baz.com");
 
         expect(userRepoStub.findOne).toHaveBeenCalledWith({
             where: { email: "bar@baz.com" },
             relations: ["userOffice", "userOffice.role"],
         });
-        expect(result).toEqual({ id: 1 });
+        expect(result).toEqual({ id: 1, userType: "STAFF" });
     });
 });
 
@@ -63,7 +61,7 @@ describe("User creation (citizen)", () => {
     });
 
     it("throws ConflictError if username exists", async () => {
-        userRepoStub.findOneBy.mockResolvedValueOnce({ id: 1 });
+        userRepoStub.findOneBy.mockResolvedValueOnce({ id: 1 }); // username già esistente
 
         await expect(
             userRepository.createUser("u", "e", "n", "s", "p", "salt", "CITIZEN")
@@ -72,8 +70,8 @@ describe("User creation (citizen)", () => {
 
     it("throws ConflictError if email exists", async () => {
         userRepoStub.findOneBy
-            .mockResolvedValueOnce(null)
-            .mockResolvedValueOnce({ id: 2 });
+            .mockResolvedValueOnce(null) // username libero
+            .mockResolvedValueOnce({ id: 2 }); // email già esistente
 
         await expect(
             userRepository.createUser("u", "e", "n", "s", "p", "salt", "CITIZEN")
@@ -85,8 +83,8 @@ describe("UserRepository.deleteUser", () => {
     it("deletes user and mapping", async () => {
         const result = await userRepository.deleteUser(1);
 
+        expect(userRepoStub.delete).toHaveBeenCalledWith({ id: 1 });
         expect(userOfficeRepoStub.delete).toHaveBeenCalledWith({ userId: 1 });
-        expect(userRepoStub.delete).toHaveBeenCalledWith({ id: 1  });
         expect(result).toEqual({ id: 1 });
     });
 
@@ -103,6 +101,8 @@ describe("UserRepository.deleteUser", () => {
     it("throws if user not found", async () => {
         userRepoStub.findOneBy.mockResolvedValue(null);
 
-        await expect(userRepository.deleteUser(999)).rejects.toThrow("User with id '999' not found");
+        await expect(userRepository.deleteUser(999)).rejects.toThrow(
+            "User with id '999' not found"
+        );
     });
 });

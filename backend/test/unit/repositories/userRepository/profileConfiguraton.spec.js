@@ -1,14 +1,21 @@
-import {describe, expect, it} from "@jest/globals";
-import {photoRepoStub, userRepoStub} from "../../mocks/reports.mock.js";
+import { describe, it, beforeEach, jest, expect } from "@jest/globals";
+import { resetUserRepositoryMocks } from "./userRepository.setup.js";
+import { photoRepoStub, userRepoStub } from "../../mocks/shared.mocks.js";
 
 const { userRepository } = await import("../../../../repositories/userRepository.js");
 
 describe("UserRepository profile configuration", () => {
 
+    beforeEach(() => {
+        jest.clearAllMocks();
+        resetUserRepositoryMocks();
+    });
+
     it("configUserAccount updates telegramId, emailNotifications and photo", async () => {
-        userRepoStub.findOneBy.mockResolvedValue({ id: 8 });
+        const user = { id: 8 };
+        userRepoStub.findOneBy.mockResolvedValue(user);
         userRepoStub.save.mockResolvedValue({
-            id: 8,
+            ...user,
             telegramId: "tg",
             emailNotifications: true,
             photoId: 1
@@ -20,7 +27,10 @@ describe("UserRepository profile configuration", () => {
         const result = await userRepository.configUserAccount(8, "tg", true, "url");
 
         expect(photoRepoStub.create).toHaveBeenCalledWith({ link: "url" });
-        expect(userRepoStub.save).toHaveBeenCalled();
+        expect(photoRepoStub.save).toHaveBeenCalledWith({ link: "url" });
+        expect(userRepoStub.save).toHaveBeenCalledWith(
+            expect.objectContaining({ telegramId: "tg", emailNotifications: true, photoId: 1 })
+        );
         expect(result.telegramId).toBe("tg");
     });
 
@@ -33,8 +43,9 @@ describe("UserRepository profile configuration", () => {
     });
 
     it("getPfpUrl returns photo url", async () => {
-        userRepoStub.findOneBy.mockResolvedValue({ id: 9, photoId: 2 });
-        photoRepoStub.findOneBy.mockResolvedValue({ link: "pfpurl" });
+        const user = { id: 9, photoId: 2 };
+        userRepoStub.findOneBy.mockResolvedValue(user);
+        photoRepoStub.findOneBy.mockResolvedValue({ id: 2, link: "pfpurl" });
 
         const result = await userRepository.getPfpUrl(9);
 
@@ -42,7 +53,9 @@ describe("UserRepository profile configuration", () => {
     });
 
     it("getPfpUrl throws if photo missing", async () => {
-        userRepoStub.findOneBy.mockResolvedValue({ id: 10 });
+        const user = { id: 10 };
+        userRepoStub.findOneBy.mockResolvedValue(user);
+        photoRepoStub.findOneBy.mockResolvedValue(null);
 
         await expect(
             userRepository.getPfpUrl(10)
