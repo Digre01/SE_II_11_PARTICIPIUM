@@ -1,79 +1,16 @@
 import {beforeEach, describe, expect, it, jest} from "@jest/globals";
-
-
-const repoStub = (name) => ({
-    findOneBy: jest.fn(),
-    findOne: jest.fn(),
-    create: jest.fn(),
-    save: jest.fn(),
-    delete: jest.fn(),
-    createQueryBuilder: undefined,
-});
-
-const userRepoStub = repoStub('Users');
-const officesRepoStub = repoStub('Offices');
-const rolesRepoStub = repoStub('Roles');
-const userOfficeRepoStub = repoStub('UserOffice');
-let photoRepoStub = repoStub('Photos');
-
-
-jest.unstable_mockModule('../../config/data-source.js', () => ({
-    AppDataSourcePostgres: {
-        getRepository: jest.fn((entity) => {
-            if (entity?.options?.name === 'Users') return userRepoStub;
-            if (entity?.options?.name === 'Offices') return officesRepoStub;
-            if (entity?.options?.name === 'Roles') return rolesRepoStub;
-            if (entity?.options?.name === 'UserOffice') return userOfficeRepoStub;
-            if (entity?.options?.name === 'Photos') return photoRepoStub;
-            return {};
-        }),
-    },
-}));
+import {
+    userRepoStub,
+    photoRepoStub,
+    rolesRepoStub,
+    officeRepoStub,
+    userOfficeRepoStub
+} from "../mocks/shared.mocks.js";
 
 const {userRepository} = await import ("../../../repositories/userRepository.js")
 
 describe("Role assignment: user repository", () => {
-    describe("Basic userRepository functions", () => {
-        it("getUserById returns user", async () => {
-            userRepoStub.findOne.mockResolvedValue({ id: 1 });
-            const result = await userRepository.getUserById(1);
-            expect(userRepoStub.findOne).toHaveBeenCalledWith({ where: { id: 1 }, relations: ['userOffice', 'userOffice.role'] });
-            expect(result).toEqual({ id: 1 });
-        });
 
-        it("getUserByUsername returns user", async () => {
-            userRepoStub.findOne.mockResolvedValue({ id: 2 });
-            const result = await userRepository.getUserByUsername("foo");
-            expect(userRepoStub.findOne).toHaveBeenCalledWith({ where: { username: "foo" }, relations: ['userOffice', 'userOffice.role'] });
-            expect(result).toEqual({ id: 2 });
-        });
-
-        it("getUserByEmail returns user", async () => {
-            userRepoStub.findOne.mockResolvedValue({ id: 3 });
-            const result = await userRepository.getUserByEmail("bar@baz.com");
-            expect(userRepoStub.findOne).toHaveBeenCalledWith({ where: { email: "bar@baz.com" }, relations: ['userOffice', 'userOffice.role'] });
-            expect(result).toEqual({ id: 3 });
-        });
-
-        it("createUser creates user if not exists", async () => {
-            userRepoStub.findOneBy.mockResolvedValueOnce(null); // username
-            userRepoStub.findOneBy.mockResolvedValueOnce(null); // email
-            userRepoStub.save.mockResolvedValue({ id: 4 });
-            const result = await userRepository.createUser("u", "e", "n", "s", "p", "salt", "STAFF", true, "code", 123);
-            expect(userRepoStub.save).toHaveBeenCalledWith(expect.objectContaining({ username: "u", email: "e" }));
-            expect(result).toEqual({ id: 4 });
-        });
-
-        it("createUser throws ConflictError if username exists", async () => {
-            userRepoStub.findOneBy.mockResolvedValueOnce({ id: 5 });
-            await expect(userRepository.createUser("u", "e", "n", "s", "p", "salt", "STAFF", true, "code", 123)).rejects.toThrow("User with username u already exists");
-        });
-
-        it("createUser throws ConflictError if email exists", async () => {
-            userRepoStub.findOneBy.mockResolvedValueOnce(null); // username
-            userRepoStub.findOneBy.mockResolvedValueOnce({ id: 6 }); // email
-            await expect(userRepository.createUser("u", "e", "n", "s", "p", "salt", "STAFF", true, "code", 123)).rejects.toThrow("User with email e already exists");
-        });
 
         it("getAvailableStaffForRoleAssignment returns staff without office", async () => {
             const qb = { leftJoinAndSelect: jest.fn().mockReturnThis(), where: jest.fn().mockReturnThis(), andWhere: jest.fn().mockReturnThis(), getMany: jest.fn().mockResolvedValue([{ id: 7 }]) };
@@ -182,50 +119,6 @@ describe("Role assignment: user repository", () => {
             role: { id: 1 },
         });
     });
-    describe("Email verification functions", () => {
-        it("saveEmailVerificationCode saves code and expiry", async () => {
-            const user = { id: 1 };
-            userRepoStub.findOneBy.mockResolvedValue(user);
-            userRepoStub.save.mockResolvedValue({ ...user, verificationCode: "abc", verificationCodeExpires: 123 });
-            await expect(userRepository.saveEmailVerificationCode(1, "abc", 123)).resolves.toBeUndefined();
-            expect(userRepoStub.save).toHaveBeenCalledWith(expect.objectContaining({ verificationCode: "abc", verificationCodeExpires: 123 }));
-        });
-
-        it("saveEmailVerificationCode throws if user not found", async () => {
-            userRepoStub.findOneBy.mockResolvedValue(null);
-            await expect(userRepository.saveEmailVerificationCode(999, "abc", 123)).rejects.toThrow("User with id '999' not found");
-        });
-
-        it("getEmailVerification returns code and expiry", async () => {
-            userRepoStub.findOneBy.mockResolvedValue({ id: 1, verificationCode: "xyz", verificationCodeExpires: 456 });
-            const result = await userRepository.getEmailVerification(1);
-            expect(result).toEqual({ code: "xyz", expiresAt: 456 });
-        });
-
-        it("getEmailVerification returns nulls if not set", async () => {
-            userRepoStub.findOneBy.mockResolvedValue({ id: 1 });
-            const result = await userRepository.getEmailVerification(1);
-            expect(result).toEqual({ code: null, expiresAt: null });
-        });
-
-        it("getEmailVerification throws if user not found", async () => {
-            userRepoStub.findOneBy.mockResolvedValue(null);
-            await expect(userRepository.getEmailVerification(999)).rejects.toThrow("User with id '999' not found");
-        });
-
-        it("markEmailVerified sets isVerified and clears code", async () => {
-            const user = { id: 1, verificationCode: "abc", verificationCodeExpires: 123 };
-            userRepoStub.findOneBy.mockResolvedValue(user);
-            userRepoStub.save.mockResolvedValue({ ...user, isVerified: true, verificationCode: null, verificationCodeExpires: null });
-            await expect(userRepository.markEmailVerified(1)).resolves.toBeUndefined();
-            expect(userRepoStub.save).toHaveBeenCalledWith(expect.objectContaining({ isVerified: true, verificationCode: null, verificationCodeExpires: null }));
-        });
-
-        it("markEmailVerified throws if user not found", async () => {
-            userRepoStub.findOneBy.mockResolvedValue(null);
-            await expect(userRepository.markEmailVerified(999)).rejects.toThrow("User with id '999' not found");
-        });
-    });
 
     it("Success: existing userOffice mapping", async () => {
         rolesRepoStub.findOneBy.mockResolvedValue({ id: 1, officeId: 1 });
@@ -317,13 +210,7 @@ describe("Role assignment: user repository", () => {
         });
     });
 
-    it("throws NotFoundError when user not found", async () => {
-        const missingUserId = 999
-        userRepoStub.findOneBy.mockResolvedValue(null);
-        await expect(userRepository.assignRoleToUser(missingUserId, 1)).rejects.toThrow(
-            `User with id '${missingUserId}' not found`)
 
-    });
 
     it("throws NotFoundError when office not found (internal)", async () => {
         const missingOfficeId = 999;

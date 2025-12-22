@@ -11,6 +11,7 @@ export const repoStub = (name) => ({
     getMany: jest.fn(),
     getConversationsForUser: jest.fn(),
     broadcastSpy: jest.fn(),
+    delete: jest.fn(),
 });
 
 // ---- Individual repository stubs you will use in tests ----
