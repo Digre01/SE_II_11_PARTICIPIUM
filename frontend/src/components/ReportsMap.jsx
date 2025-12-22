@@ -56,6 +56,7 @@ async function GeocodeResearch({ query, signal }) {
 
 function SearchAddress({ onPointChange, user }) {
   const map = useMap();
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [showList, setShowList] = useState(false);
@@ -102,7 +103,7 @@ function SearchAddress({ onPointChange, user }) {
         setResults([]);
         setShowList(false);
       }
-    }, 500);
+    }, 300);
     return () => {
       if (debounceRef.current) { clearTimeout(debounceRef.current); }
     };
@@ -126,6 +127,9 @@ function SearchAddress({ onPointChange, user }) {
     function clearSelection() {
       setSelectedPoint(null);
       setSelectedAddress('');
+      setQuery('');
+      setResults([]);
+      setShowList(false);
     }
     function formatSuggestionLabel(item) {
       const addr = item.address || {};
@@ -451,7 +455,7 @@ export default function ReportsMap({ user, loggedIn, onPointChange }) {
       />
 
       {/* Search Address Component */}
-      <SearchAddress onPointChange={onPointChange} />
+      <SearchAddress onPointChange={onPointChange} user={user} />
 
       
       {/* External Mask */}
