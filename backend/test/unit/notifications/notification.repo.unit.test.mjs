@@ -1,22 +1,18 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import {describe, it, expect, beforeEach, jest, beforeAll} from '@jest/globals';
+import { notificationRepoStub} from "../mocks/shared.mocks.js";
 
-const repoStubFactory = () => ({
-  create: jest.fn(),
-  save: jest.fn(),
-  find: jest.fn(),
-  createQueryBuilder: jest.fn()
-});
+let createNotification;
+let getUnreadNotifications;
+let markNotificationsAsReadForConversation;
+let getUnreadCountByConversation;
 
-// Mock the data-source to return our stub repository for Notification
-const notificationRepoStub = repoStubFactory();
-
-await jest.unstable_mockModule('../../config/data-source.js', () => ({
-  AppDataSourcePostgres: {
-    getRepository: jest.fn(() => notificationRepoStub)
-  }
-}));
-
-const { createNotification, getUnreadNotifications, markNotificationsAsReadForConversation, getUnreadCountByConversation } = await import('../../../repositories/notificationRepository.js');
+beforeAll(async () => {
+    const repo = await import('../../../repositories/notificationRepository.js');
+    createNotification = repo.createNotification;
+    getUnreadNotifications = repo.getUnreadNotifications;
+    markNotificationsAsReadForConversation = repo.markNotificationsAsReadForConversation;
+    getUnreadCountByConversation = repo.getUnreadCountByConversation;
+})
 
 describe('notificationRepository', () => {
   beforeEach(() => {

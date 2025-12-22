@@ -22,6 +22,7 @@ export const conversationRepoStub = repoStub('Conversation');
 export const userOfficeRepoStub = repoStub('UserOffice');
 export const officeRepoStub = repoStub('Offices');
 export const messageRepoStub = repoStub('Message');
+export const notificationRepoStub = repoStub('Notification');
 
 // ---- Shared data arrays ----
 export const savedReports = [];
@@ -60,6 +61,10 @@ await jest.unstable_mockModule('../../../entities/Offices.js', () => ({
     Offices: { options: { name: 'Offices' } },
 }));
 
+await jest.unstable_mockModule('../../../entities/Notification.js', () => ({
+    Notification: { options: { name: 'Notification' } },
+}));
+
 // ---- MOCK: data-source ----
 await jest.unstable_mockModule('../../../config/data-source.js', () => ({
     AppDataSourcePostgres: {
@@ -75,7 +80,7 @@ await jest.unstable_mockModule('../../../config/data-source.js', () => ({
             if (name === 'UserOffice') return userOfficeRepoStub;
             if (name === 'Offices') return officeRepoStub;
             if (name === 'Message') return messageRepoStub;
-            return reportRepoStub;
+            if (name === 'Notification') return notificationRepoStub;
         }),
     },
 }));
