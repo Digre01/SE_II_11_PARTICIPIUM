@@ -15,11 +15,11 @@ export const mockRepo = {
     assignRoleToUser: jest.fn()
 }
 
-await jest.unstable_mockModule('../../../../repositories/userRepository.js', () => ({
+await jest.unstable_mockModule('../../../repositories/userRepository.js', () => ({
     userRepository: mockRepo,
 }));
 
-await jest.unstable_mockModule('../../../../middlewares/uploadMiddleware.js', () => ({
+await jest.unstable_mockModule('../../../middlewares/uploadMiddleware.js', () => ({
     default: {
         single: () => (req, _res, next) => { req.file = { filename: 'mocked.png', path: 'mocked.png' }; next(); },
         array: () => (req, _res, next) => { req.files = [{ filename: 'mocked1.png', path: 'mocked1.png' }]; next(); },
