@@ -3,7 +3,6 @@ import { jest } from "@jest/globals";
 import { InsufficientRightsError } from "../../../errors/InsufficientRightsError.js";
 import { UnauthorizedError } from "../../../errors/UnauthorizedError.js";
 
-// Creates authorization middleware mock with customizable behavior
 export function createAuthorizationMock(options = {}) {
     const allowUnauthorizedThrough = options.allowUnauthorizedThrough || false;
     const return401OnAssigned = options.return401OnAssigned || false;
@@ -45,7 +44,7 @@ export function createAuthorizationMock(options = {}) {
                 return next();
             }
 
-            return next(new InsufficientRightsError('Forbidden'));
+            return next(new UnauthorizedError('UNAUTHORIZED'));
         },
 
         requireAdminIfCreatingStaff: () => (req, _res, next) => next(),

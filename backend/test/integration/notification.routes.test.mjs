@@ -1,55 +1,15 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
-import { UnauthorizedError } from '../../errors/UnauthorizedError.js';
-import { InsufficientRightsError } from '../../errors/InsufficientRightsError.js';
+import {mockRepo} from "./mocks/notifications.mocks.js";
+import {setupAuthorizationMock, setupEmailUtilsMock} from "./mocks/common.mocks.js";
 
-// Mock notification repository
-const mockRepo = {
-  createNotification: jest.fn(),
-  getUnreadNotifications: jest.fn(),
-  markNotificationsAsReadForConversation: jest.fn(),
-  getUnreadCountByConversation: jest.fn(),
-};
+await setupAuthorizationMock({
+  allowUnauthorizedThrough: false
+});
+await setupEmailUtilsMock()
 
-await jest.unstable_mockModule('../../repositories/notificationRepository.js', () => ({
-  createNotification: mockRepo.createNotification,
-  getUnreadNotifications: mockRepo.getUnreadNotifications,
-  markNotificationsAsReadForConversation: mockRepo.markNotificationsAsReadForConversation,
-  getUnreadCountByConversation: mockRepo.getUnreadCountByConversation,
-}));
-
-// Mock authorization middleware
-await jest.unstable_mockModule('../../middlewares/userAuthorization.js', () => ({
-  authorizeUserType: (allowed) => (req, _res, next) => {
-    const roleHdr = req.header('X-Test-Role');
-    if (roleHdr) {
-      req.user = { id: 10, userType: roleHdr };
-      const normalized = (allowed || []).map(a => String(a).toUpperCase());
-      const caller = String(roleHdr).toUpperCase();
-      if (!normalized.includes(caller)) return next(new InsufficientRightsError('Forbidden'));
-      return next();
-    }
-
-    if (req.header('Authorization')) {
-      req.user = { id: 10, userType: 'citizen' };
-      return next();
-    }
-
-    return next(new UnauthorizedError('UNAUTHORIZED'));
-  },
-  requireAdminIfCreatingStaff: () => (req, _res, next) => next(),
-  authorizeRole: (requiredRole) => (req, _res, next) => {
-    const roleHdr = req.header('X-Test-Role');
-    if (!roleHdr) return next(new InsufficientRightsError('Forbidden'));
-    if (String(roleHdr).toUpperCase() !== String(requiredRole).toUpperCase()) return next(new InsufficientRightsError('Forbidden'));
-    next();
-  },
-}));
-
-// Import app after mocks
 const { default: app } = await import('../../app.js');
 
-// Import controller functions
 const { getUserNotifications, getUnreadCounts, markAsRead } = await import('../../controllers/notificationController.js');
 
 describe('Notification routes integration', () => {
@@ -71,7 +31,7 @@ describe('Notification routes integration', () => {
   });
 
   it('GET /api/v1/notifications returns 401 when not authenticated', async () => {
-    const res = await request(app).get('/api/v1/notifications');
+    const res = await request(app).get('/api/v1/notifications')
     expect(res.status).toBe(401);
   });
 
@@ -170,7 +130,7 @@ describe('Notification controller unit tests (integrated)', () => {
     mockRepo.markNotificationsAsReadForConversation.mockResolvedValueOnce(4);
     const req = { user: { id: 9 }, params: { conversationId: '55' } };
     const res = { json: jest.fn() };
-    const next = jest.fn();
+    const next = jest.fn()
 
     await markAsRead(req, res, next);
 
