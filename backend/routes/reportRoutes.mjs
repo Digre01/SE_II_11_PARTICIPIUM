@@ -185,7 +185,9 @@ router.patch('/:id/assign_external', authorizeUserType(['staff']), async (
 });
 
 // External-specific start/finish/suspend/resume
-router.patch('/:id/external/start', async (req, res, next) => {
+router.patch('/:id/external/start',
+    authorizeUserType(["staff"]),
+    async (req, res, next) => {
   try {
     if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
     const userId = req.user?.id;
@@ -195,7 +197,9 @@ router.patch('/:id/external/start', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.patch('/:id/external/finish', async (req, res, next) => {
+router.patch('/:id/external/finish',
+    authorizeUserType(["staff"]),
+    async (req, res, next) => {
   try {
     if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
     const userId = req.user?.id;
@@ -205,7 +209,9 @@ router.patch('/:id/external/finish', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.patch('/:id/external/suspend', async (req, res, next) => {
+router.patch('/:id/external/suspend',
+    authorizeUserType(["staff"]),
+    async (req, res, next) => {
   try {
     if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
     const userId = req.user?.id;
@@ -215,7 +221,9 @@ router.patch('/:id/external/suspend', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.patch('/:id/external/resume', async (req, res, next) => {
+router.patch('/:id/external/resume',
+    authorizeUserType(["staff"]),
+    async (req, res, next) => {
   try {
     if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
     const userId = req.user?.id;

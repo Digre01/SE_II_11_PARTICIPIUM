@@ -45,7 +45,6 @@ export async function finishReport({ reportId, technicianId }) {
 }
 
 export async function assignReportToExternalMaintainer({reportId, internalStaffMemberId}) {
-    console.log("Controller - Assigning report to external maintainer, report id:", reportId);
     return await reportRepository.assignReportToExternalMaintainer(reportId, internalStaffMemberId);
 }
 

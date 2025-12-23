@@ -1,56 +1,18 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
-import { UnauthorizedError } from '../../../errors/UnauthorizedError.js';
+import {setupAuthorizationMock, setupEmailUtilsMock} from "../mocks/common.mocks.js";
+import {mockController} from "../mocks/userMocks/user.config.mocks.js";
 
-const mockController = {
-  configAccount: jest.fn(),
-  getPfpUrl: jest.fn(),
-};
-
-// Mock only for these tests (isolated)
-await jest.unstable_mockModule('../../middlewares/userAuthorization.js', () => ({
-  authorizeUserType: (allowed=[]) => (req, res, next) => {
-    if (!req.header('Authorization')) {
-      return next(new UnauthorizedError('Unauthorized'));
-    }
-    const token = req.header('Authorization');
-    const parts = token.split(/\s+/);
-    const roleToken = parts[parts.length-1].toUpperCase();
-    let userType = roleToken === 'CITIZEN' ? 'CITIZEN' : (roleToken === 'ADMIN' ? 'ADMIN' : 'STAFF');
-    req.user = { id: 1, userType };
-    if (allowed.length && !allowed.map(a=>String(a).toUpperCase()).includes(userType)) {
-      return next(new UnauthorizedError('Unauthorized'));
-    }
-    next();
-  },
-  authorizeRole: () => (req, _res, next) => next(),
-  requireAdminIfCreatingStaff: () => (req, _res, next) => next(),
-}));
-
-await jest.unstable_mockModule('../../controllers/userController.js', () => ({
-  default: mockController,
-}));
-
-// Mock upload middleware to bypass disk writes and support array() used in other routes
-await jest.unstable_mockModule('../../middlewares/uploadMiddleware.js', () => ({
-  default: {
-    single: () => (req, _res, next) => { req.file = { filename: 'mocked.png', path: 'mocked.png' }; next(); },
-    array: () => (req, _res, next) => { req.files = [{ filename: 'mocked1.png', path: 'mocked1.png' }]; next(); },
-  }
-}));
+await setupAuthorizationMock({
+  allowUnauthorizedThrough: false,
+})
+await setupEmailUtilsMock();
 
 const { default: app } = await import('../../../app.js');
 
 describe('Integration: user config & pfp (mocked controller)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockController.configAccount.mockResolvedValue({
-      id: 1,
-      telegramId: 'tg_123',
-      emailNotifications: true,
-      photoId: 42,
-    });
-    mockController.getPfpUrl.mockResolvedValue('/public/abc123.png');
   });
 
   it('PATCH /sessions/:id/config -> 401 without auth', async () => {

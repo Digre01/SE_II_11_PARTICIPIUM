@@ -1,4 +1,3 @@
-// Common mock utilities for all test files
 import { jest } from "@jest/globals";
 import { InsufficientRightsError } from "../../../errors/InsufficientRightsError.js";
 import { UnauthorizedError } from "../../../errors/UnauthorizedError.js";
@@ -106,5 +105,42 @@ export async function setupEmailUtilsMock() {
     await jest.unstable_mockModule('../../../utils/email.js', () => ({
         sendVerificationEmail: jest.fn().mockResolvedValue(true),
         sendNotificationEmail: jest.fn().mockResolvedValue(true),
+    }));
+}
+
+export async function setUpLoginMock() {
+    await jest.unstable_mockModule('../../../config/passport.js', () => ({
+        default: {
+            initialize: () => (_req, _res, next) => next(),
+            session: () => (_req, _res, next) => next(),
+            authenticate: (strategy, options) => (req, _res, next) => {
+                const roleHdr = req.header('X-Test-Role');
+                const userTypeHdr = req.header('X-Test-User-Type');
+                const authHdr = req.header('Authorization');
+
+                if (roleHdr || userTypeHdr || authHdr) {
+                    req.user = req.user || {
+                        id: 10,
+                        username: 'testuser',
+                        userType: roleHdr || userTypeHdr || 'CITIZEN',
+                        email: 'test@example.com'
+                    };
+                    req.isAuthenticated = () => true;
+                    req.login = (user, callback) => {
+                        req.user = user;
+                        if (callback) callback();
+                    };
+                    req.logout = (callback) => {
+                        req.user = null;
+                        if (callback) callback();
+                    };
+                } else {
+                    req.isAuthenticated = () => false;
+                }
+                next();
+            },
+            serializeUser: (fn) => fn,
+            deserializeUser: (fn) => fn
+        }
     }));
 }
