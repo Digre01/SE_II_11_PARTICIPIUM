@@ -4,48 +4,14 @@ import { UnauthorizedError } from '../../errors/UnauthorizedError.js';
 import { InsufficientRightsError } from '../../errors/InsufficientRightsError.js';
 import { BadRequestError } from '../../errors/BadRequestError.js';
 import { NotFoundError } from '../../errors/NotFoundError.js';
+import {mockRepo} from "./mocks/messages.mocks.js";
+import {setupAuthorizationMock, setupEmailUtilsMock} from "./mocks/common.mocks.js";
 
-// Local mock repo fns (spies)
-const mockRepo = {
-	getMessagesForConversation: jest.fn(),
-	sendStaffMessage: jest.fn(),
-};
+await setupAuthorizationMock({
+	allowUnauthorizedThrough: false
+});
+await setupEmailUtilsMock()
 
-// Mock repository used by controller
-await jest.unstable_mockModule('../../repositories/messageRepository.js', () => ({
-	getMessagesForConversation: mockRepo.getMessagesForConversation,
-	sendStaffMessage: mockRepo.sendStaffMessage,
-	createMessage: jest.fn(),
-	createSystemMessage: jest.fn(),
-}));
-
-// Mock authorization to simulate authenticated users/roles
-await jest.unstable_mockModule('../../middlewares/userAuthorization.js', () => ({
-	authorizeUserType: (allowed) => (req, _res, next) => {
-		const roleHdr = req.header('X-Test-Role');
-		if (roleHdr) {
-			req.user = { id: 42, userType: roleHdr };
-			const normalized = (allowed || []).map(a => String(a).toUpperCase());
-			const caller = String(roleHdr).toUpperCase();
-			if (!normalized.includes(caller)) {
-				return next(new InsufficientRightsError('Forbidden'));
-			}
-			return next();
-		}
-
-		if (req.header('Authorization')) {
-			req.user = { id: 42, userType: 'citizen' };
-			return next();
-		}
-
-		// If endpoint requires auth, fail when nothing provided
-		return next(new UnauthorizedError('UNAUTHORIZED'));
-	},
-	authorizeRole: (_requiredRole) => (_req, _res, next) => next(),
-	requireAdminIfCreatingStaff: () => (_req, _res, next) => next(),
-}));
-
-// Import app after mocks
 const { default: app } = await import('../../app.js');
 
 describe('Integration: conversation messages routes', () => {
@@ -67,7 +33,7 @@ describe('Integration: conversation messages routes', () => {
 		expect(Array.isArray(res.body)).toBeTruthy();
 		expect(res.body).toHaveLength(1);
 		expect(res.body[0].content).toBe('Hello');
-		expect(mockRepo.getMessagesForConversation).toHaveBeenCalledWith('100', 42);
+		expect(mockRepo.getMessagesForConversation).toHaveBeenCalledWith('100', 10);
 	});
 
 	it('GET /api/v1/conversations/:conversationId/messages -> 403 when not participant', async () => {
@@ -100,11 +66,12 @@ describe('Integration: conversation messages routes', () => {
 			.post('/api/v1/conversations/100/messages')
 			.send({ content: 'Staff message' })
 			.set('Authorization', 'Bearer token')
+			.set('X-Test-Role', 'staff')
 			.set('Content-Type', 'application/json');
 
 		expect(res.status).toBe(201);
 		expect(res.body).toHaveProperty('id', 11);
-		expect(mockRepo.sendStaffMessage).toHaveBeenCalledWith('100', 42, 'Staff message');
+		expect(mockRepo.sendStaffMessage).toHaveBeenCalledWith('100', 10, 'Staff message');
 	});
 
 	it('POST /api/v1/conversations/:conversationId/messages -> 400 when report closed', async () => {
@@ -114,6 +81,7 @@ describe('Integration: conversation messages routes', () => {
 			.post('/api/v1/conversations/100/messages')
 			.send({ content: 'Late message' })
 			.set('Authorization', 'Bearer token')
+			.set('X-Test-Role', 'staff')
 			.set('Content-Type', 'application/json');
 
 		expect(res.status).toBe(400);
@@ -139,6 +107,7 @@ describe('Integration: conversation messages routes', () => {
 			.post('/api/v1/conversations/100/messages')
 			.send({ content: 'Hello' })
 			.set('Authorization', 'Bearer token')
+			.set('X-Test-Role', 'staff')
 			.set('Content-Type', 'application/json');
 
 		expect(res.status).toBe(401);
