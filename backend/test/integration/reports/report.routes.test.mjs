@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
-import { InsufficientRightsError } from '../../errors/InsufficientRightsError.js';
+import { InsufficientRightsError } from '../../../errors/InsufficientRightsError.js';
 
 // Repository mock
 const mockRepo = {
@@ -103,7 +103,7 @@ await jest.unstable_mockModule('../../controllers/reportController.mjs', () => (
 
 
 // Import app after mocks
-const { default: app } = await import('../../app.js');
+const { default: app } = await import('../../../app.js');
 
 describe('POST /api/v1/reports', () => {
   beforeEach(() => {

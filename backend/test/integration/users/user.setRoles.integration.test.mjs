@@ -10,12 +10,12 @@ try {
   }));
 } catch (e) {}
 
-import errorHandler from '../../middlewares/errorHandler.js';
+import errorHandler from '../../../middlewares/errorHandler.js';
 let userRoutes = null;
 
 beforeAll(async () => {
   // Import the real routes so tests exercise route handlers and middleware.
-  userRoutes = (await import('../../routes/userRoutes.js')).default;
+  userRoutes = (await import('../../../routes/userRoutes.js')).default;
 });
 
 function createTestApp({ mockUser, mockLogout, mockLogin } = {}) {
@@ -46,7 +46,7 @@ describe('User Roles - Integration (PUT /:id/roles) - focused for story', () => 
   it('should set multiple roles as ADMIN', async () => {
     const returned = [{ roleId: 2, officeId: 3 }, { roleId: 4, officeId: 5 }];
     if (userRoutes) {
-      const userControllerModule = await import('../../controllers/userController.js');
+      const userControllerModule = await import('../../../controllers/userController.js');
       const original = userControllerModule.default.setUserRoles;
       userControllerModule.default.setUserRoles = async (userId, payload) => returned;
 
@@ -68,7 +68,7 @@ describe('User Roles - Integration (PUT /:id/roles) - focused for story', () => 
   it('should cancel all roles when empty array provided (ADMIN)', async () => {
     const returned = [];
     if (userRoutes) {
-      const userControllerModule = await import('../../controllers/userController.js');
+      const userControllerModule = await import('../../../controllers/userController.js');
       const original = userControllerModule.default.setUserRoles;
       userControllerModule.default.setUserRoles = async () => returned;
 
@@ -103,7 +103,7 @@ describe('User Roles - Integration (PUT /:id/roles) - focused for story', () => 
 
   it('should accept numeric shorthand `roleIds` array', async () => {
     if (userRoutes) {
-      const userControllerModule = await import('../../controllers/userController.js');
+      const userControllerModule = await import('../../../controllers/userController.js');
       const original = userControllerModule.default.setUserRoles;
       userControllerModule.default.setUserRoles = async (userId, payload) => {
         expect(payload).toEqual([{ roleId: 7 }, { roleId: 8 }]);

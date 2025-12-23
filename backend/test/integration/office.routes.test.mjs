@@ -1,6 +1,10 @@
 import request from 'supertest';
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import {describe, it, expect, beforeEach, afterEach, jest} from '@jest/globals';
 import { mockOfficeRepo } from "./mocks/office.mocks.js";
+import {setupAuthorizationMock, setupEmailUtilsMock} from "./mocks/common.mocks.js";
+
+await setupAuthorizationMock({ allowUnauthorizedThrough: false });
+await setupEmailUtilsMock()
 
 const { default: app } = await import('../../app.js');
 

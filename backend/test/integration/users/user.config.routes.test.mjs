@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
-import { UnauthorizedError } from '../../errors/UnauthorizedError.js';
+import { UnauthorizedError } from '../../../errors/UnauthorizedError.js';
 
 const mockController = {
   configAccount: jest.fn(),
@@ -39,7 +39,7 @@ await jest.unstable_mockModule('../../middlewares/uploadMiddleware.js', () => ({
   }
 }));
 
-const { default: app } = await import('../../app.js');
+const { default: app } = await import('../../../app.js');
 
 describe('Integration: user config & pfp (mocked controller)', () => {
   beforeEach(() => {

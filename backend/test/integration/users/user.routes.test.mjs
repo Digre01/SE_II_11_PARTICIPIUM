@@ -2,8 +2,8 @@ import request from 'supertest';
 import express from 'express';
 import session from 'express-session';
 import passport from 'passport';
-import userRoutes from '../../routes/userRoutes.js';
-import errorHandler from '../../middlewares/errorHandler.js';
+import userRoutes from '../../../routes/userRoutes.js';
+import errorHandler from '../../../middlewares/errorHandler.js';
 
 
 function createTestApp({ mockUser, mockLogout } = {}) {
@@ -92,7 +92,7 @@ describe('User Routes Integration', () => {
 
 	       // Test signup staff branch (ADMIN) - verifica che emailSent sia false e emailReason sia 'staff auto-verified'
 			       it('should signup staff as ADMIN and auto-verify email', async () => {
-				       const userControllerModule = await import('../../controllers/userController.js');
+				       const userControllerModule = await import('../../../controllers/userController.js');
 				       const originalMarkEmailVerified = userControllerModule.default.markEmailVerified;
 				       const originalCreateUser = userControllerModule.default.createUser;
 				       userControllerModule.default.markEmailVerified = async (id) => ({ id, username: 'staffuser', userType: 'STAFF', email: 'staff@example.com', name: 'Staff', surname: 'User' });
@@ -129,7 +129,7 @@ describe('User Routes Integration', () => {
 
 		       // Test verifica email: codice errato
 		       it('should fail verify_email with wrong code', async () => {
-			       const userControllerModule = await import('../../controllers/userController.js');
+			       const userControllerModule = await import('../../../controllers/userController.js');
 			       const originalVerifyEmail = userControllerModule.default.verifyEmail;
 			       userControllerModule.default.verifyEmail = async () => { throw new Error('Invalid verification code'); };
 			       const app = createTestApp({ mockUser });
@@ -142,7 +142,7 @@ describe('User Routes Integration', () => {
 
 		       // Test verifica email: codice scaduto
 		       it('should fail verify_email with expired code', async () => {
-			       const userControllerModule = await import('../../controllers/userController.js');
+			       const userControllerModule = await import('../../../controllers/userController.js');
 			       const originalVerifyEmail = userControllerModule.default.verifyEmail;
 			       userControllerModule.default.verifyEmail = async () => { throw new Error('Verification code expired'); };
 			       const app = createTestApp({ mockUser });
@@ -156,7 +156,7 @@ describe('User Routes Integration', () => {
 
 		       // Test check email verified: utente non trovato
 		       it('should fail email_verified if user not found', async () => {
-			       const userControllerModule = await import('../../controllers/userController.js');
+			       const userControllerModule = await import('../../../controllers/userController.js');
 			       const originalIsEmailVerified = userControllerModule.default.isEmailVerified;
 			       userControllerModule.default.isEmailVerified = async () => { throw new Error('User not found'); };
 			       const app = createTestApp({ mockUser: { ...mockUser, userType: 'CITIZEN' } });
@@ -169,7 +169,7 @@ describe('User Routes Integration', () => {
 
 		       // Test check email verified: errore generico
 		       it('should fail email_verified with generic error', async () => {
-			       const userControllerModule = await import('../../controllers/userController.js');
+			       const userControllerModule = await import('../../../controllers/userController.js');
 			       const originalIsEmailVerified = userControllerModule.default.isEmailVerified;
 			       userControllerModule.default.isEmailVerified = async () => { throw new Error('Generic error'); };
 			       const app = createTestApp({ mockUser: { ...mockUser, userType: 'CITIZEN' } });
