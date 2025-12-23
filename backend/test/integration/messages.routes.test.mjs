@@ -4,30 +4,22 @@ import { UnauthorizedError } from '../../errors/UnauthorizedError.js';
 import { InsufficientRightsError } from '../../errors/InsufficientRightsError.js';
 import { BadRequestError } from '../../errors/BadRequestError.js';
 import { NotFoundError } from '../../errors/NotFoundError.js';
-import {mockRepo} from "./mocks/messages.mocks.js";
-import {setupAuthorizationMock, setupEmailUtilsMock} from "./mocks/common.mocks.js";
+import { mockRepo } from "./mocks/messages.mocks.js";
+import { setupAuthorizationMock, setupEmailUtilsMock } from "./mocks/common.mocks.js";
 
-await setupAuthorizationMock({
-	allowUnauthorizedThrough: false
-});
-await setupEmailUtilsMock()
+await setupAuthorizationMock({ allowUnauthorizedThrough: false });
+await setupEmailUtilsMock();
 
 const { default: app } = await import('../../app.js');
 
 describe('Integration: conversation messages routes', () => {
-	beforeEach(() => {
-		jest.resetAllMocks();
-	});
+	beforeEach(() => jest.resetAllMocks());
 
 	it('GET /api/v1/conversations/:conversationId/messages -> 200 returns messages', async () => {
-		const msgs = [
-			{ id: 10, content: 'Hello', sender: { id: 42, username: 'alice' }, createdAt: '2025-01-01T00:00:00Z' }
-		];
+		const msgs = [{ id: 10, content: 'Hello', sender: { id: 42, username: 'alice' }, createdAt: '2025-01-01T00:00:00Z' }];
 		mockRepo.getMessagesForConversation.mockResolvedValueOnce(msgs);
 
-		const res = await request(app)
-			.get('/api/v1/conversations/100/messages')
-			.set('Authorization', 'Bearer token');
+		const res = await request(app).get('/api/v1/conversations/100/messages').set('Authorization', 'Bearer token');
 
 		expect(res.status).toBe(200);
 		expect(Array.isArray(res.body)).toBeTruthy();
@@ -39,9 +31,7 @@ describe('Integration: conversation messages routes', () => {
 	it('GET /api/v1/conversations/:conversationId/messages -> 403 when not participant', async () => {
 		mockRepo.getMessagesForConversation.mockRejectedValueOnce(new InsufficientRightsError('Forbidden'));
 
-		const res = await request(app)
-			.get('/api/v1/conversations/999/messages')
-			.set('Authorization', 'Bearer token');
+		const res = await request(app).get('/api/v1/conversations/999/messages').set('Authorization', 'Bearer token');
 
 		expect(res.status).toBe(403);
 		expect(res.body).toHaveProperty('name', 'InsufficientRightsError');
@@ -50,9 +40,7 @@ describe('Integration: conversation messages routes', () => {
 	it('GET /api/v1/conversations/:conversationId/messages -> 404 when conversation not found', async () => {
 		mockRepo.getMessagesForConversation.mockRejectedValueOnce(new NotFoundError('Conversation not found'));
 
-		const res = await request(app)
-			.get('/api/v1/conversations/555/messages')
-			.set('Authorization', 'Bearer token');
+		const res = await request(app).get('/api/v1/conversations/555/messages').set('Authorization', 'Bearer token');
 
 		expect(res.status).toBe(404);
 		expect(res.body).toHaveProperty('name', 'NotFoundError');
@@ -89,7 +77,7 @@ describe('Integration: conversation messages routes', () => {
 		expect(res.body).toHaveProperty('message', 'Cannot send messages: report is closed');
 	});
 
-	it('POST /api/v1/conversations/:conversationId/messages -> 403 when role not staff (header)', async () => {
+	it('POST /api/v1/conversations/:conversationId/messages -> 403 when role not staff', async () => {
 		const res = await request(app)
 			.post('/api/v1/conversations/100/messages')
 			.send({ content: 'Should be forbidden' })
@@ -114,4 +102,3 @@ describe('Integration: conversation messages routes', () => {
 		expect(res.body).toHaveProperty('name', 'UnauthorizedError');
 	});
 });
-

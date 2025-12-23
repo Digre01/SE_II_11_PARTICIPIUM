@@ -113,30 +113,26 @@ export async function setUpLoginMock() {
         default: {
             initialize: () => (_req, _res, next) => next(),
             session: () => (_req, _res, next) => next(),
-            authenticate: (strategy, options) => (req, _res, next) => {
+            authenticate: (_strategy, _options) => (req, _res, next) => {
                 const roleHdr = req.header('X-Test-Role');
                 const userTypeHdr = req.header('X-Test-User-Type');
                 const authHdr = req.header('Authorization');
 
-                if (roleHdr || userTypeHdr || authHdr) {
-                    req.user = req.user || {
-                        id: 10,
-                        username: 'testuser',
-                        userType: roleHdr || userTypeHdr || 'CITIZEN',
-                        email: 'test@example.com'
-                    };
-                    req.isAuthenticated = () => true;
-                    req.login = (user, callback) => {
-                        req.user = user;
-                        if (callback) callback();
-                    };
-                    req.logout = (callback) => {
-                        req.user = null;
-                        if (callback) callback();
-                    };
-                } else {
-                    req.isAuthenticated = () => false;
-                }
+                req.user = {
+                    id: 10,
+                    username: 'testuser',
+                    userType: roleHdr || userTypeHdr || 'CITIZEN',
+                    email: 'test@example.com'
+                };
+                req.isAuthenticated = () => !!req.user;
+                req.login = (user, cb) => {
+                    req.user = user;
+                    if (cb) cb();
+                };
+                req.logout = (cb) => {
+                    req.user = null;
+                    if (cb) cb();
+                };
                 next();
             },
             serializeUser: (fn) => fn,
