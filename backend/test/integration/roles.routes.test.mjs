@@ -1,6 +1,9 @@
 import request from 'supertest';
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { mockRoleRepo } from "./mocks/roles.mocks.js";
+import {setupEmailUtilsMock} from "./mocks/common.mocks.js";
+
+await setupEmailUtilsMock()
 
 // Import app AFTER mocks are set up
 const { default: app } = await import('../../app.js');
