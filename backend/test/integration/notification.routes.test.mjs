@@ -85,6 +85,18 @@ describe('Notification controller unit tests', () => {
     expect(res.json).not.toHaveBeenCalled();
   });
 
+  it('GET /api/v1/notifications - repository error returns 500', async () => {
+    mockRepo.getUnreadNotifications.mockRejectedValueOnce(new Error('DB error'));
+
+    const res = await request(app)
+        .get('/api/v1/notifications')
+        .set('Authorization', 'Bearer citizen-token');
+
+    expect(res.status).toBe(500);
+    expect(res.body).toHaveProperty('name', 'InternalServerError');
+    expect(res.body).toHaveProperty('message', 'DB error');
+  });
+
   it('getUnreadCounts returns counts', async () => {
     const counts = { c1: 2 };
     mockRepo.getUnreadCountByConversation.mockResolvedValueOnce(counts);
@@ -112,6 +124,32 @@ describe('Notification controller unit tests', () => {
     expect(res.json).not.toHaveBeenCalled();
   });
 
+  it('GET /api/v1/notifications/counts - repository throws AppError -> mapped to 403', async () => {
+    const { InsufficientRightsError } = await import('../../errors/InsufficientRightsError.js');
+    mockRepo.getUnreadCountByConversation.mockRejectedValueOnce(
+        new InsufficientRightsError('No access')
+    );
+
+    const res = await request(app)
+        .get('/api/v1/notifications/counts')
+        .set('Authorization', 'Bearer citizen-token');
+
+    expect(res.status).toBe(403);
+    expect(res.body).toHaveProperty('name', 'InsufficientRightsError');
+    expect(res.body).toHaveProperty('message', 'No access');
+  });
+
+  it('GET /api/v1/notifications/counts - returns empty array when no counts', async () => {
+    mockRepo.getUnreadCountByConversation.mockResolvedValueOnce([]);
+
+    const res = await request(app)
+        .get('/api/v1/notifications/counts')
+        .set('Authorization', 'Bearer citizen-token');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+
   it('markAsRead updates count', async () => {
     mockRepo.markNotificationsAsReadForConversation.mockResolvedValueOnce(4);
     const req = { user: { id: 9 }, params: { conversationId: '55' } };
@@ -137,4 +175,16 @@ describe('Notification controller unit tests', () => {
     expect(next).toHaveBeenCalledWith(err);
     expect(res.json).not.toHaveBeenCalled();
   });
+
+  it('POST /api/v1/notifications/:conversationId/read - returns 0 when nothing updated', async () => {
+    mockRepo.markNotificationsAsReadForConversation.mockResolvedValueOnce(0);
+
+    const res = await request(app)
+        .post('/api/v1/notifications/200/read')
+        .set('Authorization', 'Bearer citizen-token');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ updated: 0 });
+  });
+
 });
