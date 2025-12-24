@@ -111,19 +111,8 @@ export async function setupEmailUtilsMock() {
 export async function setUpLoginMock() {
     await jest.unstable_mockModule('../../../config/passport.js', () => ({
         default: {
-            initialize: () => (_req, _res, next) => next(),
-            session: () => (_req, _res, next) => next(),
-            authenticate: (_strategy, _options) => (req, _res, next) => {
-                const roleHdr = req.header('X-Test-Role');
-                const userTypeHdr = req.header('X-Test-User-Type');
-                const authHdr = req.header('Authorization');
-
-                req.user = {
-                    id: 10,
-                    username: 'testuser',
-                    userType: roleHdr || userTypeHdr || 'CITIZEN',
-                    email: 'test@example.com'
-                };
+            initialize: () => (req, _res, next) => {
+                // Initialize passport on request
                 req.isAuthenticated = () => !!req.user;
                 req.login = (user, cb) => {
                     req.user = user;
@@ -133,6 +122,31 @@ export async function setUpLoginMock() {
                     req.user = null;
                     if (cb) cb();
                 };
+                req.session = req.session || {};
+                next();
+            },
+            session: () => (_req, _res, next) => next(),
+            authenticate: (strategy, options) => (req, res, next) => {
+                // Only authenticate on login route
+                if (req.path?.includes('/login')) {
+                    // Simulate failed login if credentials are wrong
+                    if (req.body?.username === 'wrong' && req.body?.password === 'wrong') {
+                        return res.status(401).json({ error: 'Invalid credentials' });
+                    }
+
+                    // Simulate successful login
+                    req.user = {
+                        id: 10,
+                        username: 'testuser',
+                        userType: 'CITIZEN',
+                        email: 'test@example.com'
+                    };
+
+                    // Simulate session regeneration for login
+                    req.session = req.session || {};
+                    req.session.regenerate = (cb) => cb();
+                }
+
                 next();
             },
             serializeUser: (fn) => fn,

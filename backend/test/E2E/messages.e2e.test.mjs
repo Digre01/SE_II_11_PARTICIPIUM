@@ -4,6 +4,9 @@ import { UnauthorizedError } from '../../errors/UnauthorizedError.js';
 import { InsufficientRightsError } from '../../errors/InsufficientRightsError.js';
 import { BadRequestError } from '../../errors/BadRequestError.js';
 import { NotFoundError } from '../../errors/NotFoundError.js';
+import {setupEmailUtilsMock} from "../integration/mocks/common.mocks.js";
+
+await setupEmailUtilsMock()
 
 // Mock message repository
 const mockRepo = {

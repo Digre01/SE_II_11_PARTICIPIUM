@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from '@jest/globals';
 import request from 'supertest';
+import {setupEmailUtilsMock} from "../integration/mocks/common.mocks.js";
+
+await setupEmailUtilsMock()
 
 const { AppDataSourcePostgres } = await import('../../config/data-source.js');
 const { seedDatabase } = await import('../../database/seeder.js');

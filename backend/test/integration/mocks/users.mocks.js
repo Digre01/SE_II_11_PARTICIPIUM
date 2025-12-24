@@ -12,7 +12,12 @@ export const mockRepo = {
     createUser: jest.fn(),
     getEmailVerification: jest.fn(),
     isEmailVerified: jest.fn(),
-    assignRoleToUser: jest.fn()
+    assignRoleToUser: jest.fn(),
+    getUserByUsername: jest.fn(),
+    getUserByEmail: jest.fn(),
+    getUserById: jest.fn(),
+    saveEmailVerificationCode: jest.fn(),
+    markEmailVerified: jest.fn()
 }
 
 await jest.unstable_mockModule('../../../repositories/userRepository.js', () => ({
@@ -21,7 +26,13 @@ await jest.unstable_mockModule('../../../repositories/userRepository.js', () => 
 
 await jest.unstable_mockModule('../../../middlewares/uploadMiddleware.js', () => ({
     default: {
-        single: () => (req, _res, next) => { req.file = { filename: 'mocked.png', path: 'mocked.png' }; next(); },
-        array: () => (req, _res, next) => { req.files = [{ filename: 'mocked1.png', path: 'mocked1.png' }]; next(); },
+        single: () => (req, _res, next) => {
+            req.file = { filename: 'mocked.png', path: 'mocked.png' };
+            next();
+        },
+        array: () => (req, _res, next) => {
+            req.files = [{ filename: 'mocked1.png', path: 'mocked1.png' }];
+            next();
+        },
     }
 }));

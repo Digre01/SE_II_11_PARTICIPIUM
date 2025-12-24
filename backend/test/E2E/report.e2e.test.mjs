@@ -2,6 +2,9 @@ import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
 import fs from 'node:fs';
 import path from 'node:path';
+import {setupEmailUtilsMock} from "../integration/mocks/common.mocks.js";
+
+await setupEmailUtilsMock()
 
 const { AppDataSourcePostgres } = await import('../../config/data-source.js');
 const { seedDatabase } = await import('../../database/seeder.js');

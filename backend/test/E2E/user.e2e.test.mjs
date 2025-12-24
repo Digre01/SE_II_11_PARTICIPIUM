@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
+import {setupEmailUtilsMock} from "../integration/mocks/common.mocks.js";
+
+await setupEmailUtilsMock()
 
 let app;
 let dataSource;

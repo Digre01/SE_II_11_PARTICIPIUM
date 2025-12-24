@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
 import express from 'express';
+import {setupEmailUtilsMock} from "../integration/mocks/common.mocks.js";
+
+await setupEmailUtilsMock()
 
 // E2E: use real app with test-only router for external endpoints
 const mockRepo = {

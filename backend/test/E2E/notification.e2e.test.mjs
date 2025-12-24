@@ -2,6 +2,9 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
 import { InsufficientRightsError } from '../../errors/InsufficientRightsError.js';
 import { UnauthorizedError } from '../../errors/UnauthorizedError.js';
+import {setupEmailUtilsMock} from "../integration/mocks/common.mocks.js";
+
+await setupEmailUtilsMock()
 
 // Mock notification repository
 const mockRepo = {
