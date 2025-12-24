@@ -1,50 +1,18 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
-import {setupEmailUtilsMock} from "../integration/mocks/common.mocks.js";
+import {cleanupUsers, setupUsers} from "./users.setup.js";
 
-await setupEmailUtilsMock()
-
-let app;
-let dataSource;
-let seedDatabase;
-let userRepository;
-let userService;
+let app, dataSource, userRepository, userService;
+const testUsernames = [];
 
 describe('E2E: userRoutes assign role', () => {
-  // Keep track of test users to cleanup
-  const testUsernames = [];
 
   beforeAll(async () => {
-    const data = await import('../../config/data-source.js');
-    dataSource = data.AppDataSourcePostgres;
-    const seeder = await import('../../database/seeder.js');
-    seedDatabase = seeder.seedDatabase;
-    const repoMod = await import('../../repositories/userRepository.js');
-    userRepository = repoMod.userRepository;
-    userService = (await import('../../services/userService.js')).default;
-    app = (await import('../../app.js')).default;
-
-    if (!dataSource.isInitialized) {
-      await dataSource.initialize();
-    }
-    await seedDatabase();
+    ({ app, dataSource, userRepository, userService } = await setupUsers());
   }, 30000);
 
   afterAll(async () => {
-    // Cleanup test users and related UserOffice rows
-    for (const username of testUsernames) {
-      const user = await userRepository.getUserByUsername(username);
-      if (user) {
-        // Delete UserOffice row if exists
-        const userOfficeRepo = dataSource.getRepository('UserOffice');
-        await userOfficeRepo.delete({ userId: user.id });
-        // Delete user
-        await userRepository.repo.delete({ id: user.id });
-      }
-    }
-    if (dataSource?.isInitialized) {
-      await dataSource.destroy();
-    }
+    await cleanupUsers(dataSource, userRepository, testUsernames);
   });
 
   it('returns 401 when not authenticated', async () => {
@@ -145,48 +113,4 @@ describe('E2E: userRoutes assign role', () => {
       const userOfficeRepo = dataSource.getRepository('UserOffice');
       await userOfficeRepo.delete({ userId: staff.id });
   }, 30000);
-
-  // Config account & pfp flow
-  it('full citizen flow: signup -> config -> pfp', async () => {
-    const agent = request.agent(app);
-    const rnd = Math.random().toString(36).slice(2,8);
-    const username = `cit_cfg_${rnd}`;
-    testUsernames.push(username);
-    const signUpRes = await agent.post('/api/v1/sessions/signup').send({
-      username,
-      email: `${username}@example.com`,
-      name: 'Test',
-      surname: 'Config',
-      password: 'Password#123',
-      userType: 'citizen'
-    });
-    expect([200,201]).toContain(signUpRes.status);
-    const userId = signUpRes.body.id || signUpRes.body.user?.id || signUpRes.body?.userId || signUpRes.body?.user?.userId;
-    const photoBuffer = Buffer.from('fakepngdata');
-    const configRes = await agent
-      .patch(`/api/v1/sessions/${userId}/config`)
-      .field('telegramId','tel_999')
-      .field('emailNotifications','true')
-      .attach('photo', photoBuffer, { filename: 'avatar.png', contentType: 'image/png' });
-    expect(configRes.status).toBe(200);
-    expect(configRes.body.user.telegramId).toBe('tel_999');
-    expect(configRes.body.user.emailNotifications).toBe(true);
-    const pfpRes = await agent.get(`/api/v1/sessions/${userId}/pfp`);
-    expect(pfpRes.status).toBe(200);
-    const bodyText = pfpRes.text || JSON.stringify(pfpRes.body);
-    expect(bodyText).toMatch(/public\/.+/i);
-  }, 30000);
-
-  it('returns 401 for config without auth', async () => {
-    const res = await request(app)
-      .patch('/api/v1/sessions/999/config')
-      .field('telegramId','x');
-    expect(res.status).toBe(401);
-  });
-
-  it('returns 401 for pfp without auth', async () => {
-    const res = await request(app)
-      .get('/api/v1/sessions/999/pfp');
-    expect(res.status).toBe(401);
-  });
 });

@@ -1,57 +1,11 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
-import { UnauthorizedError } from '../../errors/UnauthorizedError.js';
-import { InsufficientRightsError } from '../../errors/InsufficientRightsError.js';
-import {setupEmailUtilsMock} from "../integration/mocks/common.mocks.js";
+import {setupAuthorizationMock, setupEmailUtilsMock} from "../integration/mocks/common.mocks.js";
+import {mockRepo} from "../integration/mocks/reports.mock.js";
 
 await setupEmailUtilsMock()
+await setupAuthorizationMock()
 
-// Mock report repository
-const mockRepo = {
-  getAcceptedReports: jest.fn(),
-};
-
-await jest.unstable_mockModule('../../repositories/reportRepository.mjs', () => ({
-  reportRepository: mockRepo,
-}));
-
-// Mock authorization middleware similar to integration tests
-await jest.unstable_mockModule('../../middlewares/userAuthorization.js', () => ({
-  authorizeUserType: (allowed) => (req, _res, next) => {
-    const roleHdr = req.header('X-Test-Role');
-    if (roleHdr) {
-      req.user = { id: 10, userType: roleHdr };
-      const normalized = (allowed || []).map(a => String(a).toUpperCase());
-      const caller = String(roleHdr).toUpperCase();
-      if (!normalized.includes(caller)) {
-        return next(new InsufficientRightsError('Forbidden'));
-      }
-      return next();
-    }
-
-    if (req.header('Authorization')) {
-      req.user = { id: 10, userType: 'citizen' };
-      return next();
-    }
-
-    if (req.path && req.path.includes('/assigned')) {
-      return next(new UnauthorizedError('UNAUTHORIZED'));
-    }
-
-    return next();
-  },
-  requireAdminIfCreatingStaff: () => (req, _res, next) => next(),
-  authorizeRole: (requiredRole) => (req, _res, next) => {
-    const roleHdr = req.header('X-Test-Role');
-    if (!roleHdr) return next(new InsufficientRightsError('Forbidden'));
-    if (String(roleHdr).toUpperCase() !== String(requiredRole).toUpperCase()) {
-      return next(new InsufficientRightsError('Forbidden'));
-    }
-    next();
-  },
-}));
-
-// Import the app after mocks
 const { default: app } = await import('../../app.js');
 
 describe('E2E map: citizen sees approved reports on map', () => {

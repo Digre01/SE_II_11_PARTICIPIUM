@@ -1,49 +1,21 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
-import {setupEmailUtilsMock} from "../integration/mocks/common.mocks.js";
+import {setupEmailUtilsMock} from "../../integration/mocks/common.mocks.js";
+import {cleanupUsers, setupUsers} from "./users.setup.js";
 
 await setupEmailUtilsMock()
 
-let app;
-let dataSource;
-let seedDatabase;
-let userRepository;
-let userService;
-let rolesRepository;
+let app, dataSource, userRepository, userService, rolesRepository;
 
 describe('E2E: setUserRoles story (multiple roles + cancellation)', () => {
   const testUsernames = [];
 
   beforeAll(async () => {
-    const data = await import('../../config/data-source.js');
-    dataSource = data.AppDataSourcePostgres;
-    const seeder = await import('../../database/seeder.js');
-    seedDatabase = seeder.seedDatabase;
-    const repoMod = await import('../../repositories/userRepository.js');
-    userRepository = repoMod.userRepository;
-    rolesRepository = (await import('../../repositories/rolesRepository.js')).rolesRepository;
-    userService = (await import('../../services/userService.js')).default;
-    app = (await import('../../app.js')).default;
-
-    if (!dataSource.isInitialized) {
-      await dataSource.initialize();
-    }
-    await seedDatabase();
+    ({ app, dataSource, userRepository, userService, rolesRepository } = await setupUsers());
   }, 30000);
 
   afterAll(async () => {
-    // Cleanup created test users and any UserOffice rows
-    for (const username of testUsernames) {
-      const user = await userRepository.getUserByUsername(username);
-      if (user) {
-        const userOfficeRepo = dataSource.getRepository('UserOffice');
-        await userOfficeRepo.delete({ userId: user.id });
-        await userRepository.repo.delete({ id: user.id });
-      }
-    }
-    if (dataSource?.isInitialized) {
-      await dataSource.destroy();
-    }
+    await cleanupUsers(dataSource, userRepository, testUsernames);
   });
 
   it('assigns multiple roles to a staff user as ADMIN and persists them', async () => {
@@ -106,6 +78,7 @@ describe('E2E: setUserRoles story (multiple roles + cancellation)', () => {
     const userOffices = await userRepository.getUserRoles(staff.id);
     const persistedRoleIds = userOffices.map(u => u.role?.id || u.roleId);
     const sortedPersistedRoleIds = persistedRoleIds.sort((a, b) => a - b);
+    const ids = [roles[0].id, roles[1].id];
     const sortedIds = ids.sort((a, b) => a - b);
 
     expect(sortedPersistedRoleIds).toEqual(sortedIds);
