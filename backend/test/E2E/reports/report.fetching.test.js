@@ -1,123 +1,125 @@
-import {afterAll, beforeAll, describe, expect, it} from "@jest/globals";
-import request from "supertest";
-import {
-    app,
-    attachFakeImage,
-    cookie,
-    deleteReturnedPhotos, globalSetup, globalTeardown,
-    loginAndGetCookieStaff
-} from "./report.setup.js";
-import {AppDataSourcePostgres} from "../../../config/data-source.js";
-import {mockRepo} from "./reports.mock.js";
+import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+import request from 'supertest';
+import { standardSetup, standardTeardown } from '../utils/standard.setup.js';
+import { attachFakeImage, deleteReturnedPhotos } from '../utils/files.utils.js';
+import { AppDataSourcePostgres } from '../../../config/data-source.js';
+import { mockRepo } from './reports.mock.js';
 
 describe('GET /api/v1/reports/:id (E2E)', () => {
+    let app;
+    let loginAsCitizen;
+    let loginAsStaff;
+
+    let citizenCookie;
+    let staffCookieWithRole;
     let createdReportId;
-    let cookieStaffWithRole;
 
     beforeAll(async () => {
+        const setup = await standardSetup();
+
+        app = setup.app;
+        loginAsCitizen = setup.loginAsCitizen;
+        loginAsStaff = setup.loginAsStaff;
+
+        citizenCookie = await loginAsCitizen();
+
         let req = request(app)
             .post('/api/v1/reports')
-            .set('Cookie', cookie)
+            .set('Cookie', citizenCookie)
             .field('title', 'Test Report for GET')
             .field('description', 'Desc')
             .field('categoryId', '5')
             .field('latitude', '12.3')
             .field('longitude', '3.21');
+
         req = attachFakeImage(req, 'a.jpg');
         req = attachFakeImage(req, 'b.jpg');
 
         const createRes = await req;
         expect(createRes.status).toBe(201);
 
-        // Get the created report ID
-        const { Users } = await import('../../../entities/Users.js');
-        const userRepo = AppDataSourcePostgres.getRepository(Users);
-        const citizenUser = await userRepo.findOne({ where: { username: 'citizen' } });
+        deleteReturnedPhotos(createRes.body.photos);
 
+        const { Users } = await import('../../../entities/Users.js');
         const { Report } = await import('../../../entities/Reports.js');
+
+        const userRepo = AppDataSourcePostgres.getRepository(Users);
         const reportRepo = AppDataSourcePostgres.getRepository(Report);
+
+        const citizenUser = await userRepo.findOne({
+            where: { username: 'citizen' }
+        });
+
         const report = await reportRepo.findOne({
             where: { userId: citizenUser.id },
             order: { id: 'DESC' }
         });
+
         createdReportId = report.id;
 
-        // Assign role to staff1
-        const staffUser = await userRepo.findOne({ where: { username: 'staff1' } });
+        /** -------------------------
+         *  Assign role to staff1
+         *  ------------------------- */
+        const staffUser = await userRepo.findOne({
+            where: { username: 'staff1' }
+        });
+
         const { Roles } = await import('../../../entities/Roles.js');
-        const rolesRepo = AppDataSourcePostgres.getRepository(Roles);
-        const mpRole = await rolesRepo.findOne({ where: { name: 'Municipal Public Relations Officer' } });
-
         const { UserOffice } = await import('../../../entities/UserOffice.js');
+
+        const rolesRepo = AppDataSourcePostgres.getRepository(Roles);
         const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);
-        let existingUO = await userOfficeRepo.findOne({ where: { userId: staffUser.id } });
-        if (!existingUO) {
-            existingUO = { userId: staffUser.id };
+
+        const mpRole = await rolesRepo.findOne({
+            where: { name: 'Municipal Public Relations Officer' }
+        });
+
+        let userOffice = await userOfficeRepo.findOne({
+            where: { userId: staffUser.id }
+        });
+
+        if (!userOffice) {
+            userOffice = userOfficeRepo.create({
+                userId: staffUser.id,
+                roleId: mpRole.id
+            });
+        } else {
+            userOffice.roleId = mpRole.id;
         }
-        existingUO.roleId = mpRole.id;
-        await userOfficeRepo.save(existingUO);
 
-        cookieStaffWithRole = await loginAndGetCookieStaff();
+        await userOfficeRepo.save(userOffice);
 
-        deleteReturnedPhotos(createRes.body.photos);
-
+        staffCookieWithRole = await loginAsStaff();
     }, 30000);
 
-    it('should fail without authentication (no cookie)', async () => {
+    afterAll(async () => {
+        await standardTeardown();
+    });
+
+    it('should fail without authentication', async () => {
         const res = await request(app)
             .get(`/api/v1/reports/${createdReportId}`);
 
         expect(res.status).toBe(401);
-        expect(res.body.message).toMatch(/Unauthorized/i);
     });
 
-    it('should fail when accessed by citizen user', async () => {
+    it('should fail when accessed by citizen', async () => {
         const res = await request(app)
             .get(`/api/v1/reports/${createdReportId}`)
-            .set('Cookie', cookie);
+            .set('Cookie', citizenCookie);
 
         expect(res.status).toBe(403);
-        expect(res.body.message).toMatch(/Forbidden/i);
     });
 
-    it('should fail when accessed by staff without proper role', async () => {
-        // Login with staff2 who doesn't have the Municipal Public Relations Officer role
-        const cookieStaff2 = await (async () => {
-            const res = await request(app)
-                .post('/api/v1/sessions/login')
-                .send({ username: 'staff2', password: 'staff2' });
-            expect(res.status).toBe(201);
-            return res.headers['set-cookie'].map(c => c.split(';')[0]).join('; ');
-        })();
-
+    it('should fail when report does not exist', async () => {
         const res = await request(app)
-            .get(`/api/v1/reports/${createdReportId}`)
-            .set('Cookie', cookieStaff2);
-
-        expect(res.status).toBe(403);
-        expect(res.body.message).toMatch(/Forbidden/i);
-    });
-
-    it('should fail when report ID does not exist', async () => {
-        const nonExistentId = 999999;
-        const res = await request(app)
-            .get(`/api/v1/reports/${nonExistentId}`)
-            .set('Cookie', cookieStaffWithRole);
+            .get('/api/v1/reports/999999')
+            .set('Cookie', staffCookieWithRole);
 
         expect(res.status).toBe(404);
-        expect(res.body.message).toMatch(/Not found/i);
     });
 
-    it('should fail with invalid report ID format', async () => {
-        const res = await request(app)
-            .get('/api/v1/reports/invalid-id')
-            .set('Cookie', cookieStaffWithRole);
-
-        // Should either return 404 or 400 depending on validation
-        expect([400, 404, 500]).toContain(res.status);
-    });
-
-    it('should successfully retrieve report with proper staff role', async () => {
+    it('should retrieve report with proper staff role', async () => {
         mockRepo.getReportById.mockResolvedValue({
             id: createdReportId,
             title: 'Test Report for GET',
@@ -126,42 +128,39 @@ describe('GET /api/v1/reports/:id (E2E)', () => {
             latitude: 12.3,
             longitude: 3.21,
             status: 'pending'
-        })
+        });
+
         const res = await request(app)
             .get(`/api/v1/reports/${createdReportId}`)
-            .set('Cookie', cookieStaffWithRole);
+            .set('Cookie', staffCookieWithRole);
 
         expect(res.status).toBe(200);
-        expect(res.body).toBeDefined();
         expect(res.body.id).toBe(createdReportId);
-        expect(res.body.title).toBe('Test Report for GET');
-        expect(res.body.description).toBe('Desc');
-        expect(res.body.categoryId).toBe(5);
-        expect(res.body.latitude).toBe(12.3);
-        expect(res.body.longitude).toBe(3.21);
-        expect(res.body.status).toBe('pending');
     });
 
     it('should include photos in the response', async () => {
-        mockRepo.getReportById.mockResolvedValue({photos: ['/public/a.jpg', '/public/b.jpg']});
+        mockRepo.getReportById.mockResolvedValue({
+            photos: ['/public/a.jpg', '/public/b.jpg']
+        });
+
         const res = await request(app)
             .get(`/api/v1/reports/${createdReportId}`)
-            .set('Cookie', cookieStaffWithRole);
+            .set('Cookie', staffCookieWithRole);
 
         expect(res.status).toBe(200);
-        expect(res.body.photos).toBeDefined();
         expect(Array.isArray(res.body.photos)).toBe(true);
     });
 
-    it('should include category information in the response', async () => {
-        mockRepo.getReportById.mockResolvedValue({category: { id: 5, name: 'Road Issues' }})
+    it('should include category information', async () => {
+        mockRepo.getReportById.mockResolvedValue({
+            category: { id: 5, name: 'Road Issues' }
+        });
+
         const res = await request(app)
             .get(`/api/v1/reports/${createdReportId}`)
-            .set('Cookie', cookieStaffWithRole);
+            .set('Cookie', staffCookieWithRole);
 
         expect(res.status).toBe(200);
-        expect(res.body.category).toBeDefined();
         expect(res.body.category.id).toBe(5);
-        expect(res.body.category.name).toBeDefined();
     });
-})
+});

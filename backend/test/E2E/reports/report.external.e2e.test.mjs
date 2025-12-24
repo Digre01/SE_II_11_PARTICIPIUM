@@ -1,118 +1,110 @@
-import {describe, it, beforeAll, afterAll, expect, jest, beforeEach} from '@jest/globals';
-import request from 'supertest';
-import {mockRepo} from './reports.mock.js';
 import {
-  app,
-  attachFakeImage, cookie, cookie_staff,
-  deleteReturnedPhotos,
-} from './report.setup.js';
-import {AppDataSourcePostgres} from "../../../config/data-source.js";
+  describe,
+  it,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  expect,
+  jest
+} from '@jest/globals';
+import request from 'supertest';
+import { mockRepo } from './reports.mock.js';
+import { standardSetup, standardTeardown } from '../utils/standard.setup.js';
+import { attachFakeImage, deleteReturnedPhotos } from '../utils/files.utils.js';
 
 describe('PATCH /api/v1/reports/:id/assign_external (E2E)', () => {
+  let app;
+  let dataSource;
+  let adminCookie;
+  let staffCookie;
+  let citizenCookie;
   let createdForExternalId;
 
   beforeAll(async () => {
+    const setup = await standardSetup();
+
+    app = setup.app;
+    dataSource = setup.dataSource;
+
+    adminCookie = await setup.loginAsAdmin();
+    staffCookie = await setup.loginAsStaff();
+    citizenCookie = await setup.loginAsCitizen();
+
+    // Create a report as citizen
     let req = request(app)
         .post('/api/v1/reports')
-        .set('Cookie', cookie)
+        .set('Cookie', citizenCookie)
         .field('title', 'To assign externally')
         .field('description', 'Desc')
         .field('categoryId', '5')
         .field('latitude', '10.1')
         .field('longitude', '20.2');
+
     req = attachFakeImage(req, 'ext-a.jpg');
+
     const createRes = await req;
     expect(createRes.status).toBe(201);
 
+    // Retrieve created report ID
     const { Users } = await import('../../../entities/Users.js');
-    const userRepo = AppDataSourcePostgres.getRepository(Users);
+    const userRepo = dataSource.getRepository(Users);
     const citizenUser = await userRepo.findOne({ where: { username: 'citizen' } });
 
     const { Report } = await import('../../../entities/Reports.js');
-    const reportRepo = AppDataSourcePostgres.getRepository(Report);
+    const reportRepo = dataSource.getRepository(Report);
     const report = await reportRepo.findOne({
       where: { userId: citizenUser.id },
       order: { id: 'DESC' }
     });
+
     createdForExternalId = report.id;
 
     deleteReturnedPhotos(createRes.body.photos);
   }, 30000);
 
-  it('fails without authentication (no cookie)', async () => {
-    const res = await request(app)
-        .patch(`/api/v1/reports/${createdForExternalId}/assign_external`);
-    expect(res.status).toBe(401);
-  });
-
-  it('successfully assigns to external maintainer (staff)', async () => {
-    mockRepo.assignReportToExternalMaintainer.mockResolvedValue({assignedExternal: true});
-    const res = await request(app)
-        .patch(`/api/v1/reports/${createdForExternalId}/assign_external`)
-        .set('Cookie', cookie_staff);
-    expect(res.status).toBe(200);
-    expect(res.body.assignedExternal).toBe(true);
-  });
-
-  it('returns 404 for non-existent report id', async () => {
-    mockRepo.assignReportToExternalMaintainer.mockResolvedValue(null)
-    const res = await request(app)
-        .patch('/api/v1/reports/999999/assign_external')
-        .set('Cookie', cookie_staff);
-    expect(res.status).toBe(404);
-  });
-});
-/*
-// External maintainer routes (mocked)
-describe('E2E: external maintainer routes', () => {
-  beforeAll(async () => {
-    await globalSetup();
-    app.use((req, res, next) => {
-      req.isAuthenticated = () => true;
-      next();
-    });
-  })
-
   afterAll(async () => {
-    await globalTeardown();
-  })
+    await standardTeardown();
+  });
 
   beforeEach(() => {
     jest.resetAllMocks();
   });
 
-  it('start -> in_progress', async () => {
-    mockRepo.findOneBy.mockResolvedValue({id: 1})
-    mockRepo.startReport.mockResolvedValueOnce({ id: 1, status: 'in_progress' });
-    const res = await request(app).patch('/api/v1/reports/1/external/start').set('Cookie', cookie_staff);
-    expect(res.status).toBe(200);
-    expect(res.body.status).toBe('in_progress');
+  it('fails without authentication (no cookie)', async () => {
+    const res = await request(app)
+        .patch(`/api/v1/reports/${createdForExternalId}/assign_external`);
+
+    expect(res.status).toBe(401);
   });
 
-  it('finish -> resolved', async () => {
-    mockRepo.finishReport.mockResolvedValueOnce({ id: 2, status: 'resolved' });
-    const res = await request(app).patch('/api/v1/reports/2/external/finish').set('Cookie', cookie_staff);
-    expect(res.status).toBe(200);
-    expect(res.body.status).toBe('resolved');
+  it('fails when accessed by citizen', async () => {
+    const res = await request(app)
+        .patch(`/api/v1/reports/${createdForExternalId}/assign_external`)
+        .set('Cookie', citizenCookie);
+
+    expect(res.status).toBe(403);
   });
 
-  it('suspend -> suspended', async () => {
-    mockRepo.suspendReport.mockResolvedValueOnce({ id: 3, status: 'suspended' });
-    const res = await request(app).patch('/api/v1/reports/3/external/suspend').set('Cookie', cookie_staff);
+  it('successfully assigns report to external maintainer (staff)', async () => {
+    mockRepo.assignReportToExternalMaintainer.mockResolvedValue({
+      assignedExternal: true
+    });
+
+    const res = await request(app)
+        .patch(`/api/v1/reports/${createdForExternalId}/assign_external`)
+        .set('Cookie', staffCookie);
+
     expect(res.status).toBe(200);
-    expect(res.body.status).toBe('suspended');
+    expect(res.body.assignedExternal).toBe(true);
   });
 
-  it('resume -> assigned', async () => {
-    mockRepo.resumeReport.mockResolvedValueOnce({ id: 4, status: 'assigned' });
-    const res = await request(app).patch('/api/v1/reports/4/external/resume').set('Cookie', cookie_staff);
-    expect(res.status).toBe(200);
-    expect(res.body.status).toBe('assigned');
-  });
+  it('returns 404 for non-existent report id', async () => {
+    mockRepo.assignReportToExternalMaintainer.mockResolvedValue(null);
 
-  it('returns 404 when repo returns null', async () => {
-    mockRepo.startReport.mockResolvedValueOnce(null);
-    const res = await request(app).patch('/api/v1/reports/999/external/start').set('Cookie', cookie_staff);
+    const res = await request(app)
+        .patch('/api/v1/reports/999999/assign_external')
+        .set('Cookie', staffCookie);
+
     expect(res.status).toBe(404);
   });
-});*/
+});

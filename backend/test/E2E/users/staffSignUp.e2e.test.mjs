@@ -1,15 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from '@jest/globals';
 import request from 'supertest';
-import {setupEmailUtilsMock} from "../integration/mocks/common.mocks.js";
-
-await setupEmailUtilsMock()
-
-const { AppDataSourcePostgres } = await import('../../config/data-source.js');
-const { seedDatabase } = await import('../../database/seeder.js');
-const { default: app } = await import('../../app.js');
-
-let adminCookie = '';
-let citizenCookie = '';
+import {standardSetup, standardTeardown} from "../utils/standard.setup.js";
+import {cleanupUsers} from "../utils/db.utils.js";
 
 const staffUsernames = [
   'staffE2E',
@@ -19,42 +11,21 @@ const staffUsernames = [
   'otherStaff'
 ];
 
-async function cleanupStaffUsers() {
-  const userRepo = AppDataSourcePostgres.getRepository('Users');
-  const userOfficeRepo = AppDataSourcePostgres.getRepository('UserOffice');
-  for (const username of staffUsernames) {
-    const user = await userRepo.findOneBy({ username });
-    if (user) {
-      await userOfficeRepo.delete({ userId: user.id });
-      await userRepo.delete({ id: user.id });
-    }
-  }
-}
-
-async function loginAndGetCookie(username, password) {
-  const res = await request(app)
-    .post('/api/v1/sessions/login')
-    .send({ username, password });
-  expect(res.status).toBe(201);
-  const setCookie = res.headers['set-cookie'];
-  expect(setCookie).toBeDefined();
-  return setCookie.map(c => c.split(';')[0]).join('; ');
-}
+let app, dataSource, adminCookie, citizenCookie;
 
 beforeAll(async () => {
-  await AppDataSourcePostgres.initialize();
-  await seedDatabase();
-  adminCookie = await loginAndGetCookie('admin', 'admin');
-  citizenCookie = await loginAndGetCookie('citizen', 'citizen');
+  const setup = await standardSetup();
+
+  app = setup.app;
+  dataSource = setup.dataSource;
+
+  adminCookie = await setup.loginAsAdmin();
+  citizenCookie = await setup.loginAsCitizen();
 }, 30000);
 
 afterAll(async () => {
-  await cleanupStaffUsers();
-  await AppDataSourcePostgres.destroy();
-});
-
-afterEach(async () => {
-  await cleanupStaffUsers();
+  await cleanupUsers(dataSource, staffUsernames);
+  await standardTeardown();
 });
 
 describe('POST /api/v1/sessions/signup (E2E)', () => {
