@@ -46,7 +46,10 @@ export function createAuthorizationMock(options = {}) {
             return next(new UnauthorizedError('UNAUTHORIZED'));
         },
 
-        requireAdminIfCreatingStaff: () => (req, _res, next) => next(),
+        requireAdminIfCreatingStaff: (req, res, next) => {
+            req.user = { userType: req.headers['X-Test-User-Type'] };
+            next();
+        },
 
         authorizeRole: (requiredRole) => (req, _res, next) => {
             const roleHdr = req.header('X-Test-Role');
@@ -126,25 +129,25 @@ export async function setUpLoginMock() {
                 next();
             },
             session: () => (_req, _res, next) => next(),
-            authenticate: (strategy, options) => (req, res, next) => {
-                // Only authenticate on login route
+            authenticate: (strategy, options, callback) => (req, res, next) => {
                 if (req.path?.includes('/login')) {
-                    // Simulate failed login if credentials are wrong
                     if (req.body?.username === 'wrong' && req.body?.password === 'wrong') {
                         return res.status(401).json({ error: 'Invalid credentials' });
                     }
 
-                    // Simulate successful login
-                    req.user = {
+                    const user = {
                         id: 10,
                         username: 'testuser',
                         userType: 'CITIZEN',
                         email: 'test@example.com'
                     };
 
-                    // Simulate session regeneration for login
+                    req.user = user;
                     req.session = req.session || {};
                     req.session.regenerate = (cb) => cb();
+
+                    // chiama il callback se Passport lo usa
+                    if (callback) return callback(null, user);
                 }
 
                 next();

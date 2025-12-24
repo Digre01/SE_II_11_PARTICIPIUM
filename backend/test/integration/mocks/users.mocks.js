@@ -36,3 +36,12 @@ await jest.unstable_mockModule('../../../middlewares/uploadMiddleware.js', () =>
         },
     }
 }));
+
+const mockUserService = {
+    verifyPassword: jest.fn(() => true), // sempre "password corretta"
+    hashPassword: jest.fn()
+}
+
+await jest.unstable_mockModule("../../../services/userService.js", () => ({
+    default: mockUserService
+}));
