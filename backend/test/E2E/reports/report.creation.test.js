@@ -1,15 +1,8 @@
-import {afterAll, beforeAll, describe, expect, it} from "@jest/globals";
-import {app, attachFakeImage, cookie, deleteReturnedPhotos, globalSetup, globalTeardown} from "./report.setup.js";
+import {beforeAll, describe, expect, it} from "@jest/globals";
+import {app, attachFakeImage, cookie, deleteReturnedPhotos} from "./report.setup.js";
 import request from "supertest";
 
 describe('POST /api/v1/reports (E2E)', () => {
-    beforeAll(async () => {
-        await globalSetup()
-    });
-
-    afterAll(async () => {
-        await globalTeardown()
-    })
 
     it('fails without authorization (no cookie)', async () => {
         let req = request(app)

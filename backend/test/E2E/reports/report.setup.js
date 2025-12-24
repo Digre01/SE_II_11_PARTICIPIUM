@@ -1,4 +1,4 @@
-import {expect} from "@jest/globals";
+import {afterAll, beforeAll, expect} from "@jest/globals";
 import request from "supertest";
 import fs from "fs";
 import path from "node:path";
@@ -31,8 +31,10 @@ export function deleteReturnedPhotos(photos) {
 }
 
 export async function globalSetup() {
-    await AppDataSourcePostgres.initialize();
-    await seedDatabase();
+    if (!AppDataSourcePostgres.isInitialized) {
+        await AppDataSourcePostgres.initialize();
+        await seedDatabase();
+    }
 
     await setupEmailUtilsMock()
 
@@ -68,3 +70,22 @@ export async function globalTeardown() {
         await AppDataSourcePostgres.destroy();
     }
 }
+
+let isSetupDone = false;
+
+beforeAll(async () => {
+    if (!isSetupDone) {
+        await globalSetup();
+        console.log("updating to true")
+        isSetupDone = true;
+    }
+});
+
+afterAll(async () => {
+    // facciamo teardown solo se era stato fatto setup
+    if (isSetupDone) {
+        await globalTeardown();
+        console.log("updating to false")
+        isSetupDone = false;
+    }
+});

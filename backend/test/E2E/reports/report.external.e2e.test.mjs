@@ -5,8 +5,6 @@ import {
   app,
   attachFakeImage, cookie, cookie_staff,
   deleteReturnedPhotos,
-  globalSetup,
-  globalTeardown,
 } from './report.setup.js';
 import {AppDataSourcePostgres} from "../../../config/data-source.js";
 
@@ -14,7 +12,6 @@ describe('PATCH /api/v1/reports/:id/assign_external (E2E)', () => {
   let createdForExternalId;
 
   beforeAll(async () => {
-    await globalSetup()
     let req = request(app)
         .post('/api/v1/reports')
         .set('Cookie', cookie)
@@ -41,10 +38,6 @@ describe('PATCH /api/v1/reports/:id/assign_external (E2E)', () => {
 
     deleteReturnedPhotos(createRes.body.photos);
   }, 30000);
-
-  afterAll(async () => {
-    await globalTeardown();
-  });
 
   it('fails without authentication (no cookie)', async () => {
     const res = await request(app)

@@ -15,8 +15,6 @@ describe('GET /api/v1/reports/:id (E2E)', () => {
     let cookieStaffWithRole;
 
     beforeAll(async () => {
-        await globalSetup()
-
         let req = request(app)
             .post('/api/v1/reports')
             .set('Cookie', cookie)
@@ -64,10 +62,6 @@ describe('GET /api/v1/reports/:id (E2E)', () => {
         deleteReturnedPhotos(createRes.body.photos);
 
     }, 30000);
-
-    afterAll(async() => {
-        await globalTeardown()
-    })
 
     it('should fail without authentication (no cookie)', async () => {
         const res = await request(app)
