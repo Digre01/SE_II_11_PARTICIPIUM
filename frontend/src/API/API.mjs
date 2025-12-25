@@ -92,14 +92,21 @@ const createReport = async (formData) => {
 };
 
 // GET /api/v1/reports (staff)
-const fetchReports = async (categoryId) => {
+const fetchReports = async (categoryId, isExternal) => {
   const url = new URL(SERVER_URL + '/api/v1/reports');
 
-  if (categoryId) {
+  if (categoryId !== undefined && categoryId !== null) {
     url.searchParams.append('categoryId', categoryId);
   }
 
-  const response = await fetch(url, { credentials: 'include' });
+  if (isExternal !== undefined && isExternal !== null) {
+    url.searchParams.append('isExternal', String(isExternal));
+  }
+
+  const response = await fetch(url, {
+    method: "GET",
+    credentials: 'include'
+  });
 
   if (response.ok) return await response.json();
   throw await response.text();

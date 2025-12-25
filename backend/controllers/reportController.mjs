@@ -16,8 +16,8 @@ export async function getReportsByTechnician(userId) {
   return await reportRepository.getReportsByTechnician(userId)
 }
 
-export async function getReportsByCategory(categoryId) {
-  return await reportRepository.getReportsByCategory(categoryId)
+export async function getReportsByCategory(categoryId, isExternal) {
+  return await reportRepository.getReportsByCategory(categoryId, isExternal)
 }
 
 export async function getAcceptedReports(){

@@ -60,10 +60,11 @@ router.get(
     authorizeUserType(['staff']),
     async (req, res, next) => {
       try {
-        const { categoryId } = req.query;
+        const categoryId = req.query.categoryId;
+        const isExternal = req.query.isExternal === "true" ? true : null;
 
         const reports = categoryId
-            ? await getReportsByCategory(categoryId)
+            ? await getReportsByCategory(categoryId, isExternal)
             : await getAllReports();
 
         res.json(reports);

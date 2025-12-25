@@ -18,7 +18,9 @@ export const getStatusVariant = (status) => {
     }
 };
 
-export const getActionButtons = (report, user, onAction, isExternal) => {
+export const getActionButtons = (report, user, onAction, isExternal, loading) => {
+    if (!report) return [];
+
     const status = String(report.status).toLowerCase();
     const isUserTechnician = report.technicianId === user?.id;
 
@@ -28,7 +30,8 @@ export const getActionButtons = (report, user, onAction, isExternal) => {
             variant={variant}
             size="sm"
             className={"me-2 mb-2"}
-            onClick={() => onAction(action, report.id)}
+            onClick={() => onAction(action, report.id, user?.id)}
+            disabled={loading}
         >
             {label}
         </Button>
@@ -66,5 +69,21 @@ export const getActionButtons = (report, user, onAction, isExternal) => {
 export const getUserOffices = async (officesIdArray) => {
     return await Promise.all(
         officesIdArray.map(id => API.fetchOffice(id))
+    );
+};
+
+export const fetchAndFilterReports = async ({ userId, categoryId, isExternal }) => {
+    let data = [];
+
+    if (userId) {
+        data = await API.fetchReportsByTechnician(userId);
+    } else if (categoryId !== undefined) {
+        data = await API.fetchReports(categoryId, isExternal);
+    }
+
+    return data.filter(r =>
+        ["assigned", "in_progress", "suspended"].includes(
+            String(r.status || "").trim().toLowerCase()
+        )
     );
 };

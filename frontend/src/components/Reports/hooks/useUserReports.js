@@ -1,35 +1,28 @@
 import { useEffect, useState } from "react";
-import API from "../../../API/API.mjs";
+import {fetchAndFilterReports} from "../common.jsx";
 
 export function useUserReports(userId) {
-    const [reports, setReports] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [userReports, setUserReports] = useState([]);
+    const [loadingUser, setLoadingUser] = useState(false);
 
     useEffect(() => {
         if (!userId) return;
 
         const fetchUserReports = async () => {
             try {
-                setLoading(true);
-                const data = await API.fetchReportsByTechnician(userId);
-
-                const filtered = data.filter(r =>
-                    ["assigned", "in_progress", "suspended"].includes(
-                        String(r.status || "").trim().toLowerCase()
-                    )
-                );
-
-                setReports(filtered);
+                setLoadingUser(true);
+                const filtered = await fetchAndFilterReports({ userId });
+                setUserReports(filtered);
             } catch (err) {
                 console.error(err);
-                setReports([]);
+                setUserReports([]);
             } finally {
-                setLoading(false);
+                setLoadingUser(false);
             }
         };
 
         fetchUserReports();
     }, [userId]);
 
-    return reports;
+    return { userReports, setUserReports, loadingUser };
 }

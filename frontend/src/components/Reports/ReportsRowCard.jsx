@@ -3,14 +3,14 @@ import {Badge, Button, Card} from "react-bootstrap";
 import {getActionButtons, getStatusVariant} from "./common.jsx";
 import {CardBody, Collapse} from "design-react-kit";
 
-export function ReportRow({ idx, report, user, isExternal, onAction, onRowClick }) {
+export function ReportRow({ idx, report, user, isExternal, onAction, onRowClick, loading }) {
 
     const handleRowClick = (e) => {
         if (e.target.closest('button')) return;
         onRowClick(report);
     };
 
-    const actionButtons = getActionButtons(report, user, onAction, isExternal);
+    const actionButtons = getActionButtons(report, user, onAction, isExternal, loading);
 
     return (
         <tr

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import API from "../../../API/API.mjs";
+import {fetchAndFilterReports} from "../common.jsx";
 
 export function useOfficeReports(selectedOfficeId, isExternal) {
     const [reports, setReports] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loadingOffice, setLoadingOffice] = useState(false);
 
     useEffect(() => {
         if (!selectedOfficeId) {
@@ -13,27 +14,20 @@ export function useOfficeReports(selectedOfficeId, isExternal) {
 
         const fetchReports = async () => {
             try {
-                setLoading(true);
+                setLoadingOffice(true);
                 const category = await API.fetchOfficeCategory(selectedOfficeId, isExternal);
-                const data = await API.fetchReports(category.id);
-
-                const filtered = data.filter(r =>
-                    ["assigned", "in_progress", "suspended"].includes(
-                        String(r.status || "").trim().toLowerCase()
-                    )
-                );
-
+                const filtered = await fetchAndFilterReports({ categoryId: category.id, isExternal });
                 setReports(filtered);
             } catch (err) {
                 console.error(err);
                 setReports([]);
             } finally {
-                setLoading(false);
+                setLoadingOffice(false);
             }
         };
 
         fetchReports();
     }, [selectedOfficeId, isExternal]);
 
-    return { reports, setReports, loading };
+    return { reports, setReports, loadingOffice };
 }

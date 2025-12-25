@@ -83,8 +83,12 @@ export class ReportRepository {
 		return await this.repo.findOne({ where: { id: Number(id) }, relations: ['photos', 'category'] });
 	}
 
-	async getReportsByCategory(categoryId) {
-		return await this.repo.find({ where: { categoryId } });
+	async getReportsByCategory(categoryId, isExternal) {
+		if(isExternal) {
+			return await this.repo.findBy({categoryId, assignedExternal: isExternal})
+		} else {
+			return await this.repo.findBy({categoryId})
+		}
 	}
 
 	async getReportsByTechnician(technicianId) {

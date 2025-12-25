@@ -1,13 +1,16 @@
 import API from "../../../API/API.mjs";
+import {fetchAndFilterReports} from "../common.jsx";
 
 export function useReportActions({
-                                     selectedOfficeId,
-                                     setReports,
-                                     setAlertMessage,
-                                     setAlertColor,
-                                     setAlertVisible,
-                                 }) {
-    const handleAction = async (action, reportId) => {
+    selectedOfficeId,
+    isExternal,
+    setReports,
+    setUserReports,
+    setAlertMessage,
+    setAlertColor,
+    setAlertVisible,
+    }) {
+    const handleAction = async (action, reportId, userId) => {
         try {
             if (action === "start") await API.startReport(reportId);
             else if (action === "assign") {
@@ -19,10 +22,15 @@ export function useReportActions({
             else if (action === "suspend") await API.suspendReport(reportId);
             else if (action === "resume") await API.resumeReport(reportId);
 
+            if (userId) {
+                const userReports = await fetchAndFilterReports({userId})
+                setUserReports(userReports);
+            }
+
             if (selectedOfficeId) {
-                const category = await API.fetchOfficeCategory(selectedOfficeId);
-                const updatedReports = await API.fetchReports(category.id);
-                setReports(updatedReports);
+                const category = await API.fetchOfficeCategory(selectedOfficeId, isExternal);
+                const filtered = await fetchAndFilterReports({ categoryId: category.id, isExternal });
+                setReports(filtered);
             }
         } catch (err) {
             alert("Operation failed: " + err);

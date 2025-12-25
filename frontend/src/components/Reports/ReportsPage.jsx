@@ -18,12 +18,14 @@ function ReportsPage({ user }) {
     const [alertColor, setAlertColor] = useState("primary");
 
     const { userOffices, isExternal } = useUserOffices(user);
-    const { reports, setReports } = useOfficeReports(selectedOfficeId, isExternal);
-    const userReports = useUserReports(user.id)
+    const { reports, setReports, loadingOffice } = useOfficeReports(selectedOfficeId, isExternal);
+    const { userReports, setUserReports, loadingUser } = useUserReports(user?.id)
 
     const { handleAction } = useReportActions({
         selectedOfficeId,
+        isExternal,
         setReports,
+        setUserReports,
         setAlertMessage,
         setAlertColor,
         setAlertVisible,
@@ -69,17 +71,19 @@ function ReportsPage({ user }) {
                     isExternal={isExternal}
                     onAction={handleAction}
                     onRowClick={handleOpenModal}
+                    loading={loadingUser}
                     title="Reports assigned to you"
                 />
             </Container>
 
             <Container className="my-4">
                 <ReportsTable
-                    reports={isExternal ? reports.filter(r => r.assignedExternal) : reports}
+                    reports={reports}
                     user={user}
                     isExternal={isExternal}
                     onAction={handleAction}
                     onRowClick={handleOpenModal}
+                    loading={loadingOffice}
                     headerContent={
                         <div className="d-flex flex-column gap-3">
                             <h3 className="text-primary mb-0">
