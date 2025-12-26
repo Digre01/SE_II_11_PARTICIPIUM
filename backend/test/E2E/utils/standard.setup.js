@@ -1,13 +1,9 @@
 import { setupEmailUtilsMock } from '../../integration/mocks/common.mocks.js';
-import { AppDataSourcePostgres } from '../../../config/data-source.js';
-import { seedDatabase } from '../../../database/seeder.js';
 import { loginAndGetCookie } from './auth.utils.js';
+import {databaseSetup} from "./db.utils.js";
 
-export async function standardSetup() {
-    if (!AppDataSourcePostgres.isInitialized) {
-        await AppDataSourcePostgres.initialize();
-        await seedDatabase();
-    }
+export async function standardSetup({seed = true} = {}) {
+    const dataSource = await databaseSetup({seed})
 
     await setupEmailUtilsMock();
 
@@ -15,7 +11,7 @@ export async function standardSetup() {
 
     return {
         app,
-        dataSource: AppDataSourcePostgres,
+        dataSource,
 
         loginAsAdmin: () =>
             loginAndGetCookie(app, 'admin', 'admin'),
@@ -28,8 +24,8 @@ export async function standardSetup() {
     };
 }
 
-export async function standardTeardown() {
-    if (AppDataSourcePostgres.isInitialized) {
-        await AppDataSourcePostgres.destroy();
+export async function standardTeardown(dataSource) {
+    if (dataSource?.isInitialized) {
+        await dataSource.destroy();
     }
 }

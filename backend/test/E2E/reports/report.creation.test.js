@@ -5,7 +5,7 @@ import { standardSetup, standardTeardown } from '../utils/standard.setup.js';
 import { attachFakeImage, deleteReturnedPhotos } from '../utils/files.utils.js';
 
 describe('POST /api/v1/reports (E2E)', () => {
-    let app;
+    let app, dataSource;
     let loginAsCitizen;
     let citizenCookie;
 
@@ -13,13 +13,14 @@ describe('POST /api/v1/reports (E2E)', () => {
         const setup = await standardSetup();
 
         app = setup.app;
+        dataSource = setup.dataSource
         loginAsCitizen = setup.loginAsCitizen;
 
         citizenCookie = await loginAsCitizen();
     }, 30000);
 
     afterAll(async () => {
-        await standardTeardown();
+        await standardTeardown(dataSource);
     });
 
     it('fails without authorization (no cookie)', async () => {

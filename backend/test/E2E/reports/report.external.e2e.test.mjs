@@ -63,7 +63,7 @@ describe('PATCH /api/v1/reports/:id/assign_external (E2E)', () => {
   }, 30000);
 
   afterAll(async () => {
-    await standardTeardown();
+    await standardTeardown(dataSource);
   });
 
   beforeEach(() => {

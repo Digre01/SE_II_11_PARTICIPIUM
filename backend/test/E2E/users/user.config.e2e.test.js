@@ -1,17 +1,24 @@
 import {afterAll, beforeAll, describe, expect, it} from "@jest/globals";
 import request from "supertest";
 import {cleanupUsers, setupUsers} from "./users.setup.js";
+import {standardSetup, standardTeardown} from "../utils/standard.setup.js";
 
 let app, dataSource, userRepository;
 const testUsernames = [];
 
 describe("E2E: profile configuration", () => {
     beforeAll(async () => {
-        ({ app, dataSource, userRepository } = await setupUsers());
+        const setup = await standardSetup();
+        app = setup.app;
+        dataSource = setup.dataSource;
+
+        const userSetup = await setupUsers();
+        userRepository = userSetup.userRepository
     }, 30000);
 
     afterAll(async () => {
         await cleanupUsers(dataSource, userRepository, testUsernames);
+        await standardTeardown(dataSource)
     });
 
     it('full citizen flow: signup -> config -> pfp', async () => {

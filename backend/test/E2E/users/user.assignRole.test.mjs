@@ -1,18 +1,28 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
 import {cleanupUsers, setupUsers} from "./users.setup.js";
+import {standardSetup, standardTeardown} from "../utils/standard.setup.js";
 
-let app, dataSource, userRepository, userService;
-const testUsernames = [];
 
 describe('E2E: userRoutes assign role', () => {
 
+  let app, dataSource, userRepository, userService;
+  const testUsernames = [];
+
   beforeAll(async () => {
-    ({ app, dataSource, userRepository, userService } = await setupUsers());
+    const setup = await standardSetup();
+
+    app = setup.app;
+    dataSource = setup.dataSource;
+
+    const userSetup = await setupUsers();
+    userRepository = userSetup.userRepository;
+    userService = userSetup.userService;
   }, 30000);
 
   afterAll(async () => {
     await cleanupUsers(dataSource, userRepository, testUsernames);
+    await standardTeardown(dataSource)
   });
 
   it('returns 401 when not authenticated', async () => {

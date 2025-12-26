@@ -3,32 +3,32 @@ import request from 'supertest';
 import {standardSetup, standardTeardown} from "../utils/standard.setup.js";
 import {cleanupUsers} from "../utils/db.utils.js";
 
-const staffUsernames = [
-  'staffE2E',
-  'staffE2E2',
-  'dupStaff',
-  'uniqueStaff',
-  'otherStaff'
-];
-
-let app, dataSource, adminCookie, citizenCookie;
-
-beforeAll(async () => {
-  const setup = await standardSetup();
-
-  app = setup.app;
-  dataSource = setup.dataSource;
-
-  adminCookie = await setup.loginAsAdmin();
-  citizenCookie = await setup.loginAsCitizen();
-}, 30000);
-
-afterAll(async () => {
-  await cleanupUsers(dataSource, staffUsernames);
-  await standardTeardown();
-});
-
 describe('POST /api/v1/sessions/signup (E2E)', () => {
+  const staffUsernames = [
+    'staffE2E',
+    'staffE2E2',
+    'dupStaff',
+    'uniqueStaff',
+    'otherStaff'
+  ];
+
+  let app, dataSource, adminCookie, citizenCookie;
+
+  beforeAll(async () => {
+    const setup = await standardSetup();
+
+    app = setup.app;
+    dataSource = setup.dataSource;
+
+    adminCookie = await setup.loginAsAdmin();
+    citizenCookie = await setup.loginAsCitizen();
+  }, 30000);
+
+  afterAll(async () => {
+    await cleanupUsers(dataSource, staffUsernames);
+    await standardTeardown(dataSource);
+  });
+
   it('registers staff when called by admin', async () => {
     const res = await request(app)
       .post('/api/v1/sessions/signup')

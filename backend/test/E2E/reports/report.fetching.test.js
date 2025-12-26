@@ -2,11 +2,10 @@ import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
 import { standardSetup, standardTeardown } from '../utils/standard.setup.js';
 import { attachFakeImage, deleteReturnedPhotos } from '../utils/files.utils.js';
-import { AppDataSourcePostgres } from '../../../config/data-source.js';
 import { mockRepo } from './reports.mock.js';
 
 describe('GET /api/v1/reports/:id (E2E)', () => {
-    let app;
+    let app, dataSource;
     let loginAsCitizen;
     let loginAsStaff;
 
@@ -18,6 +17,7 @@ describe('GET /api/v1/reports/:id (E2E)', () => {
         const setup = await standardSetup();
 
         app = setup.app;
+        dataSource = setup.dataSource;
         loginAsCitizen = setup.loginAsCitizen;
         loginAsStaff = setup.loginAsStaff;
 
@@ -43,8 +43,8 @@ describe('GET /api/v1/reports/:id (E2E)', () => {
         const { Users } = await import('../../../entities/Users.js');
         const { Report } = await import('../../../entities/Reports.js');
 
-        const userRepo = AppDataSourcePostgres.getRepository(Users);
-        const reportRepo = AppDataSourcePostgres.getRepository(Report);
+        const userRepo = dataSource.getRepository(Users);
+        const reportRepo = dataSource.getRepository(Report);
 
         const citizenUser = await userRepo.findOne({
             where: { username: 'citizen' }
@@ -57,9 +57,6 @@ describe('GET /api/v1/reports/:id (E2E)', () => {
 
         createdReportId = report.id;
 
-        /** -------------------------
-         *  Assign role to staff1
-         *  ------------------------- */
         const staffUser = await userRepo.findOne({
             where: { username: 'staff1' }
         });
@@ -67,8 +64,8 @@ describe('GET /api/v1/reports/:id (E2E)', () => {
         const { Roles } = await import('../../../entities/Roles.js');
         const { UserOffice } = await import('../../../entities/UserOffice.js');
 
-        const rolesRepo = AppDataSourcePostgres.getRepository(Roles);
-        const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);
+        const rolesRepo = dataSource.getRepository(Roles);
+        const userOfficeRepo = dataSource.getRepository(UserOffice);
 
         const mpRole = await rolesRepo.findOne({
             where: { name: 'Municipal Public Relations Officer' }
@@ -93,7 +90,7 @@ describe('GET /api/v1/reports/:id (E2E)', () => {
     }, 30000);
 
     afterAll(async () => {
-        await standardTeardown();
+        await standardTeardown(dataSource);
     });
 
     it('should fail without authentication', async () => {

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
 import {setupEmailUtilsMock} from "../../integration/mocks/common.mocks.js";
 import {cleanupUsers, setupUsers} from "./users.setup.js";
+import {standardSetup, standardTeardown} from "../utils/standard.setup.js";
 
 await setupEmailUtilsMock()
 
@@ -11,11 +12,19 @@ describe('E2E: setUserRoles story (multiple roles + cancellation)', () => {
   const testUsernames = [];
 
   beforeAll(async () => {
-    ({ app, dataSource, userRepository, userService, rolesRepository } = await setupUsers());
+    const setup = await standardSetup();
+    app = setup.app;
+    dataSource = setup.dataSource;
+
+    const userSetup = await setupUsers();
+    userRepository = userSetup.userRepository;
+    userService = userSetup.userService;
+    rolesRepository = userSetup.rolesRepository;
   }, 30000);
 
   afterAll(async () => {
     await cleanupUsers(dataSource, userRepository, testUsernames);
+    await standardTeardown(dataSource)
   });
 
   it('assigns multiple roles to a staff user as ADMIN and persists them', async () => {
