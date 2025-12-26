@@ -4,8 +4,8 @@ import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "../m
 import { mockRepo } from "../mocks/users.mocks.js";
 
 await setupEmailUtilsMock();
-await setupAuthorizationMocks()
 await setUpLoginMock();
+await setupAuthorizationMocks()
 
 const { default: app } = await import('../../../app.js');
 
@@ -15,7 +15,6 @@ describe('POST /sessions/current/verify_email', () => {
     it('should fail verify_email if not authenticated', async () => {
         const res = await request(app)
             .post('/api/v1/sessions/current/verify_email')
-            .set("Authorization", "Bearer token")
             .send({ code: '123456' });
         expect(res.status).toBe(401);
     });
@@ -23,7 +22,7 @@ describe('POST /sessions/current/verify_email', () => {
     it('should fail verify_email if code is missing', async () => {
         const res = await request(app)
             .post('/api/v1/sessions/current/verify_email')
-            .set('Authorization', 'Bearer citizen')
+            .set("X-Test-User-Type", "CITIZEN")
             .send({});
         expect(res.status).toBe(400);
     });
@@ -32,19 +31,22 @@ describe('POST /sessions/current/verify_email', () => {
         mockRepo.getEmailVerification.mockRejectedValueOnce(new Error('Invalid verification code'));
         const res = await request(app)
             .post('/api/v1/sessions/current/verify_email')
-            .set('Authorization', 'Bearer citizen')
+            .set("X-Test-User-Type", "CITIZEN")
             .send({ code: 'wrongcode' });
-        expect([400, 500]).toContain(res.status);
+        expect(res.status === 400 || res.status === 500).toBe(true)
         expect(res.body).toHaveProperty('message');
     });
 
     it('should fail verify_email with expired code', async () => {
-        mockRepo.getEmailVerification.mockRejectedValueOnce(new Error('Verification code expired'));
+        mockRepo.getEmailVerification.mockResolvedValueOnce({
+            code: 'expiredcode',
+            expiresAt: new Date(Date.now() - 1000) //un secondo fa, quindi scaduto
+        });
         const res = await request(app)
             .post('/api/v1/sessions/current/verify_email')
-            .set('Authorization', 'Bearer citizen')
+            .set("X-Test-User-Type", "CITIZEN")
             .send({ code: 'expiredcode' });
-        expect([400, 500]).toContain(res.status);
+        expect(res.status).toBe(410)
         expect(res.body).toHaveProperty('message');
     });
 });
@@ -60,7 +62,6 @@ describe('GET /sessions/current/email_verified', () => {
         mockRepo.isEmailVerified.mockRejectedValueOnce(new Error('User not found'));
         const res = await request(app)
             .get('/api/v1/sessions/current/email_verified')
-            .set('Authorization', 'Bearer citizen')
             .set("X-Test-User-Type", "CITIZEN");
         expect([400, 500]).toContain(res.status);
         expect(res.body).toHaveProperty('message');
@@ -70,9 +71,8 @@ describe('GET /sessions/current/email_verified', () => {
         mockRepo.isEmailVerified.mockRejectedValueOnce(new Error('Generic error'));
         const res = await request(app)
             .get('/api/v1/sessions/current/email_verified')
-            .set('Authorization', 'Bearer citizen')
             .set("X-Test-User-Type", "CITIZEN");
-        expect([400, 500]).toContain(res.status);
+        expect(res.status === 400 || res.status === 500).toBe(true)
         expect(res.body).toHaveProperty('message');
     });
 });

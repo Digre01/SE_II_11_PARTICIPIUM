@@ -4,20 +4,14 @@ import {UnauthorizedError} from "../../../errors/UnauthorizedError.js";
 
 export function mockAuthorizeUserType(allowedTypes = []) {
     return (req, _res, next) => {
-        const headers = req.headers || {};
-        const userTypeHeader = headers['x-test-user-type'];
-
-        if (!userTypeHeader) {
-            req.isAuthenticated = () => false;
+        // Controlla se l'utente è autenticato (già impostato da Passport)
+        if (!req.isAuthenticated || !req.isAuthenticated()) {
             return next(new UnauthorizedError('UNAUTHORIZED'));
         }
 
-        req.user = { id: 1, userType: userTypeHeader.toUpperCase() };
-        req.isAuthenticated = () => true;
-
         if (allowedTypes.length > 0) {
             const normalizedAllowed = allowedTypes.map(a => String(a).toUpperCase());
-            const callerType = req.user.userType;
+            const callerType = String(req.user?.userType || '').toUpperCase();
             if (!normalizedAllowed.includes(callerType)) {
                 return next(new InsufficientRightsError('Forbidden'));
             }
@@ -28,9 +22,6 @@ export function mockAuthorizeUserType(allowedTypes = []) {
 }
 
 export function mockRequireAdminIfCreatingStaff(req, _res, next) {
-    const headers = req.headers || {};
-    const userTypeHeader = headers['x-test-user-type'];
-
     const requestedUserType = req.body?.userType;
     const isStaff = String(requestedUserType || '').toUpperCase() === 'STAFF';
 
@@ -38,15 +29,11 @@ export function mockRequireAdminIfCreatingStaff(req, _res, next) {
         return next();
     }
 
-    if (!userTypeHeader) {
-        req.isAuthenticated = () => false;
+    if (!req.isAuthenticated || !req.isAuthenticated()) {
         return next(new UnauthorizedError('Unauthorized'));
     }
 
-    req.user = { id: 1, userType: userTypeHeader.toUpperCase() };
-    req.isAuthenticated = () => true;
-
-    const isAdmin = req.user.userType === 'ADMIN';
+    const isAdmin = String(req.user?.userType || '').toUpperCase() === 'ADMIN';
     if (!isAdmin) {
         return next(new InsufficientRightsError('Forbidden'));
     }
@@ -56,18 +43,14 @@ export function mockRequireAdminIfCreatingStaff(req, _res, next) {
 
 export function mockAuthorizeRole(requiredRole) {
     return (req, _res, next) => {
-        const headers = req.headers || {};
-        const roleHeader = headers['x-test-role'];
-
-        if (!roleHeader) {
-            req.isAuthenticated = () => false;
+        if (!req.isAuthenticated || !req.isAuthenticated()) {
             return next(new UnauthorizedError('UNAUTHORIZED'));
         }
 
-        req.user = { id: 1, roles: [roleHeader.toLowerCase()] };
-        req.isAuthenticated = () => true;
+        const headers = req.headers || {};
+        const roleHeader = headers['x-test-role'];
 
-        if (String(roleHeader).toLowerCase() !== String(requiredRole).toLowerCase()) {
+        if (!roleHeader || String(roleHeader).toLowerCase() !== String(requiredRole).toLowerCase()) {
             return next(new InsufficientRightsError('Forbidden'));
         }
 
@@ -102,7 +85,19 @@ export async function setUpLoginMock() {
     await jest.unstable_mockModule('../../../config/passport.js', () => ({
         default: {
             initialize: () => (req, _res, next) => {
-                // Initialize passport on request
+                // Leggi l'header per simulare l'autenticazione
+                const headers = req.headers || {};
+                const userTypeHeader = headers['x-test-user-type'];
+
+                if (userTypeHeader) {
+                    req.user = {
+                        id: 1,
+                        username: 'testuser',
+                        userType: userTypeHeader.toUpperCase(),
+                        email: 'test@example.com'
+                    };
+                }
+
                 req.isAuthenticated = () => !!req.user;
                 req.login = (user, cb) => {
                     req.user = user;
@@ -133,7 +128,6 @@ export async function setUpLoginMock() {
                     req.session = req.session || {};
                     req.session.regenerate = (cb) => cb();
 
-                    // chiama il callback se Passport lo usa
                     if (callback) return callback(null, user);
                 }
 
