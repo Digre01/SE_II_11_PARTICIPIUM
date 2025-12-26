@@ -1,92 +1,25 @@
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+import {describe, it, expect, beforeAll, jest, afterAll} from '@jest/globals';
 import request from 'supertest';
 import { standardSetup, standardTeardown } from '../utils/standard.setup.js';
-import { attachFakeImage, deleteReturnedPhotos } from '../utils/files.utils.js';
 import { mockRepo } from './reports.mock.js';
 
-describe('GET /api/v1/reports/:id (E2E)', () => {
-    let app, dataSource;
-    let loginAsCitizen;
-    let loginAsStaff;
-
+describe('GET /api/v1/reports/:id (E2E - mocked)', () => {
+    let app;
+    let dataSource;
     let citizenCookie;
     let staffCookieWithRole;
-    let createdReportId;
+    const createdReportId = 123;
 
     beforeAll(async () => {
         const setup = await standardSetup();
-
         app = setup.app;
         dataSource = setup.dataSource;
-        loginAsCitizen = setup.loginAsCitizen;
-        loginAsStaff = setup.loginAsStaff;
 
-        citizenCookie = await loginAsCitizen();
+        citizenCookie = await setup.loginAsCitizen();
+        staffCookieWithRole = await setup.loginAsStaff();
 
-        let req = request(app)
-            .post('/api/v1/reports')
-            .set('Cookie', citizenCookie)
-            .field('title', 'Test Report for GET')
-            .field('description', 'Desc')
-            .field('categoryId', '5')
-            .field('latitude', '12.3')
-            .field('longitude', '3.21');
-
-        req = attachFakeImage(req, 'a.jpg');
-        req = attachFakeImage(req, 'b.jpg');
-
-        const createRes = await req;
-        expect(createRes.status).toBe(201);
-
-        deleteReturnedPhotos(createRes.body.photos);
-
-        const { Users } = await import('../../../entities/Users.js');
-        const { Report } = await import('../../../entities/Reports.js');
-
-        const userRepo = dataSource.getRepository(Users);
-        const reportRepo = dataSource.getRepository(Report);
-
-        const citizenUser = await userRepo.findOne({
-            where: { username: 'citizen' }
-        });
-
-        const report = await reportRepo.findOne({
-            where: { userId: citizenUser.id },
-            order: { id: 'DESC' }
-        });
-
-        createdReportId = report.id;
-
-        const staffUser = await userRepo.findOne({
-            where: { username: 'staff1' }
-        });
-
-        const { Roles } = await import('../../../entities/Roles.js');
-        const { UserOffice } = await import('../../../entities/UserOffice.js');
-
-        const rolesRepo = dataSource.getRepository(Roles);
-        const userOfficeRepo = dataSource.getRepository(UserOffice);
-
-        const mpRole = await rolesRepo.findOne({
-            where: { name: 'Municipal Public Relations Officer' }
-        });
-
-        let userOffice = await userOfficeRepo.findOne({
-            where: { userId: staffUser.id }
-        });
-
-        if (!userOffice) {
-            userOffice = userOfficeRepo.create({
-                userId: staffUser.id,
-                roleId: mpRole.id
-            });
-        } else {
-            userOffice.roleId = mpRole.id;
-        }
-
-        await userOfficeRepo.save(userOffice);
-
-        staffCookieWithRole = await loginAsStaff();
+        // Reset dei mock prima dei test
+        jest.resetAllMocks();
     }, 30000);
 
     afterAll(async () => {
@@ -94,9 +27,7 @@ describe('GET /api/v1/reports/:id (E2E)', () => {
     });
 
     it('should fail without authentication', async () => {
-        const res = await request(app)
-            .get(`/api/v1/reports/${createdReportId}`);
-
+        const res = await request(app).get(`/api/v1/reports/${createdReportId}`);
         expect(res.status).toBe(401);
     });
 
@@ -109,6 +40,8 @@ describe('GET /api/v1/reports/:id (E2E)', () => {
     });
 
     it('should fail when report does not exist', async () => {
+        mockRepo.getReportById.mockResolvedValue(null);
+
         const res = await request(app)
             .get('/api/v1/reports/999999')
             .set('Cookie', staffCookieWithRole);
@@ -124,32 +57,8 @@ describe('GET /api/v1/reports/:id (E2E)', () => {
             categoryId: 5,
             latitude: 12.3,
             longitude: 3.21,
-            status: 'pending'
-        });
-
-        const res = await request(app)
-            .get(`/api/v1/reports/${createdReportId}`)
-            .set('Cookie', staffCookieWithRole);
-
-        expect(res.status).toBe(200);
-        expect(res.body.id).toBe(createdReportId);
-    });
-
-    it('should include photos in the response', async () => {
-        mockRepo.getReportById.mockResolvedValue({
-            photos: ['/public/a.jpg', '/public/b.jpg']
-        });
-
-        const res = await request(app)
-            .get(`/api/v1/reports/${createdReportId}`)
-            .set('Cookie', staffCookieWithRole);
-
-        expect(res.status).toBe(200);
-        expect(Array.isArray(res.body.photos)).toBe(true);
-    });
-
-    it('should include category information', async () => {
-        mockRepo.getReportById.mockResolvedValue({
+            status: 'pending',
+            photos: ['/public/a.jpg', '/public/b.jpg'],
             category: { id: 5, name: 'Road Issues' }
         });
 
@@ -158,6 +67,10 @@ describe('GET /api/v1/reports/:id (E2E)', () => {
             .set('Cookie', staffCookieWithRole);
 
         expect(res.status).toBe(200);
+        expect(res.body.id).toBe(createdReportId);
+        expect(Array.isArray(res.body.photos)).toBe(true);
+        expect(res.body.photos.length).toBe(2);
+        expect(res.body.category).toBeDefined();
         expect(res.body.category.id).toBe(5);
     });
 });

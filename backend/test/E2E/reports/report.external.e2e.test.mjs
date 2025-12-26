@@ -10,15 +10,14 @@ import {
 import request from 'supertest';
 import { mockRepo } from './reports.mock.js';
 import { standardSetup, standardTeardown } from '../utils/standard.setup.js';
-import { attachFakeImage, deleteReturnedPhotos } from '../utils/files.utils.js';
 
-describe('PATCH /api/v1/reports/:id/assign_external (E2E)', () => {
+describe('PATCH /api/v1/reports/:id/assign_external (E2E - mocked)', () => {
   let app;
   let dataSource;
   let adminCookie;
   let staffCookie;
   let citizenCookie;
-  let createdForExternalId;
+  const createdForExternalId = 456;
 
   beforeAll(async () => {
     const setup = await standardSetup();
@@ -30,36 +29,7 @@ describe('PATCH /api/v1/reports/:id/assign_external (E2E)', () => {
     staffCookie = await setup.loginAsStaff();
     citizenCookie = await setup.loginAsCitizen();
 
-    // Create a report as citizen
-    let req = request(app)
-        .post('/api/v1/reports')
-        .set('Cookie', citizenCookie)
-        .field('title', 'To assign externally')
-        .field('description', 'Desc')
-        .field('categoryId', '5')
-        .field('latitude', '10.1')
-        .field('longitude', '20.2');
-
-    req = attachFakeImage(req, 'ext-a.jpg');
-
-    const createRes = await req;
-    expect(createRes.status).toBe(201);
-
-    // Retrieve created report ID
-    const { Users } = await import('../../../entities/Users.js');
-    const userRepo = dataSource.getRepository(Users);
-    const citizenUser = await userRepo.findOne({ where: { username: 'citizen' } });
-
-    const { Report } = await import('../../../entities/Reports.js');
-    const reportRepo = dataSource.getRepository(Report);
-    const report = await reportRepo.findOne({
-      where: { userId: citizenUser.id },
-      order: { id: 'DESC' }
-    });
-
-    createdForExternalId = report.id;
-
-    deleteReturnedPhotos(createRes.body.photos);
+    jest.resetAllMocks();
   }, 30000);
 
   afterAll(async () => {
@@ -86,6 +56,7 @@ describe('PATCH /api/v1/reports/:id/assign_external (E2E)', () => {
   });
 
   it('successfully assigns report to external maintainer (staff)', async () => {
+    // Mock della funzione che assegna il report
     mockRepo.assignReportToExternalMaintainer.mockResolvedValue({
       assignedExternal: true
     });
