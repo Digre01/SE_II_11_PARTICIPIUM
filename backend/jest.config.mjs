@@ -30,4 +30,5 @@ export default {
         "<rootDir>/services/**/*.{js,mjs}",
     ],
     coverageReporters: ["text", "html", "lcov"],
+    maxWorkers: 1
 };
