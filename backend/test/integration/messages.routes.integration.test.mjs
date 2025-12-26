@@ -49,7 +49,7 @@ describe('Integration: conversation messages routes', () => {
 
 		const res = await request(app)
 			.get('/api/v1/conversations/555/messages')
-		set('X-test-User-Type', 'citizen');
+			.set('X-test-User-Type', 'citizen');
 
 		expect(res.status).toBe(404);
 		expect(res.body).toHaveProperty('name', 'NotFoundError');
