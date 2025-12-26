@@ -12,6 +12,8 @@ await setUpLoginMock()
 
 const { default: app } = await import('../../../app.js');
 
+const externalMaintainerId = 1;
+
 describe('PATCH /api/v1/reports/:id/assign_external', () => {
 
     beforeEach(() => {
@@ -32,13 +34,13 @@ describe('PATCH /api/v1/reports/:id/assign_external', () => {
         expect(res.body.assignedExternal).toBe(true);
 
         expect(mockRepo.assignReportToExternalMaintainer)
-            .toHaveBeenCalledWith('1', 10);
+            .toHaveBeenCalledWith('1', externalMaintainerId);
     });
 
     it('returns 403 when called by citizen', async () => {
         const res = await request(app)
             .patch('/api/v1/reports/1/assign_external')
-            .set('X-Test-User-Type', 'citizen');
+            .set('X-Test-User-Type', 'CITIZEN')
 
         expect(res.status).toBe(403);
         expect(mockRepo.assignReportToExternalMaintainer).not.toHaveBeenCalled();
@@ -47,7 +49,7 @@ describe('PATCH /api/v1/reports/:id/assign_external', () => {
     it('returns 403 when called by admin', async () => {
         const res = await request(app)
             .patch('/api/v1/reports/1/assign_external')
-            .set('X-Test-Role', 'admin');
+            .set('X-Test-User-Type', 'ADMIN')
 
         expect(res.status).toBe(403);
         expect(mockRepo.assignReportToExternalMaintainer).not.toHaveBeenCalled();
@@ -105,7 +107,7 @@ describe('PATCH /api/v1/reports/:id/external/*', () => {
 
             expect(mockRepo[repoMethod]).toHaveBeenCalledWith({
                 reportId: '50',
-                externalMaintainerId: 10
+                externalMaintainerId
             });
         }
     );
