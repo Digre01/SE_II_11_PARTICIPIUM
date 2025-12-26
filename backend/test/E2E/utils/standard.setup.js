@@ -1,11 +1,14 @@
 import { setupEmailUtilsMock } from '../../integration/mocks/common.mocks.js';
 import { loginAndGetCookie } from './auth.utils.js';
 import {databaseSetup} from "./db.utils.js";
+import {jest} from "@jest/globals";
+import {setupWsMock} from "./ws.utils.js";
 
 export async function standardSetup({seed = true} = {}) {
     const dataSource = await databaseSetup({seed})
 
     await setupEmailUtilsMock();
+    await setupWsMock();
 
     const { default: app } = await import('../../../app.js');
 

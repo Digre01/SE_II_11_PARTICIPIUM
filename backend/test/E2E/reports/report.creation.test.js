@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+import {describe, it, expect, beforeAll, afterAll, jest} from '@jest/globals';
 import request from 'supertest';
 
 import { standardSetup, standardTeardown } from '../utils/standard.setup.js';

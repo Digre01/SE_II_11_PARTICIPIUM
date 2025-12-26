@@ -48,6 +48,7 @@ router.post('/',
       res.status(201).json({ message: 'Report created successfully', photos });
     } catch (error) {
       deleteUploadedFiles();
+      console.log(error)
       next(error);
     }
   }
