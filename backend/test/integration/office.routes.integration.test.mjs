@@ -1,10 +1,11 @@
 import request from 'supertest';
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { mockOfficeRepo } from "./mocks/office.mocks.js";
-import { setupAuthorizationMock, setupEmailUtilsMock } from "./mocks/common.mocks.js";
+import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "./mocks/common.mocks.js";
 
-await setupAuthorizationMock({ allowUnauthorizedThrough: false });
 await setupEmailUtilsMock();
+await setupAuthorizationMocks()
+await setUpLoginMock()
 
 const { default: app } = await import('../../app.js');
 
@@ -37,7 +38,9 @@ describe('GET /api/v1/offices', () => {
 
     it('returns 403 for non-ADMIN users or missing auth', async () => {
         for (const role of ['staff', 'citizen', undefined]) {
-            const req = request(app).get('/api/v1/offices').set("Authorization", "Bearer token");
+            const req = request(app)
+                .get('/api/v1/offices')
+                .set('X-test-User-Type', 'citizen')
             if (role) req.set('X-Test-User-Type', role);
             await req.expect(403);
             expect(mockOfficeRepo.findAll).not.toHaveBeenCalled();

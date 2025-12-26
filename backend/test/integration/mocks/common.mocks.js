@@ -86,9 +86,9 @@ export function createUploadMiddlewareMock() {
 
 export async function setupAuthorizationMocks() {
     await jest.unstable_mockModule('../../../middlewares/userAuthorization.js', () => ({
-        authorizeUserType: mockAuthorizeUserType,  // Passa la factory direttamente
-        requireAdminIfCreatingStaff: mockRequireAdminIfCreatingStaff,  // Passa il middleware diretto
-        authorizeRole: mockAuthorizeRole  // Passa la factory direttamente
+        authorizeUserType: mockAuthorizeUserType,
+        requireAdminIfCreatingStaff: mockRequireAdminIfCreatingStaff,
+        authorizeRole: mockAuthorizeRole
     }));
 }
 

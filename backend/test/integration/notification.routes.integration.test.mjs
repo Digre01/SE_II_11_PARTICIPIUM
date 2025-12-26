@@ -1,10 +1,13 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
 import { mockRepo } from "./mocks/notifications.mocks.js";
-import { setupAuthorizationMock, setupEmailUtilsMock } from "./mocks/common.mocks.js";
+import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "./mocks/common.mocks.js";
 
-await setupAuthorizationMock({ allowUnauthorizedThrough: false });
 await setupEmailUtilsMock();
+await setUpLoginMock()
+await setupAuthorizationMocks()
+
+const userId = 1
 
 const { default: app } = await import('../../app.js');
 const { getUserNotifications, getUnreadCounts, markAsRead } = await import('../../controllers/notificationController.js');
@@ -16,11 +19,12 @@ describe('Notification routes integration', () => {
     const sample = [{ id: 1, message: { id: 11 } }];
     mockRepo.getUnreadNotifications.mockResolvedValueOnce(sample);
 
-    const res = await request(app).get('/api/v1/notifications').set('Authorization', 'Bearer token');
+    const res = await request(app).get('/api/v1/notifications')
+        .set('X-Test-User-Type', 'CITIZEN');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(sample);
-    expect(mockRepo.getUnreadNotifications).toHaveBeenCalledWith(10);
+    expect(mockRepo.getUnreadNotifications).toHaveBeenCalledWith(userId);
   });
 
   it('GET /api/v1/notifications -> 401 when unauthenticated', async () => {
@@ -32,21 +36,25 @@ describe('Notification routes integration', () => {
     const counts = { '123': 2 };
     mockRepo.getUnreadCountByConversation.mockResolvedValueOnce(counts);
 
-    const res = await request(app).get('/api/v1/notifications/counts').set('Authorization', 'Bearer t');
+    const res = await request(app)
+        .get('/api/v1/notifications/counts')
+        .set('X-Test-User-Type', 'CITIZEN');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(counts);
-    expect(mockRepo.getUnreadCountByConversation).toHaveBeenCalledWith(10);
+    expect(mockRepo.getUnreadCountByConversation).toHaveBeenCalledWith(userId);
   });
 
   it('POST /api/v1/notifications/:conversationId/read -> 200 marks as read', async () => {
     mockRepo.markNotificationsAsReadForConversation.mockResolvedValueOnce(3);
 
-    const res = await request(app).post('/api/v1/notifications/55/read').set('Authorization', 'Bearer t');
+    const res = await request(app)
+        .post('/api/v1/notifications/55/read')
+        .set('X-Test-User-Type', 'CITIZEN');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ updated: 3 });
-    expect(mockRepo.markNotificationsAsReadForConversation).toHaveBeenCalledWith(10, '55');
+    expect(mockRepo.markNotificationsAsReadForConversation).toHaveBeenCalledWith(userId, '55');
   });
 
   it('POST /api/v1/notifications/:conversationId/read -> 401 when unauthenticated', async () => {
@@ -90,7 +98,7 @@ describe('Notification controller unit tests', () => {
 
     const res = await request(app)
         .get('/api/v1/notifications')
-        .set('Authorization', 'Bearer citizen-token');
+        .set('X-Test-User-Type', 'CITIZEN');
 
     expect(res.status).toBe(500);
     expect(res.body).toHaveProperty('name', 'InternalServerError');
@@ -132,7 +140,7 @@ describe('Notification controller unit tests', () => {
 
     const res = await request(app)
         .get('/api/v1/notifications/counts')
-        .set('Authorization', 'Bearer citizen-token');
+        .set('X-Test-User-Type', 'CITIZEN');
 
     expect(res.status).toBe(403);
     expect(res.body).toHaveProperty('name', 'InsufficientRightsError');
@@ -144,7 +152,7 @@ describe('Notification controller unit tests', () => {
 
     const res = await request(app)
         .get('/api/v1/notifications/counts')
-        .set('Authorization', 'Bearer citizen-token');
+        .set('X-Test-User-Type', 'CITIZEN');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([]);
@@ -181,7 +189,7 @@ describe('Notification controller unit tests', () => {
 
     const res = await request(app)
         .post('/api/v1/notifications/200/read')
-        .set('Authorization', 'Bearer citizen-token');
+        .set('X-Test-User-Type', 'CITIZEN');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ updated: 0 });

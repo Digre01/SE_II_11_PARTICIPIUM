@@ -1,9 +1,12 @@
 import request from 'supertest';
 import {describe, it, expect, beforeEach, jest} from '@jest/globals';
 import { mockRoleRepo } from "./mocks/roles.mocks.js";
-import { setupEmailUtilsMock } from "./mocks/common.mocks.js";
+import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "./mocks/common.mocks.js";
 
 await setupEmailUtilsMock();
+await setUpLoginMock()
+await setupAuthorizationMocks()
+
 const { default: app } = await import('../../app.js');
 
 beforeEach(() => {
@@ -36,7 +39,9 @@ describe('GET /api/v1/roles', () => {
 
     it('returns 403 for non-ADMIN users or missing auth', async () => {
         for (const role of ['staff', 'citizen', undefined]) {
-            const req = request(app).get('/api/v1/roles').set("Authorization", "Bearer token");
+            const req = request(app)
+                .get('/api/v1/roles')
+                .set('X-test-User-Type', 'staff');
             if (role) req.set('X-Test-User-Type', role);
             await req.expect(403);
             expect(mockRoleRepo.findAll).not.toHaveBeenCalled();

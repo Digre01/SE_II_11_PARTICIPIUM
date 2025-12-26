@@ -5,10 +5,13 @@ import { InsufficientRightsError } from '../../errors/InsufficientRightsError.js
 import { BadRequestError } from '../../errors/BadRequestError.js';
 import { NotFoundError } from '../../errors/NotFoundError.js';
 import { mockRepo } from "./mocks/messages.mocks.js";
-import { setupAuthorizationMock, setupEmailUtilsMock } from "./mocks/common.mocks.js";
+import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "./mocks/common.mocks.js";
 
-await setupAuthorizationMock({ allowUnauthorizedThrough: false });
 await setupEmailUtilsMock();
+await setupAuthorizationMocks()
+await setUpLoginMock()
+
+const userId = 1
 
 const { default: app } = await import('../../app.js');
 
@@ -19,19 +22,23 @@ describe('Integration: conversation messages routes', () => {
 		const msgs = [{ id: 10, content: 'Hello', sender: { id: 42, username: 'alice' }, createdAt: '2025-01-01T00:00:00Z' }];
 		mockRepo.getMessagesForConversation.mockResolvedValueOnce(msgs);
 
-		const res = await request(app).get('/api/v1/conversations/100/messages').set('Authorization', 'Bearer token');
+		const res = await request(app)
+			.get('/api/v1/conversations/100/messages')
+			.set('X-test-User-Type', 'citizen');
 
 		expect(res.status).toBe(200);
 		expect(Array.isArray(res.body)).toBeTruthy();
 		expect(res.body).toHaveLength(1);
 		expect(res.body[0].content).toBe('Hello');
-		expect(mockRepo.getMessagesForConversation).toHaveBeenCalledWith('100', 10);
+		expect(mockRepo.getMessagesForConversation).toHaveBeenCalledWith('100', userId);
 	});
 
 	it('GET /api/v1/conversations/:conversationId/messages -> 403 when not participant', async () => {
 		mockRepo.getMessagesForConversation.mockRejectedValueOnce(new InsufficientRightsError('Forbidden'));
 
-		const res = await request(app).get('/api/v1/conversations/999/messages').set('Authorization', 'Bearer token');
+		const res = await request(app)
+			.get('/api/v1/conversations/999/messages')
+			.set('X-test-User-Type', 'citizen');
 
 		expect(res.status).toBe(403);
 		expect(res.body).toHaveProperty('name', 'InsufficientRightsError');
@@ -40,7 +47,9 @@ describe('Integration: conversation messages routes', () => {
 	it('GET /api/v1/conversations/:conversationId/messages -> 404 when conversation not found', async () => {
 		mockRepo.getMessagesForConversation.mockRejectedValueOnce(new NotFoundError('Conversation not found'));
 
-		const res = await request(app).get('/api/v1/conversations/555/messages').set('Authorization', 'Bearer token');
+		const res = await request(app)
+			.get('/api/v1/conversations/555/messages')
+		set('X-test-User-Type', 'citizen');
 
 		expect(res.status).toBe(404);
 		expect(res.body).toHaveProperty('name', 'NotFoundError');
@@ -53,13 +62,12 @@ describe('Integration: conversation messages routes', () => {
 		const res = await request(app)
 			.post('/api/v1/conversations/100/messages')
 			.send({ content: 'Staff message' })
-			.set('Authorization', 'Bearer token')
-			.set('X-Test-Role', 'staff')
+			.set('X-test-User-Type', 'staff')
 			.set('Content-Type', 'application/json');
 
 		expect(res.status).toBe(201);
 		expect(res.body).toHaveProperty('id', 11);
-		expect(mockRepo.sendStaffMessage).toHaveBeenCalledWith('100', 10, 'Staff message');
+		expect(mockRepo.sendStaffMessage).toHaveBeenCalledWith('100', userId, 'Staff message');
 	});
 
 	it('POST /api/v1/conversations/:conversationId/messages -> 400 when report closed', async () => {
@@ -69,7 +77,7 @@ describe('Integration: conversation messages routes', () => {
 			.post('/api/v1/conversations/100/messages')
 			.send({ content: 'Late message' })
 			.set('Authorization', 'Bearer token')
-			.set('X-Test-Role', 'staff')
+			.set('X-test-User-Type', 'staff')
 			.set('Content-Type', 'application/json');
 
 		expect(res.status).toBe(400);
@@ -81,7 +89,7 @@ describe('Integration: conversation messages routes', () => {
 		const res = await request(app)
 			.post('/api/v1/conversations/100/messages')
 			.send({ content: 'Should be forbidden' })
-			.set('X-Test-Role', 'citizen')
+			.set('X-test-User-Type', 'citizen')
 			.set('Content-Type', 'application/json');
 
 		expect(res.status).toBe(403);
@@ -95,7 +103,7 @@ describe('Integration: conversation messages routes', () => {
 			.post('/api/v1/conversations/100/messages')
 			.send({ content: 'Hello' })
 			.set('Authorization', 'Bearer token')
-			.set('X-Test-Role', 'staff')
+			.set('X-test-User-Type', 'staff')
 			.set('Content-Type', 'application/json');
 
 		expect(res.status).toBe(401);
