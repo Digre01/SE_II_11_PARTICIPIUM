@@ -2,13 +2,14 @@ import {describe, it, expect, beforeEach, jest, beforeAll} from '@jest/globals';
 import request from 'supertest';
 import {
 	setupAuthorizationMocks,
-	setupEmailUtilsMock
+	setupEmailUtilsMock, setUpLoginMock
 } from '../mocks/common.mocks.js';
 import {mockRepo, mockUserService} from "../mocks/users.mocks.js";
 import {ConflictError} from "../../../errors/ConflictError.js";
 
 await setupAuthorizationMocks();
 await setupEmailUtilsMock();
+await setUpLoginMock()
 
 const { default: app } = await import('../../../app.js');
 

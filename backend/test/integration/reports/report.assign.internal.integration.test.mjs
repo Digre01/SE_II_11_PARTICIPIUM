@@ -1,12 +1,11 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
 import {mockRepo} from "../mocks/reports.mock.js";
-import {setupAuthorizationMock, setupEmailUtilsMock} from "../mocks/common.mocks.js";
+import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "../mocks/common.mocks.js";
 
 await setupEmailUtilsMock()
-await setupAuthorizationMock({
-    allowUnauthorizedThrough: false
-})
+await setUpLoginMock()
+await setupAuthorizationMocks()
 
 const { default: app } = await import('../../../app.js');
 
@@ -43,7 +42,7 @@ describe('GET /api/v1/reports/assigned (map DTO)', () => {
 
     const res = await request(app)
       .get('/api/v1/reports/assigned')
-      .set('Authorization', 'Bearer test');
+      .set('X-Test-User-Type', 'CITIZEN');
 
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
@@ -68,7 +67,7 @@ describe('GET /api/v1/reports/assigned (map DTO)', () => {
     mockRepo.getAcceptedReports.mockResolvedValueOnce([]);
     const res = await request(app)
       .get('/api/v1/reports/assigned')
-      .set('Authorization', 'Bearer test');
+        .set('X-Test-User-Type', 'CITIZEN');
     expect(res.status).toBe(200);
     expect(res.body).toEqual([]);
   });
@@ -93,7 +92,7 @@ describe('GET /api/v1/reports/assigned (map DTO)', () => {
 
     const res = await request(app)
       .get('/api/v1/reports/assigned')
-      .set('Authorization', 'Bearer test');
+        .set('X-Test-User-Type', 'CITIZEN');
 
     expect(res.status).toBe(200);
     // ensure backend returns individual items — clustering/aggregation is client-side
@@ -110,7 +109,7 @@ describe('GET /api/v1/reports/assigned (map DTO)', () => {
 
     const res = await request(app)
       .get('/api/v1/reports/assigned')
-      .set('Authorization', 'Bearer test');
+        .set('X-Test-User-Type', 'CITIZEN');
 
     expect(res.status).toBe(200);
     // ensure at least one assigned report from the repository is returned and mapped
@@ -125,7 +124,7 @@ describe('GET /api/v1/reports/assigned (map DTO)', () => {
 
     const res = await request(app)
       .get('/api/v1/reports/assigned')
-      .set('Authorization', 'Bearer test');
+        .set('X-Test-User-Type', 'CITIZEN');
 
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);

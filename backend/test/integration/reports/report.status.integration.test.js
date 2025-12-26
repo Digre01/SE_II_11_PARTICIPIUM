@@ -1,14 +1,14 @@
 import request from 'supertest';
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { mockRepo } from "../mocks/reports.mock.js";
-import { setupAuthorizationMock, setupEmailUtilsMock, setUpLoginMock } from "../mocks/common.mocks.js";
+import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "../mocks/common.mocks.js";
 
 await setupEmailUtilsMock();
-await setupAuthorizationMock({ allowUnauthorizedThrough: false });
+await setupAuthorizationMocks()
 await setUpLoginMock();
 
 const { default: app } = await import('../../../app.js');
-const staffUserId = 10;
+const staffUserId = 1;
 
 beforeEach(() => jest.clearAllMocks());
 

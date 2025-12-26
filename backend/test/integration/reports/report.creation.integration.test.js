@@ -2,14 +2,15 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
 import { mockRepo } from '../mocks/reports.mock.js';
 import {
-    setupAuthorizationMock,
-    setupEmailUtilsMock,
+    setupAuthorizationMocks,
+    setupEmailUtilsMock, setUpLoginMock,
     setupUploadMiddlewareMock
 } from '../mocks/common.mocks.js';
 
 await setupEmailUtilsMock();
-await setupAuthorizationMock({ allowUnauthorizedThrough: false });
 await setupUploadMiddlewareMock();
+await setUpLoginMock()
+await setupAuthorizationMocks()
 
 const { default: app } = await import('../../../app.js');
 
@@ -31,7 +32,7 @@ describe('POST /api/v1/reports', () => {
 
         const res = await request(app)
             .post('/api/v1/reports')
-            .set('X-Test-Role', 'citizen')
+            .set('X-Test-User-Type', 'CITIZEN')
             .set('X-Test-Photos', 'a.jpg,b.jpg')
             .send(body);
 
@@ -43,7 +44,7 @@ describe('POST /api/v1/reports', () => {
             title: 'Good',
             description: 'Desc',
             categoryId: 5,
-            userId: 10,
+            userId: 1,
             latitude: 45.1,
             longitude: 9.2,
             photos: ['/public/a.jpg', '/public/b.jpg']
@@ -72,7 +73,7 @@ describe('POST /api/v1/reports', () => {
 
         const res = await request(app)
             .post('/api/v1/reports')
-            .set('X-Test-Role', 'admin')
+            .set('X-Test-User-Type', 'ADMIN')
             .set('X-Test-Photos', 'a.jpg')
             .send(body);
 
@@ -83,7 +84,7 @@ describe('POST /api/v1/reports', () => {
     it('returns 400 when required fields are missing', async () => {
         const res = await request(app)
             .post('/api/v1/reports')
-            .set('X-Test-Role', 'citizen')
+            .set('X-Test-User-Type', 'CITIZEN')
             .send({ title: 'Only title' });
 
         expect(res.status).toBe(400);
@@ -102,7 +103,7 @@ describe('POST /api/v1/reports', () => {
 
         const res = await request(app)
             .post('/api/v1/reports')
-            .set('X-Test-Role', 'citizen')
+            .set('X-Test-User-Type', 'CITIZEN')
             .set('X-Test-Photos', 'a.jpg,b.jpg,c.jpg,d.jpg')
             .send(body);
 
@@ -122,7 +123,7 @@ describe('POST /api/v1/reports', () => {
 
         const res = await request(app)
             .post('/api/v1/reports')
-            .set('X-Test-Role', 'citizen')
+            .set('X-Test-User-Type', 'CITIZEN')
             .set('X-Test-Photos', 'a.jpg')
             .send(body);
 
@@ -145,7 +146,7 @@ describe('POST /api/v1/reports', () => {
 
         const res = await request(app)
             .post('/api/v1/reports')
-            .set('X-Test-Role', 'citizen')
+            .set('X-Test-User-Type', 'CITIZEN')
             .set('X-Test-Photos', 'a.jpg,b.jpg')
             .send(body);
 

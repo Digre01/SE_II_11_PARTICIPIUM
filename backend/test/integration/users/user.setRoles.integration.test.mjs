@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
-import {setupAuthorizationMocks, setupEmailUtilsMock} from "../mocks/common.mocks.js";
+import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "../mocks/common.mocks.js";
 import {mockRepo} from "../mocks/users.mocks.js";
 
 await setupAuthorizationMocks()
 await setupEmailUtilsMock();
+await setUpLoginMock()
 
 const { default: app } = await import('../../../app.js');
 
@@ -19,7 +20,6 @@ describe('User roles', () => {
 
     const res = await request(app)
         .put('/api/v1/sessions/42/roles')
-        .set('Authorization', 'Bearer admin')
         .set('X-Test-User-Type', 'ADMIN')
         .send({ roles: [{ roleId: 2 }, { roleId: 4 }] });
 
@@ -34,7 +34,6 @@ describe('User roles', () => {
 
     const res = await request(app)
         .put('/api/v1/sessions/42/roles')
-        .set('Authorization', 'Bearer admin')
         .set('X-Test-User-Type', 'ADMIN')
         .send({ roles: [] });
 

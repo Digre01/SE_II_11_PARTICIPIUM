@@ -2,12 +2,13 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
 import { mockRepo } from '../mocks/reports.mock.js';
 import {
-    setupAuthorizationMock,
-    setupEmailUtilsMock
+    setupAuthorizationMocks,
+    setupEmailUtilsMock, setUpLoginMock
 } from '../mocks/common.mocks.js';
 
 await setupEmailUtilsMock();
-await setupAuthorizationMock({ allowUnauthorizedThrough: false });
+await setupAuthorizationMocks()
+await setUpLoginMock()
 
 const { default: app } = await import('../../../app.js');
 

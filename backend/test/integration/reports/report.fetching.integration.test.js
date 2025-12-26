@@ -1,10 +1,15 @@
 import {beforeEach, describe, expect, it, jest} from "@jest/globals";
 import { mockRepo } from "../mocks/reports.mock.js";
 import request from "supertest";
-import { setupAuthorizationMock, setupEmailUtilsMock, setUpLoginMock } from "../mocks/common.mocks.js";
+import {
+    setupAuthorizationMocks,
+    setupEmailUtilsMock,
+    setUpLoginMock
+} from "../mocks/common.mocks.js";
 
 await setupEmailUtilsMock();
-await setupAuthorizationMock({ allowUnauthorizedThrough: false });
+await setUpLoginMock()
+await setupAuthorizationMocks()
 await setUpLoginMock();
 
 const { default: app } = await import('../../../app.js');
@@ -14,7 +19,9 @@ describe('GET /api/v1/reports (staff)', () => {
 
     it('returns empty array when no reports exist', async () => {
         mockRepo.getAllReports.mockResolvedValueOnce([]);
-        const res = await request(app).get('/api/v1/reports').set('X-Test-Role', 'staff');
+        const res = await request(app)
+            .get('/api/v1/reports')
+            .set('X-Test-User-Type', 'STAFF')
 
         expect(res.status).toBe(200);
         expect(Array.isArray(res.body)).toBe(true);
@@ -29,7 +36,9 @@ describe('GET /api/v1/reports (staff)', () => {
         ];
         mockRepo.getAllReports.mockResolvedValueOnce(reports);
 
-        const res = await request(app).get('/api/v1/reports').set('X-Test-Role', 'staff');
+        const res = await request(app)
+            .get('/api/v1/reports')
+            .set('X-Test-User-Type', 'STAFF')
 
         expect(res.status).toBe(200);
         expect(res.body).toHaveLength(2);
@@ -38,7 +47,9 @@ describe('GET /api/v1/reports (staff)', () => {
     });
 
     it('rejects citizen user (403)', async () => {
-        const res = await request(app).get('/api/v1/reports').set('Authorization', 'Bearer test');
+        const res = await request(app)
+            .get('/api/v1/reports')
+            .set('X-Test-User-Type', 'CITIZEN')
         expect(res.status).toBe(403);
     });
 });
@@ -76,7 +87,8 @@ describe('GET /api/v1/reports/:id', () => {
     it('returns 403 for staff with wrong role', async () => {
         const res = await request(app)
             .get('/api/v1/reports/1')
-            .set("X-Test-User-Type", "citizen")
+            .set('X-Test-User-Type', 'STAFF')
+            .set('X-Test-Role', 'Water Systems Technician')
         ;
         expect(res.status).toBe(403);
         expect(mockRepo.getReportById).not.toHaveBeenCalled();
@@ -97,7 +109,8 @@ describe('GET /api/v1/reports/:id/photos', () => {
 
     it('returns photos array', async () => {
         mockRepo.getReportPhotos.mockResolvedValue([{ link: '/public/a.jpg' }]);
-        const res = await request(app).get('/api/v1/reports/123/photos');
+        const res = await request(app)
+            .get('/api/v1/reports/123/photos')
         expect(res.status).toBe(200);
         expect(res.body).toEqual([{ link: '/public/a.jpg' }]);
         expect(mockRepo.getReportPhotos).toHaveBeenCalledWith('123');
@@ -120,7 +133,9 @@ describe('GET /api/v1/reports/assigned and /suspended (citizen only)', () => {
     });
 
     it('assigned returns only assigned DTOs', async () => {
-        const res = await request(app).get('/api/v1/reports/assigned').set('Authorization', 'Bearer test');
+        const res = await request(app)
+            .get('/api/v1/reports/assigned')
+            .set('X-Test-User-Type', 'CITIZEN')
         expect(res.status).toBe(200);
         expect(res.body).toEqual([
             { id: 1, title: 'A', latitude: 1, longitude: 2, status: 'assigned', categoryId: 5,
@@ -130,7 +145,9 @@ describe('GET /api/v1/reports/assigned and /suspended (citizen only)', () => {
     });
 
     it('suspended returns only suspended DTOs', async () => {
-        const res = await request(app).get('/api/v1/reports/suspended').set('Authorization', 'Bearer test');
+        const res = await request(app)
+            .get('/api/v1/reports/suspended')
+            .set('X-Test-User-Type', 'CITIZEN')
         expect(res.status).toBe(200);
         expect(res.body).toEqual([
             { id: 2, title: 'B', latitude: 3, longitude: 4, status: 'suspended', categoryId: 6,
@@ -139,7 +156,9 @@ describe('GET /api/v1/reports/assigned and /suspended (citizen only)', () => {
     });
 
     it('rejects staff user (403) as route requires citizen', async () => {
-        const res = await request(app).get('/api/v1/reports/assigned').set('X-Test-Role', 'staff');
+        const res = await request(app)
+            .get('/api/v1/reports/assigned')
+            .set('X-Test-User-Type', 'STAFF')
         expect(res.status).toBe(403);
     });
 });

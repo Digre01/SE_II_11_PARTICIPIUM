@@ -58,6 +58,32 @@ export function mockAuthorizeRole(requiredRole) {
     };
 }
 
+export function createUploadMiddlewareMock() {
+    return {
+        array: () => (req, _res, next) => {
+            const photoNamesHeader = req.header('X-Test-Photos');
+            if (photoNamesHeader) {
+                const names = photoNamesHeader.split(',').filter(Boolean);
+                req.files = names.map((n, idx) => ({
+                    filename: n.trim(),
+                    path: `/tmp/${n.trim()}-${idx}`
+                }));
+            } else {
+                req.files = [];
+            }
+            next();
+        },
+        single: () => (req, _res, next) => {
+            const name = req.header('X-Test-Photo');
+            req.file = name ? {
+                filename: name.trim(),
+                path: `/tmp/${name.trim()}`
+            } : undefined;
+            next();
+        }
+    };
+}
+
 export async function setupAuthorizationMocks() {
     await jest.unstable_mockModule('../../../middlewares/userAuthorization.js', () => ({
         authorizeUserType: mockAuthorizeUserType,  // Passa la factory direttamente
