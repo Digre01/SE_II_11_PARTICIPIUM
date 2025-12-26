@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
-import { setupAuthorizationMock, setupEmailUtilsMock } from "../mocks/common.mocks.js";
+import {setupAuthorizationMocks, setupEmailUtilsMock} from "../mocks/common.mocks.js";
 import { mockRepo } from "../mocks/users.mocks.js";
 
-await setupAuthorizationMock({ allowUnauthorizedThrough: false });
+await setupAuthorizationMocks()
 await setupEmailUtilsMock();
 
 const { default: app } = await import('../../../app.js');
@@ -21,7 +21,7 @@ describe('User config & profile picture integration (controller + repo)', () => 
   it('PATCH /sessions/:id/config -> 200 with auth + photo', async () => {
     const res = await request(app)
         .patch('/api/v1/sessions/1/config')
-        .set('Authorization','Bearer citizen')
+        .set("X-Test-User-Type", "CITIZEN")
         .field('telegramId','tg_123')
         .field('emailNotifications','true')
         .attach('photo', Buffer.from('fakeimage'), { filename: 'pic.png', contentType: 'image/png' });
@@ -41,7 +41,7 @@ describe('User config & profile picture integration (controller + repo)', () => 
 
     const res = await request(app)
         .patch('/api/v1/sessions/1/config')
-        .set('Authorization','Bearer citizen')
+        .set("X-Test-User-Type", "CITIZEN")
         .field('telegramId','tg_123');
 
     expect(res.status).toBe(500);
@@ -57,7 +57,7 @@ describe('User config & profile picture integration (controller + repo)', () => 
 
     const res = await request(app)
         .get('/api/v1/sessions/1/pfp')
-        .set('Authorization','Bearer citizen');
+        .set("X-Test-User-Type", "CITIZEN")
 
     expect(res.status).toBe(200);
     expect(res.text).toMatch(/\/public\/abc123\.png/);
@@ -69,7 +69,7 @@ describe('User config & profile picture integration (controller + repo)', () => 
 
     const res = await request(app)
         .get('/api/v1/sessions/1/pfp')
-        .set('Authorization','Bearer citizen');
+        .set("X-Test-User-Type", "CITIZEN")
 
     expect(res.status).toBe(500);
   });

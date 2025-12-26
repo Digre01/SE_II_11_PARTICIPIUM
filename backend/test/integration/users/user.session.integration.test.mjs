@@ -1,12 +1,13 @@
 import {describe, it, expect, beforeEach, jest, beforeAll} from '@jest/globals';
 import request from 'supertest';
-import {setupAuthorizationMock, setupEmailUtilsMock, setUpLoginMock} from '../mocks/common.mocks.js';
-import {mockRepo} from "../mocks/users.mocks.js";
+import {
+	setupAuthorizationMocks,
+	setupEmailUtilsMock
+} from '../mocks/common.mocks.js';
+import {mockRepo, mockUserService} from "../mocks/users.mocks.js";
 import {ConflictError} from "../../../errors/ConflictError.js";
 
-await setupAuthorizationMock({
-	allowUnauthorizedThrough: false,
-});
+await setupAuthorizationMocks();
 await setupEmailUtilsMock();
 
 const { default: app } = await import('../../../app.js');
@@ -55,8 +56,8 @@ describe('GET /sessions/current', () => {
 		expect(res.body).toHaveProperty('error');
 	});
 
-	/*
-	it('should return current session if authenticated', async () => {
+
+	/*it('should return current session if authenticated', async () => {
 		const agent = request.agent(app); // agent mantiene i cookie tra le richieste
 
 		await agent
@@ -83,9 +84,6 @@ describe('DELETE /sessions/current', () => {
 });
 
 describe('POST /sessions/signup', () => {
-	beforeAll(async () => {
-		await setupAuthorizationMock()
-	})
 
 	beforeEach(() => {
 		mockRepo.saveEmailVerificationCode.mockResolvedValue(undefined);
@@ -95,7 +93,6 @@ describe('POST /sessions/signup', () => {
 	it('should fail signup without email', async () => {
 		const res = await request(app)
 			.post('/api/v1/sessions/signup')
-			.set("Authorization", "Bearer citizen")
 			.send({ username: 'testuser', password: 'testpass', userType: 'CITIZEN' });
 		expect(res.status).toBe(400);
 		expect(res.body).toHaveProperty('message');
@@ -112,8 +109,17 @@ describe('POST /sessions/signup', () => {
 			isVerified: false
 		};
 
-		mockRepo.createUser.mockResolvedValue(mockStaffUser);
-		mockRepo.markEmailVerified.mockResolvedValue(undefined);
+		mockUserService.hashPassword.mockResolvedValue("hashed_pw")
+
+		mockRepo.createUser.mockImplementation(async (username, email, name, surname, hashedPassword, salt, userType) => {
+			return { ...mockStaffUser, hashedPassword, salt };
+		});
+
+		mockRepo.markEmailVerified.mockResolvedValue({
+			...mockStaffUser,
+			isVerified: true
+		});
+
 		mockRepo.getUserById.mockResolvedValue({
 			...mockStaffUser,
 			isVerified: true
@@ -121,7 +127,6 @@ describe('POST /sessions/signup', () => {
 
 		const res = await request(app)
 			.post('/api/v1/sessions/signup')
-			.set('Authorization', 'Bearer admin')
 			.set('X-Test-User-Type', 'ADMIN')
 			.send({
 				username: 'staff1',
@@ -136,15 +141,17 @@ describe('POST /sessions/signup', () => {
 		expect(res.body.user.userType).toBe('STAFF');
 		expect(res.body.emailSent).toBe(false);
 		expect(res.body.emailReason).toBe('staff auto-verified');
+
 		expect(mockRepo.createUser).toHaveBeenCalledWith(
-			expect.any(String), // username
-			expect.any(String), // email
-			expect.any(String), // name
-			expect.any(String), // surname
-			expect.any(String), // hashedPassword
-			expect.any(String), // salt
-			'STAFF' // userType
+			'staff1',                              // username
+			'staff@email.com',                     // email
+			'Nome',                                // name
+			'Cognome',                             // surname
+			"hashed_pw", // hashedPassword (64 char hex)
+			expect.any(String),                    // salt
+			'STAFF'                                // userType
 		);
+
 		expect(mockRepo.markEmailVerified).toHaveBeenCalledWith(123);
 	});
 

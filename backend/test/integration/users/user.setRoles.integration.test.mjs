@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
-import { setupAuthorizationMock, setupEmailUtilsMock } from "../mocks/common.mocks.js";
+import {setupAuthorizationMocks, setupEmailUtilsMock} from "../mocks/common.mocks.js";
 import {mockRepo} from "../mocks/users.mocks.js";
 
-await setupAuthorizationMock({ allowUnauthorizedThrough: false });
+await setupAuthorizationMocks()
 await setupEmailUtilsMock();
 
 const { default: app } = await import('../../../app.js');
@@ -46,7 +46,7 @@ describe('User roles', () => {
   it('PUT /:id/roles -> 403 when non-admin tries to set roles', async () => {
     const res = await request(app)
         .put('/api/v1/sessions/42/roles')
-        .set('Authorization', 'Bearer staff')
+        .set("X-Test-User-Type", "CITIZEN")
         .send({ roles: [{ roleId: 2 }] });
 
     expect(res.status).toBe(403);
