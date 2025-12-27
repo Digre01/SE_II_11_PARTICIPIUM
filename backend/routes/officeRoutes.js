@@ -27,8 +27,6 @@ router.get("/:id/categories", async (req, res, next) => {
         const officeId = req.params.id;
         const isExternal = req.query.isExternal === 'true';
 
-        console.log("officeId:", officeId, "isExternal:", isExternal);
-
         const categories = await officeController.getOfficeCategories(officeId, isExternal);
 
         res.json(categories);

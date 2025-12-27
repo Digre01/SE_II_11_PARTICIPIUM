@@ -2,6 +2,7 @@ import request from 'supertest';
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { mockOfficeRepo } from "./mocks/office.mocks.js";
 import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "./mocks/common.mocks.js";
+import {mockCategoryRepo} from "./mocks/category.mocks.js";
 
 await setupEmailUtilsMock();
 await setupAuthorizationMocks()
@@ -47,3 +48,30 @@ describe('GET /api/v1/offices', () => {
         }
     });
 });
+
+describe("GET /api/v1/offices/:id/categories", () => {
+    const mockOfficeId = 1;
+    const mockCategory = { id: 1, name: 'Infrastructure', description: 'Roads and bridges' }
+
+    it("returns category from internal office", async () => {
+        mockCategoryRepo.findCategoriesByOfficeId.mockResolvedValue(mockCategory)
+
+        const res = await request(app)
+            .get(`/api/v1/offices/${mockOfficeId}/categories`)
+
+        expect(res.status).toBe(200)
+        expect(res.body).toEqual(mockCategory);
+        expect(mockCategoryRepo.findCategoriesByOfficeId).toHaveBeenCalled();
+    })
+
+    it("returns category from external office", async () => {
+        mockCategoryRepo.findCategoriesByOfficeId.mockResolvedValue(mockCategory)
+
+        const res = await request(app)
+            .get(`/api/v1/offices/${mockOfficeId}/categories?isExternal=true`)
+
+        expect(res.status).toBe(200)
+        expect(res.body).toEqual(mockCategory);
+        expect(mockCategoryRepo.findCategoriesByOfficeId).toHaveBeenCalled();
+    })
+})
