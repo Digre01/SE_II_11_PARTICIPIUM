@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeAll, afterAll, jest} from '@jest/globals';
+import {describe, it, expect, beforeAll, afterAll, jest, afterEach} from '@jest/globals';
 import request from 'supertest';
 
 import { standardSetup, standardTeardown } from '../utils/standard.setup.js';
@@ -8,6 +8,7 @@ describe('POST /api/v1/reports (E2E)', () => {
     let app, dataSource;
     let loginAsCitizen;
     let citizenCookie;
+    let createdPhotos = []
 
     beforeAll(async () => {
         const setup = await standardSetup();
@@ -18,6 +19,11 @@ describe('POST /api/v1/reports (E2E)', () => {
 
         citizenCookie = await loginAsCitizen();
     }, 30000);
+
+    afterEach(() => {
+        deleteReturnedPhotos(createdPhotos)
+        createdPhotos = []
+    })
 
     afterAll(async () => {
         await standardTeardown(dataSource);
@@ -85,11 +91,11 @@ describe('POST /api/v1/reports (E2E)', () => {
         req = attachFakeImage(req, 'b.jpg');
 
         const res = await req;
+        createdPhotos.push(...res.body.photos);
 
         expect(res.status).toBe(201);
         expect(res.body.photos.length).toBe(2);
 
-        deleteReturnedPhotos(res.body.photos);
     });
 
     it('creates report with 3 photos', async () => {
@@ -107,11 +113,11 @@ describe('POST /api/v1/reports (E2E)', () => {
         req = attachFakeImage(req, 'c.jpg');
 
         const res = await req;
+        createdPhotos.push(...res.body.photos);
 
         expect(res.status).toBe(201);
         expect(res.body.photos.length).toBe(3);
 
-        deleteReturnedPhotos(res.body.photos);
     });
 
     it('fails when categoryId does not exist', async () => {
@@ -129,6 +135,5 @@ describe('POST /api/v1/reports (E2E)', () => {
         const res = await req;
 
         expect([400, 404]).toContain(res.status);
-        deleteReturnedPhotos(res.body.photos);
     });
 });
