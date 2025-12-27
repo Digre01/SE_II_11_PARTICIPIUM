@@ -37,4 +37,28 @@ describe('CategoryRepository.getAllCategories', () => {
     expect(result).toEqual([]);
     expect(result).toHaveLength(0);
   });
+
+  it('returns category given internal officeId', async () => {
+    const mockOfficeId = 1
+    const mockCategory = { id: 1, name: 'Infrastructure', description: 'Roads and bridges' }
+
+    categoryRepoStub.findOneBy.mockResolvedValue(mockCategory);
+
+    const result = await categoryRepository.findCategoriesByOfficeId(mockOfficeId, false);
+
+    expect(categoryRepoStub.findOneBy).toHaveBeenCalled();
+    expect(result).toEqual(mockCategory);
+  });
+
+  it('returns category given external officeId', async () => {
+    const mockOfficeId = 1
+    const mockCategory = { id: 1, name: 'Infrastructure', description: 'Roads and bridges' }
+
+    categoryRepoStub.findOneBy.mockResolvedValue(mockCategory);
+
+    const result = await categoryRepository.findCategoriesByOfficeId(mockOfficeId, true);
+
+    expect(categoryRepoStub.findOneBy).toHaveBeenCalled();
+    expect(result).toEqual(mockCategory);
+  });
 });
