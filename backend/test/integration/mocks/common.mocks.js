@@ -108,10 +108,9 @@ export async function setupEmailUtilsMock() {
 }
 
 export async function setUpLoginMock() {
-    await jest.unstable_mockModule('../../../config/passport.js', () => ({
+    await jest.unstable_mockModule('passport', () => ({
         default: {
             initialize: () => (req, _res, next) => {
-                // Leggi l'header per simulare l'autenticazione
                 const headers = req.headers || {};
                 const userTypeHeader = headers['x-test-user-type'];
 
@@ -159,8 +158,9 @@ export async function setUpLoginMock() {
 
                 next();
             },
-            serializeUser: (fn) => fn,
-            deserializeUser: (fn) => fn
+            use: jest.fn(),
+            serializeUser: jest.fn(),
+            deserializeUser: jest.fn()
         }
     }));
 }

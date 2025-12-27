@@ -45,7 +45,11 @@ describe('POST /sessions/login', () => {
 			.post('/api/v1/sessions/login')
 			.send({ username: 'testuser', password: 'correctpassword' });
 
-		expect([200, 201]).toContain(res.status);
+		console.log('Status:', res.status);
+		console.log('Body:', res.body);
+		console.log('Error:', res.error);
+
+		expect(res.status === 200 || res.status === 201).toBe(true);
 		expect(res.body).toHaveProperty('username', 'testuser');
 	});
 });
