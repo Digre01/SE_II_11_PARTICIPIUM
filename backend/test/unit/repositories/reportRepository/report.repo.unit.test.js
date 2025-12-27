@@ -9,10 +9,10 @@ import {
     userOfficeRepoStub,
     officeRepoStub,
     conversationRepoStub
-} from '../mocks/shared.mocks.js';
-import {addParticipantToConversationMock} from "../mocks/external.mocks.js";
+} from '../../mocks/shared.mocks.js';
+import {addParticipantToConversationMock} from "../../mocks/external.mocks.js";
 
-const { reportRepository } = await import('../../../repositories/reportRepository.mjs');
+const { reportRepository } = await import('../../../../repositories/reportRepository.mjs');
 
 describe('ReportRepository.createReport', () => {
     beforeEach(() => {

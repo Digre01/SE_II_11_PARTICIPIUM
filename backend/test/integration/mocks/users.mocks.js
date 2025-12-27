@@ -17,7 +17,10 @@ export const mockRepo = {
     getUserByEmail: jest.fn(),
     getUserById: jest.fn(),
     saveEmailVerificationCode: jest.fn(),
-    markEmailVerified: jest.fn()
+    markEmailVerified: jest.fn(),
+    getUserRoles: jest.fn(),
+    getAvailableStaffForRoleAssignment: jest.fn(),
+    getAssignedStaffForRoleModification: jest.fn()
 }
 
 await jest.unstable_mockModule('../../../repositories/userRepository.js', () => ({

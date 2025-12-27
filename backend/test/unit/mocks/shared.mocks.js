@@ -8,6 +8,7 @@ await jest.unstable_mockModule('../../../wsHandler.js', () => ({
 // ---- Shared mock repo factory ----
 export const repoStub = (name) => ({
     findOneBy: jest.fn(),
+    findBy: jest.fn(),
     findOne: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
