@@ -49,6 +49,22 @@ describe('GET /api/v1/offices', () => {
     });
 });
 
+describe("GET /api/v1/offices/:id", () => {
+    const mockOffice = { id: 1, name: 'Municipality Office' };
+
+    it("returns office by id", async () => {
+        mockOfficeRepo.findById.mockResolvedValue(mockOffice)
+
+        const res = await request(app)
+            .get(`/api/v1/offices/${mockOffice.id}`)
+
+        expect(res.status).toBe(200)
+        expect(res.body).toEqual(mockOffice);
+        expect(mockOfficeRepo.findById).toHaveBeenCalled();
+    })
+
+})
+
 describe("GET /api/v1/offices/:id/categories", () => {
     const mockOfficeId = 1;
     const mockCategory = { id: 1, name: 'Infrastructure', description: 'Roads and bridges' }
