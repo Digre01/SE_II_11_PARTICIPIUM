@@ -4,8 +4,8 @@ import { UnauthorizedError } from '../../errors/UnauthorizedError.js';
 import { InsufficientRightsError } from '../../errors/InsufficientRightsError.js';
 import { BadRequestError } from '../../errors/BadRequestError.js';
 import { NotFoundError } from '../../errors/NotFoundError.js';
-import { mockRepo } from "../mocks/repositories/message.repo.mock.js";
 import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "../mocks/common.mocks.js";
+import {mockMessageRepo} from "../mocks/repositories/message.repo.mock.js";
 
 await setupEmailUtilsMock();
 await setupAuthorizationMocks()
@@ -20,7 +20,7 @@ describe('Integration: conversation messages routes', () => {
 
 	it('GET /api/v1/conversations/:conversationId/messages -> 200 returns messages', async () => {
 		const msgs = [{ id: 10, content: 'Hello', sender: { id: 42, username: 'alice' }, createdAt: '2025-01-01T00:00:00Z' }];
-		mockRepo.getMessagesForConversation.mockResolvedValueOnce(msgs);
+		mockMessageRepo.getMessagesForConversationMock.mockResolvedValueOnce(msgs);
 
 		const res = await request(app)
 			.get('/api/v1/conversations/100/messages')
@@ -30,11 +30,11 @@ describe('Integration: conversation messages routes', () => {
 		expect(Array.isArray(res.body)).toBeTruthy();
 		expect(res.body).toHaveLength(1);
 		expect(res.body[0].content).toBe('Hello');
-		expect(mockRepo.getMessagesForConversation).toHaveBeenCalledWith('100', userId);
+		expect(mockMessageRepo.getMessagesForConversationMock).toHaveBeenCalledWith('100', userId);
 	});
 
 	it('GET /api/v1/conversations/:conversationId/messages -> 403 when not participant', async () => {
-		mockRepo.getMessagesForConversation.mockRejectedValueOnce(new InsufficientRightsError('Forbidden'));
+		mockMessageRepo.getMessagesForConversationMock.mockRejectedValueOnce(new InsufficientRightsError('Forbidden'));
 
 		const res = await request(app)
 			.get('/api/v1/conversations/999/messages')
@@ -45,7 +45,7 @@ describe('Integration: conversation messages routes', () => {
 	});
 
 	it('GET /api/v1/conversations/:conversationId/messages -> 404 when conversation not found', async () => {
-		mockRepo.getMessagesForConversation.mockRejectedValueOnce(new NotFoundError('Conversation not found'));
+		mockMessageRepo.getMessagesForConversationMock.mockRejectedValueOnce(new NotFoundError('Conversation not found'));
 
 		const res = await request(app)
 			.get('/api/v1/conversations/555/messages')
@@ -57,7 +57,7 @@ describe('Integration: conversation messages routes', () => {
 
 	it('POST /api/v1/conversations/:conversationId/messages -> 201 staff sends message', async () => {
 		const created = { id: 11, content: 'Staff message', sender: { id: 42 }, createdAt: '2025-01-02T00:00:00Z' };
-		mockRepo.sendStaffMessage.mockResolvedValueOnce(created);
+		mockMessageRepo.getMessagesForConversationMock.mockResolvedValueOnce(created);
 
 		const res = await request(app)
 			.post('/api/v1/conversations/100/messages')
@@ -67,11 +67,11 @@ describe('Integration: conversation messages routes', () => {
 
 		expect(res.status).toBe(201);
 		expect(res.body).toHaveProperty('id', 11);
-		expect(mockRepo.sendStaffMessage).toHaveBeenCalledWith('100', userId, 'Staff message');
+		expect(mockMessageRepo.getMessagesForConversationMock).toHaveBeenCalledWith('100', userId, 'Staff message');
 	});
 
 	it('POST /api/v1/conversations/:conversationId/messages -> 400 when report closed', async () => {
-		mockRepo.sendStaffMessage.mockRejectedValueOnce(new BadRequestError('Cannot send messages: report is closed'));
+		mockMessageRepo.sendStaffMessageMock.mockRejectedValueOnce(new BadRequestError('Cannot send messages: report is closed'));
 
 		const res = await request(app)
 			.post('/api/v1/conversations/100/messages')
@@ -97,7 +97,7 @@ describe('Integration: conversation messages routes', () => {
 	});
 
 	it('POST /api/v1/conversations/:conversationId/messages -> 401 when repo throws UnauthorizedError', async () => {
-		mockRepo.sendStaffMessage.mockRejectedValueOnce(new UnauthorizedError('Forbidden: user not in conversation'));
+		mockMessageRepo.sendStaffMessageMock.mockRejectedValueOnce(new UnauthorizedError('Forbidden: user not in conversation'));
 
 		const res = await request(app)
 			.post('/api/v1/conversations/100/messages')

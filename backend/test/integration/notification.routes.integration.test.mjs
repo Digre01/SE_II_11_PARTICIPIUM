@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
-import { mockRepo } from "../mocks/repositories/notifications.repo.mock.js";
 import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "../mocks/common.mocks.js";
+import {mockNotificationRepo} from "../mocks/repositories/notifications.repo.mock.js";
 
 await setupEmailUtilsMock();
 await setUpLoginMock()
@@ -17,14 +17,14 @@ describe('Notification routes integration', () => {
 
   it('GET /api/v1/notifications -> 200 returns notifications', async () => {
     const sample = [{ id: 1, message: { id: 11 } }];
-    mockRepo.getUnreadNotifications.mockResolvedValueOnce(sample);
+    mockNotificationRepo.getUnreadNotifications.mockResolvedValueOnce(sample);
 
     const res = await request(app).get('/api/v1/notifications')
         .set('X-Test-User-Type', 'CITIZEN');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(sample);
-    expect(mockRepo.getUnreadNotifications).toHaveBeenCalledWith(userId);
+    expect(mockNotificationRepo.getUnreadNotifications).toHaveBeenCalledWith(userId);
   });
 
   it('GET /api/v1/notifications -> 401 when unauthenticated', async () => {
@@ -34,7 +34,7 @@ describe('Notification routes integration', () => {
 
   it('GET /api/v1/notifications/counts -> 200 returns counts map', async () => {
     const counts = { '123': 2 };
-    mockRepo.getUnreadCountByConversation.mockResolvedValueOnce(counts);
+    mockNotificationRepo.getUnreadCountByConversation.mockResolvedValueOnce(counts);
 
     const res = await request(app)
         .get('/api/v1/notifications/counts')
@@ -42,11 +42,11 @@ describe('Notification routes integration', () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(counts);
-    expect(mockRepo.getUnreadCountByConversation).toHaveBeenCalledWith(userId);
+    expect(mockNotificationRepo.getUnreadCountByConversation).toHaveBeenCalledWith(userId);
   });
 
   it('POST /api/v1/notifications/:conversationId/read -> 200 marks as read', async () => {
-    mockRepo.markNotificationsAsReadForConversation.mockResolvedValueOnce(3);
+    mockNotificationRepo.markNotificationsAsReadForConversation.mockResolvedValueOnce(3);
 
     const res = await request(app)
         .post('/api/v1/notifications/55/read')
@@ -54,7 +54,7 @@ describe('Notification routes integration', () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ updated: 3 });
-    expect(mockRepo.markNotificationsAsReadForConversation).toHaveBeenCalledWith(userId, '55');
+    expect(mockNotificationRepo.markNotificationsAsReadForConversation).toHaveBeenCalledWith(userId, '55');
   });
 
   it('POST /api/v1/notifications/:conversationId/read -> 401 when unauthenticated', async () => {
@@ -82,7 +82,7 @@ describe('Notification controller unit tests', () => {
 
   it('getUserNotifications forwards errors', async () => {
     const err = new Error('db');
-    mockRepo.getUnreadNotifications.mockRejectedValueOnce(err);
+    mockNotificationRepo.getUnreadNotifications.mockRejectedValueOnce(err);
     const req = { user: { id: 5 } };
     const res = { json: jest.fn() };
     const next = jest.fn();
@@ -94,7 +94,7 @@ describe('Notification controller unit tests', () => {
   });
 
   it('GET /api/v1/notifications - repository error returns 500', async () => {
-    mockRepo.getUnreadNotifications.mockRejectedValueOnce(new Error('DB error'));
+    mockNotificationRepo.getUnreadNotifications.mockRejectedValueOnce(new Error('DB error'));
 
     const res = await request(app)
         .get('/api/v1/notifications')
@@ -107,21 +107,21 @@ describe('Notification controller unit tests', () => {
 
   it('getUnreadCounts returns counts', async () => {
     const counts = { c1: 2 };
-    mockRepo.getUnreadCountByConversation.mockResolvedValueOnce(counts);
+    mockNotificationRepo.getUnreadCountByConversation.mockResolvedValueOnce(counts);
     const req = { user: { id: 7 } };
     const res = { json: jest.fn() };
     const next = jest.fn();
 
     await getUnreadCounts(req, res, next);
 
-    expect(mockRepo.getUnreadCountByConversation).toHaveBeenCalledWith(7);
+    expect(mockNotificationRepo.getUnreadCountByConversation).toHaveBeenCalledWith(7);
     expect(res.json).toHaveBeenCalledWith(counts);
     expect(next).not.toHaveBeenCalled();
   });
 
   it('getUnreadCounts forwards errors', async () => {
     const err = new Error('boom');
-    mockRepo.getUnreadCountByConversation.mockRejectedValueOnce(err);
+    mockNotificationRepo.getUnreadCountByConversation.mockRejectedValueOnce(err);
     const req = { user: { id: 8 } };
     const res = { json: jest.fn() };
     const next = jest.fn();
@@ -134,7 +134,7 @@ describe('Notification controller unit tests', () => {
 
   it('GET /api/v1/notifications/counts - repository throws AppError -> mapped to 403', async () => {
     const { InsufficientRightsError } = await import('../../errors/InsufficientRightsError.js');
-    mockRepo.getUnreadCountByConversation.mockRejectedValueOnce(
+    mockNotificationRepo.getUnreadCountByConversation.mockRejectedValueOnce(
         new InsufficientRightsError('No access')
     );
 
@@ -148,7 +148,7 @@ describe('Notification controller unit tests', () => {
   });
 
   it('GET /api/v1/notifications/counts - returns empty array when no counts', async () => {
-    mockRepo.getUnreadCountByConversation.mockResolvedValueOnce([]);
+    mockNotificationRepo.getUnreadCountByConversation.mockResolvedValueOnce([]);
 
     const res = await request(app)
         .get('/api/v1/notifications/counts')
@@ -159,7 +159,7 @@ describe('Notification controller unit tests', () => {
   });
 
   it('markAsRead updates count', async () => {
-    mockRepo.markNotificationsAsReadForConversation.mockResolvedValueOnce(4);
+    mockNotificationRepo.markNotificationsAsReadForConversation.mockResolvedValueOnce(4);
     const req = { user: { id: 9 }, params: { conversationId: '55' } };
     const res = { json: jest.fn() };
     const next = jest.fn();
@@ -173,7 +173,7 @@ describe('Notification controller unit tests', () => {
 
   it('markAsRead forwards errors', async () => {
     const err = new Error('err');
-    mockRepo.markNotificationsAsReadForConversation.mockRejectedValueOnce(err);
+    mockNotificationRepo.markNotificationsAsReadForConversation.mockRejectedValueOnce(err);
     const req = { user: { id: 11 }, params: { conversationId: '77' } };
     const res = { json: jest.fn() };
     const next = jest.fn();
@@ -185,7 +185,7 @@ describe('Notification controller unit tests', () => {
   });
 
   it('POST /api/v1/notifications/:conversationId/read - returns 0 when nothing updated', async () => {
-    mockRepo.markNotificationsAsReadForConversation.mockResolvedValueOnce(0);
+    mockNotificationRepo.markNotificationsAsReadForConversation.mockResolvedValueOnce(0);
 
     const res = await request(app)
         .post('/api/v1/notifications/200/read')

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
 import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "../../mocks/common.mocks.js";
-import { mockRepo } from "../../mocks/repositories/users.repo.mock.js";
+import { mockUserRepo } from "../../mocks/repositories/users.repo.mock.js";
 
 await setupAuthorizationMocks()
 await setupEmailUtilsMock();
@@ -34,11 +34,11 @@ describe('User config & profile picture integration (controller + repo)', () => 
       emailNotifications: true,
       photoId: 42
     });
-    expect(mockRepo.configUserAccount).toHaveBeenCalledWith(1, undefined, undefined, expect.any(String));
+    expect(mockUserRepo.configUserAccount).toHaveBeenCalledWith(1, undefined, undefined, expect.any(String));
   });
 
   it('PATCH /sessions/:id/config -> 500 when repo throws', async () => {
-    mockRepo.configUserAccount.mockRejectedValueOnce(new Error('DB failure'));
+    mockUserRepo.configUserAccount.mockRejectedValueOnce(new Error('DB failure'));
 
     const res = await request(app)
         .patch('/api/v1/sessions/1/config')
@@ -54,7 +54,7 @@ describe('User config & profile picture integration (controller + repo)', () => 
   });
 
   it('GET /sessions/:id/pfp -> 200 with auth', async () => {
-    mockRepo.getPfpUrl.mockResolvedValue("/public/abc123.png");
+    mockUserRepo.getPfpUrl.mockResolvedValue("/public/abc123.png");
 
     const res = await request(app)
         .get('/api/v1/sessions/1/pfp')
@@ -62,11 +62,11 @@ describe('User config & profile picture integration (controller + repo)', () => 
 
     expect(res.status).toBe(200);
     expect(res.text).toMatch(/\/public\/abc123\.png/);
-    expect(mockRepo.getPfpUrl).toHaveBeenCalledWith(1);
+    expect(mockUserRepo.getPfpUrl).toHaveBeenCalledWith(1);
   });
 
   it('GET /sessions/:id/pfp -> 500 on repo error', async () => {
-    mockRepo.getPfpUrl.mockRejectedValueOnce(new Error('DB fail'));
+    mockUserRepo.getPfpUrl.mockRejectedValueOnce(new Error('DB fail'));
 
     const res = await request(app)
         .get('/api/v1/sessions/1/pfp')

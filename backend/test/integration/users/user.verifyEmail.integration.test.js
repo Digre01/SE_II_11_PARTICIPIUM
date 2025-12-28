@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
 import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "../../mocks/common.mocks.js";
-import { mockRepo } from "../../mocks/repositories/users.repo.mock.js";
+import {mockUserRepo} from "../../mocks/repositories/users.repo.mock.js";
 
 await setupEmailUtilsMock();
 await setUpLoginMock();
@@ -28,7 +28,7 @@ describe('POST /sessions/current/verify_email', () => {
     });
 
     it('should fail verify_email with wrong code', async () => {
-        mockRepo.getEmailVerification.mockRejectedValueOnce(new Error('Invalid verification code'));
+        mockUserRepo.getEmailVerification.mockRejectedValueOnce(new Error('Invalid verification code'));
         const res = await request(app)
             .post('/api/v1/sessions/current/verify_email')
             .set("X-Test-User-Type", "CITIZEN")
@@ -38,7 +38,7 @@ describe('POST /sessions/current/verify_email', () => {
     });
 
     it('should fail verify_email with expired code', async () => {
-        mockRepo.getEmailVerification.mockResolvedValueOnce({
+        mockUserRepo.getEmailVerification.mockResolvedValueOnce({
             code: 'expiredcode',
             expiresAt: new Date(Date.now() - 1000) //un secondo fa, quindi scaduto
         });
@@ -59,7 +59,7 @@ describe('GET /sessions/current/email_verified', () => {
     });
 
     it('should fail email_verified if user not found', async () => {
-        mockRepo.isEmailVerified.mockRejectedValueOnce(new Error('User not found'));
+        mockUserRepo.isEmailVerified.mockRejectedValueOnce(new Error('User not found'));
         const res = await request(app)
             .get('/api/v1/sessions/current/email_verified')
             .set("X-Test-User-Type", "CITIZEN");
@@ -68,7 +68,7 @@ describe('GET /sessions/current/email_verified', () => {
     });
 
     it('should fail email_verified with generic error', async () => {
-        mockRepo.isEmailVerified.mockRejectedValueOnce(new Error('Generic error'));
+        mockUserRepo.isEmailVerified.mockRejectedValueOnce(new Error('Generic error'));
         const res = await request(app)
             .get('/api/v1/sessions/current/email_verified')
             .set("X-Test-User-Type", "CITIZEN");

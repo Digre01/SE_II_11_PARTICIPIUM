@@ -1,7 +1,7 @@
 import {describe, expect, it} from "@jest/globals";
 import request from "supertest";
-import {mockRepo} from "../../mocks/repositories/users.repo.mock.js";
 import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "../../mocks/common.mocks.js";
+import {mockUserRepo} from "../../mocks/repositories/users.repo.mock.js";
 
 await setupAuthorizationMocks()
 await setupEmailUtilsMock();
@@ -20,7 +20,7 @@ describe('GET /me/roles', () => {
     it('should return 200 and user roles for ADMIN', async () => {
         const mockRoles = [{ id: 1, name: 'ADMIN' }];
 
-        mockRepo.getUserRoles.mockResolvedValueOnce(mockRoles);
+        mockUserRepo.getUserRoles.mockResolvedValueOnce(mockRoles);
 
         const res = await request(app)
             .get('/api/v1/sessions/me/roles')
@@ -33,7 +33,7 @@ describe('GET /me/roles', () => {
     it('should return 200 and user roles for STAFF', async () => {
         const mockRoles = [{ id: 2, name: 'STAFF' }];
 
-        mockRepo.getUserRoles.mockResolvedValueOnce(mockRoles);
+        mockUserRepo.getUserRoles.mockResolvedValueOnce(mockRoles);
 
         const res = await request(app)
             .get('/api/v1/sessions/me/roles')
@@ -64,7 +64,7 @@ describe('GET /me/roles', () => {
     it('should return 200 and user roles for ADMIN', async () => {
         const mockRoles = [{ id: 1, name: 'ADMIN' }];
 
-        mockRepo.getUserRoles.mockResolvedValueOnce(mockRoles);
+        mockUserRepo.getUserRoles.mockResolvedValueOnce(mockRoles);
 
         const res = await request(app)
             .get(`/api/v1/sessions/${userId}/roles`)
@@ -77,7 +77,7 @@ describe('GET /me/roles', () => {
     it('should return 200 and user roles for STAFF', async () => {
         const mockRoles = [{ id: 2, name: 'STAFF' }];
 
-        mockRepo.getUserRoles.mockResolvedValueOnce(mockRoles);
+        mockUserRepo.getUserRoles.mockResolvedValueOnce(mockRoles);
 
         const res = await request(app)
             .get(`/api/v1/sessions/${userId}/roles`)
@@ -130,7 +130,7 @@ describe('GET /available_staff', () => {
             }
         ];
 
-        mockRepo.getAvailableStaffForRoleAssignment.mockResolvedValueOnce(mockUsers);
+        mockUserRepo.getAvailableStaffForRoleAssignment.mockResolvedValueOnce(mockUsers);
 
         const res = await request(app)
             .get('/api/v1/sessions/available_staff')
@@ -144,7 +144,7 @@ describe('GET /available_staff', () => {
     });
 
     it('should return 500 if repository throws', async () => {
-        mockRepo.getAvailableStaffForRoleAssignment.mockRejectedValueOnce(
+        mockUserRepo.getAvailableStaffForRoleAssignment.mockRejectedValueOnce(
             new Error('DB error')
         );
 
@@ -190,7 +190,7 @@ describe('GET /assigned_staff', () => {
             }
         ];
 
-        mockRepo.getAssignedStaffForRoleModification.mockResolvedValueOnce(mockUsers);
+        mockUserRepo.getAssignedStaffForRoleModification.mockResolvedValueOnce(mockUsers);
 
         const res = await request(app)
             .get('/api/v1/sessions/assigned_staff')
@@ -204,7 +204,7 @@ describe('GET /assigned_staff', () => {
     });
 
     it('should return 500 if repository throws', async () => {
-        mockRepo.getAssignedStaffForRoleModification.mockRejectedValueOnce(
+        mockUserRepo.getAssignedStaffForRoleModification.mockRejectedValueOnce(
             new Error('DB error')
         );
 

@@ -1,6 +1,6 @@
 import {jest} from "@jest/globals";
 
-export const mockRepo = {
+export const mockNotificationRepo = {
     createNotification: jest.fn(),
     getUnreadNotifications: jest.fn(),
     markNotificationsAsReadForConversation: jest.fn(),
@@ -8,8 +8,8 @@ export const mockRepo = {
 };
 
 await jest.unstable_mockModule('../../../repositories/notificationRepository.js', () => ({
-    createNotification: mockRepo.createNotification,
-    getUnreadNotifications: mockRepo.getUnreadNotifications,
-    markNotificationsAsReadForConversation: mockRepo.markNotificationsAsReadForConversation,
-    getUnreadCountByConversation: mockRepo.getUnreadCountByConversation,
+    createNotification: mockNotificationRepo.createNotification,
+    getUnreadNotifications: mockNotificationRepo.getUnreadNotifications,
+    markNotificationsAsReadForConversation: mockNotificationRepo.markNotificationsAsReadForConversation,
+    getUnreadCountByConversation: mockNotificationRepo.getUnreadCountByConversation,
 }));

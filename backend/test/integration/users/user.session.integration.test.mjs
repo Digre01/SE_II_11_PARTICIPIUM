@@ -4,8 +4,8 @@ import {
 	setupAuthorizationMocks,
 	setupEmailUtilsMock, setUpLoginMock
 } from '../../mocks/common.mocks.js';
-import {mockRepo, mockUserService} from "../../mocks/repositories/users.repo.mock.js";
 import {ConflictError} from "../../../errors/ConflictError.js";
+import {mockUserRepo, mockUserService} from "../../mocks/repositories/users.repo.mock.js";
 
 await setupAuthorizationMocks();
 await setupEmailUtilsMock();
@@ -17,7 +17,7 @@ beforeEach(() => jest.clearAllMocks());
 
 describe('POST /sessions/login', () => {
 	it('should fail login with wrong credentials', async () => {
-		mockRepo.getUserByUsername.mockResolvedValue(null);
+		mockUserRepo.getUserByUsername.mockResolvedValue(null);
 
 		const res = await request(app)
 			.post('/api/v1/sessions/login')
@@ -35,7 +35,7 @@ describe('POST /sessions/login', () => {
 			isVerified: true
 		};
 
-		mockRepo.getUserByUsername.mockResolvedValue({
+		mockUserRepo.getUserByUsername.mockResolvedValue({
 			...mockUser,
 			password: 'hashedpassword',
 			salt: 'somesalt'
@@ -91,8 +91,8 @@ describe('DELETE /sessions/current', () => {
 describe('POST /sessions/signup', () => {
 
 	beforeEach(() => {
-		mockRepo.saveEmailVerificationCode.mockResolvedValue(undefined);
-		mockRepo.markEmailVerified.mockResolvedValue(undefined);
+		mockUserRepo.saveEmailVerificationCode.mockResolvedValue(undefined);
+		mockUserRepo.markEmailVerified.mockResolvedValue(undefined);
 	});
 
 	it('should fail signup without email', async () => {
@@ -116,16 +116,16 @@ describe('POST /sessions/signup', () => {
 
 		mockUserService.hashPassword.mockResolvedValue("hashed_pw")
 
-		mockRepo.createUser.mockImplementation(async (username, email, name, surname, hashedPassword, salt, userType) => {
+		mockUserRepo.createUser.mockImplementation(async (username, email, name, surname, hashedPassword, salt, userType) => {
 			return { ...mockStaffUser, hashedPassword, salt };
 		});
 
-		mockRepo.markEmailVerified.mockResolvedValue({
+		mockUserRepo.markEmailVerified.mockResolvedValue({
 			...mockStaffUser,
 			isVerified: true
 		});
 
-		mockRepo.getUserById.mockResolvedValue({
+		mockUserRepo.getUserById.mockResolvedValue({
 			...mockStaffUser,
 			isVerified: true
 		});
@@ -147,7 +147,7 @@ describe('POST /sessions/signup', () => {
 		expect(res.body.emailSent).toBe(false);
 		expect(res.body.emailReason).toBe('staff auto-verified');
 
-		expect(mockRepo.createUser).toHaveBeenCalledWith(
+		expect(mockUserRepo.createUser).toHaveBeenCalledWith(
 			'staff1',                              // username
 			'staff@email.com',                     // email
 			'Nome',                                // name
@@ -157,7 +157,7 @@ describe('POST /sessions/signup', () => {
 			'STAFF'                                // userType
 		);
 
-		expect(mockRepo.markEmailVerified).toHaveBeenCalledWith(123);
+		expect(mockUserRepo.markEmailVerified).toHaveBeenCalledWith(123);
 	});
 
 	it('forbids staff registration by non-admin', async () => {
@@ -175,7 +175,7 @@ describe('POST /sessions/signup', () => {
 			});
 
 		expect(res.status).toBe(403);
-		expect(mockRepo.createUser).not.toHaveBeenCalled();
+		expect(mockUserRepo.createUser).not.toHaveBeenCalled();
 	});
 
 	it('registers citizen without admin', async () => {
@@ -189,8 +189,8 @@ describe('POST /sessions/signup', () => {
 			isVerified: false
 		};
 
-		mockRepo.createUser.mockResolvedValue(mockCitizenUser);
-		mockRepo.getUserById.mockResolvedValue(mockCitizenUser);
+		mockUserRepo.createUser.mockResolvedValue(mockCitizenUser);
+		mockUserRepo.getUserById.mockResolvedValue(mockCitizenUser);
 
 		const res = await request(app)
 			.post('/api/v1/sessions/signup')
@@ -208,8 +208,8 @@ describe('POST /sessions/signup', () => {
 		expect(res.status).toBe(201);
 		expect(res.body.user.userType).toBe('CITIZEN');
 		expect(res.body).toHaveProperty('emailSent');
-		expect(mockRepo.createUser).toHaveBeenCalled();
-		expect(mockRepo.saveEmailVerificationCode).toHaveBeenCalledWith(
+		expect(mockUserRepo.createUser).toHaveBeenCalled();
+		expect(mockUserRepo.saveEmailVerificationCode).toHaveBeenCalledWith(
 			456,
 			expect.any(String), // verification code
 			expect.any(Date) // expiry date
@@ -217,7 +217,7 @@ describe('POST /sessions/signup', () => {
 	});
 
 	it('fails if username already exists', async () => {
-		mockRepo.createUser.mockRejectedValueOnce(
+		mockUserRepo.createUser.mockRejectedValueOnce(
 			new ConflictError('User with username dupuser already exists')
 		);
 
@@ -239,7 +239,7 @@ describe('POST /sessions/signup', () => {
 	});
 
 	it('fails if email already exists', async () => {
-		mockRepo.createUser.mockRejectedValueOnce(
+		mockUserRepo.createUser.mockRejectedValueOnce(
 			new ConflictError('User with email dup@email.com already exists')
 		);
 
