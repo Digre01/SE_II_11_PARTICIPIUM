@@ -1,6 +1,6 @@
 import {jest} from "@jest/globals";
 
-export const mockRepo = {
+export const mockUserRepo = {
     configUserAccount: jest.fn().mockResolvedValue({
         id: 1,
         telegramId: 'tg_123',
@@ -20,14 +20,15 @@ export const mockRepo = {
     markEmailVerified: jest.fn(),
     getUserRoles: jest.fn(),
     getAvailableStaffForRoleAssignment: jest.fn(),
-    getAssignedStaffForRoleModification: jest.fn()
+    getAssignedStaffForRoleModification: jest.fn(),
+    findOneBy: jest.fn()
 }
 
-await jest.unstable_mockModule('../../../repositories/userRepository.js', () => ({
-    userRepository: mockRepo,
+await jest.unstable_mockModule('../../repositories/userRepository.js', () => ({
+    userRepository: mockUserRepo,
 }));
 
-await jest.unstable_mockModule('../../../middlewares/uploadMiddleware.js', () => ({
+await jest.unstable_mockModule('../../middlewares/uploadMiddleware.js', () => ({
     default: {
         single: () => (req, _res, next) => {
             req.file = { filename: 'mocked.png', path: 'mocked.png' };
@@ -45,6 +46,6 @@ export const mockUserService = {
     hashPassword: jest.fn()
 }
 
-await jest.unstable_mockModule("../../../services/userService.js", () => ({
+await jest.unstable_mockModule("../../services/userService.js", () => ({
     default: mockUserService
 }));

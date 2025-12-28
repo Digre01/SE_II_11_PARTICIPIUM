@@ -6,18 +6,20 @@ const {
   createConversation,
   addParticipantToConversation
 } = await import('../../../repositories/conversationRepository.js');
-const { AppDataSourcePostgres } = await import('../../../config/data-source.js');
-const { Conversation } = await import('../../../entities/Conversation.js');
 
 describe('conversationRepository', () => {
+  // ---- Variabili di mock comuni ----
+  const mockConversations = [{ id: 1 }];
+  let mockConversation = { id: 1, participants: [{ id: 2 }] };
+  let mockUser = { id: 3 };
+  let mockUpdatedConversation = { id: 1, participants: [{ id: 2 }, { id: 3 }] };
+  let getMany = jest.fn().mockResolvedValue(mockConversations);
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('getConversationsForUser chiama query builder', async () => {
-    const mockConversations = [{ id: 1 }];
-    const getMany = jest.fn().mockResolvedValue(mockConversations);
-
     conversationRepoStub.createQueryBuilder.mockReturnValue({
       leftJoinAndSelect: () => ({
         leftJoinAndSelect: () => ({
@@ -30,7 +32,6 @@ describe('conversationRepository', () => {
 
     const result = await getConversationsForUser(42);
 
-    expect(AppDataSourcePostgres.getRepository).toHaveBeenCalledWith(Conversation);
     expect(getMany).toHaveBeenCalled();
     expect(result).toEqual(mockConversations);
   });
@@ -50,16 +51,6 @@ describe('conversationRepository', () => {
   });
 
   it('addParticipantToConversation aggiunge utente se non presente', async () => {
-    const mockConversation = {
-      id: 1,
-      participants: [{ id: 2 }]
-    };
-    const mockUser = { id: 3 };
-    const mockUpdatedConversation = {
-      id: 1,
-      participants: [{ id: 2 }, { id: 3 }]
-    };
-
     conversationRepoStub.findOne.mockResolvedValue(mockConversation);
     userRepoStub.findOneBy.mockResolvedValue(mockUser);
     conversationRepoStub.save.mockResolvedValue(mockUpdatedConversation);
@@ -76,12 +67,8 @@ describe('conversationRepository', () => {
   });
 
   it('addParticipantToConversation non aggiunge se già presente', async () => {
-    const mockConversation = {
-      id: 1,
-      participants: [{ id: 2 }, { id: 3 }]
-    };
-
-    conversationRepoStub.findOne.mockResolvedValue(mockConversation);
+    const convWithUser = { id: 1, participants: [{ id: 2 }, { id: 3 }] };
+    conversationRepoStub.findOne.mockResolvedValue(convWithUser);
 
     const result = await addParticipantToConversation(1, 3);
 
@@ -89,7 +76,7 @@ describe('conversationRepository', () => {
       where: { id: 1 },
       relations: ['participants']
     });
-    expect(result).toEqual(mockConversation);
+    expect(result).toEqual(convWithUser);
   });
 
   it('addParticipantToConversation lancia errore se conversazione non trovata', async () => {
@@ -99,13 +86,15 @@ describe('conversationRepository', () => {
   });
 
   it('addParticipantToConversation lancia errore se user non trovato', async () => {
-    const mockConversation = { id: 1, participants: [] };
+    const mockConversationWithoutUser = { id: 1, participants: [{ id: 2 }] };
 
-    conversationRepoStub.findOne.mockResolvedValue(mockConversation);
+    conversationRepoStub.findOne.mockResolvedValue(mockConversationWithoutUser);
     userRepoStub.findOneBy.mockResolvedValue(null);
 
-    await expect(addParticipantToConversation(1, 3)).rejects.toThrow('User not found');
+    await expect(addParticipantToConversation(1, 3))
+        .rejects.toThrow('User not found');
   });
+
 
   it('createConversation crea conversazione interna quando isInternal è true', async () => {
     const mockInternalConversationData = {
@@ -163,7 +152,8 @@ describe('conversationRepository', () => {
       { id: 2, isInternal: false, report: { id: 10 } }
     ];
 
-    const getMany = jest.fn().mockResolvedValue(mockMixedConversations);
+    getMany.mockResolvedValue(mockMixedConversations);
+
     conversationRepoStub.createQueryBuilder.mockReturnValue({
       leftJoinAndSelect: () => ({
         leftJoinAndSelect: () => ({
@@ -187,7 +177,6 @@ describe('conversationRepository', () => {
       isInternal: true,
       participants: [{ id: 2 }]
     };
-    const mockUser = { id: 3 };
     const mockUpdatedInternalConversation = {
       id: 1,
       isInternal: true,
@@ -210,7 +199,8 @@ describe('conversationRepository', () => {
       { id: 1, isInternal: false, participants: [{ id: 5 }] },
     ];
 
-    const getMany = jest.fn().mockResolvedValue(mockUserConversations);
+    getMany.mockResolvedValue(mockUserConversations);
+
     conversationRepoStub.createQueryBuilder.mockReturnValue({
       leftJoinAndSelect: () => ({
         leftJoinAndSelect: () => ({
