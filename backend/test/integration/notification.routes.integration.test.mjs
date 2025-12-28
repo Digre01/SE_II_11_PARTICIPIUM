@@ -68,14 +68,14 @@ describe('Notification controller unit tests', () => {
 
   it('getUserNotifications returns notifications', async () => {
     const fake = [{ id: 1 }];
-    mockRepo.getUnreadNotifications.mockResolvedValueOnce(fake);
+    mockNotificationRepo.getUnreadNotifications.mockResolvedValueOnce(fake);
     const req = { user: { id: 42 } };
     const res = { json: jest.fn() };
     const next = jest.fn();
 
     await getUserNotifications(req, res, next);
 
-    expect(mockRepo.getUnreadNotifications).toHaveBeenCalledWith(42);
+    expect(mockNotificationRepo.getUnreadNotifications).toHaveBeenCalledWith(42);
     expect(res.json).toHaveBeenCalledWith(fake);
     expect(next).not.toHaveBeenCalled();
   });
@@ -166,7 +166,7 @@ describe('Notification controller unit tests', () => {
 
     await markAsRead(req, res, next);
 
-    expect(mockRepo.markNotificationsAsReadForConversation).toHaveBeenCalledWith(9, '55');
+    expect(mockNotificationRepo.markNotificationsAsReadForConversation).toHaveBeenCalledWith(9, '55');
     expect(res.json).toHaveBeenCalledWith({ updated: 4 });
     expect(next).not.toHaveBeenCalled();
   });

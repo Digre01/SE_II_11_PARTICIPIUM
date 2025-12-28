@@ -57,7 +57,7 @@ describe('Integration: conversation messages routes', () => {
 
 	it('POST /api/v1/conversations/:conversationId/messages -> 201 staff sends message', async () => {
 		const created = { id: 11, content: 'Staff message', sender: { id: 42 }, createdAt: '2025-01-02T00:00:00Z' };
-		mockMessageRepo.getMessagesForConversationMock.mockResolvedValueOnce(created);
+		mockMessageRepo.sendStaffMessageMock.mockResolvedValueOnce(created);
 
 		const res = await request(app)
 			.post('/api/v1/conversations/100/messages')
@@ -67,7 +67,7 @@ describe('Integration: conversation messages routes', () => {
 
 		expect(res.status).toBe(201);
 		expect(res.body).toHaveProperty('id', 11);
-		expect(mockMessageRepo.getMessagesForConversationMock).toHaveBeenCalledWith('100', userId, 'Staff message');
+		expect(mockMessageRepo.sendStaffMessageMock).toHaveBeenCalledWith('100', userId, 'Staff message');
 	});
 
 	it('POST /api/v1/conversations/:conversationId/messages -> 400 when report closed', async () => {
