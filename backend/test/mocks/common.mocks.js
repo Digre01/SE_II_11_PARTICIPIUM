@@ -164,3 +164,9 @@ export async function setUpLoginMock() {
         }
     }));
 }
+
+export async function setupWsHandlerMock() {
+    await jest.unstable_mockModule('../../wsHandler.js', () => ({
+        broadcastToConversation: jest.fn(),
+    }));
+}

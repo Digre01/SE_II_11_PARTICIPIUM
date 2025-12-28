@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it, jest} from "@jest/globals";
-import {reportRepoStub} from "../../mocks/repo.stubs.js";
+import {photoRepoStub, reportRepoStub} from "../../mocks/repo.stubs.js";
 
 const { reportRepository } = await import('../../../../repositories/reportRepository.mjs');
 
@@ -177,5 +177,50 @@ describe("ReportRepository.getAcceptedReports", () => {
         const result = await reportRepository.getAcceptedReports();
 
         expect(result).toEqual(emptyArray);
+    });
+});
+
+describe('ReportRepository.getReportPhotos', () => {
+    const mockPhotos = [
+        { id: 1, reportId: 1, link: '/public/photo1.jpg' },
+        { id: 2, reportId: 1, link: '/public/photo2.jpg' }
+    ];
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('returns all photos for a report', async () => {
+        photoRepoStub.find.mockResolvedValue(mockPhotos);
+
+        const result = await reportRepository.getReportPhotos(1);
+
+        expect(photoRepoStub.find).toHaveBeenCalledWith({
+            where: { reportId: 1 }
+        });
+        expect(result).toEqual(mockPhotos);
+        expect(result).toHaveLength(2);
+    });
+
+    it('returns empty array if no photos exist', async () => {
+        photoRepoStub.find.mockResolvedValue([]);
+
+        const result = await reportRepository.getReportPhotos(2);
+
+        expect(photoRepoStub.find).toHaveBeenCalledWith({
+            where: { reportId: 2 }
+        });
+        expect(result).toEqual([]);
+        expect(result).toHaveLength(0);
+    });
+
+    it('converts string id to number', async () => {
+        photoRepoStub.find.mockResolvedValue(mockPhotos);
+
+        await reportRepository.getReportPhotos('1');
+
+        expect(photoRepoStub.find).toHaveBeenCalledWith({
+            where: { reportId: 1 }
+        });
     });
 });

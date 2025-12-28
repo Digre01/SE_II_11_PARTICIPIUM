@@ -9,7 +9,9 @@ import {
 } from '../../mocks/repo.stubs.js';
 import { mockConversationRepo } from '../../../mocks/repositories/conversation.repo.mock.js';
 import { mockMessageRepo } from '../../../mocks/repositories/message.repo.mock.js';
+import {setupWsHandlerMock} from "../../../mocks/common.mocks.js";
 
+await setupWsHandlerMock()
 const { reportRepository } = await import('../../../../repositories/reportRepository.mjs');
 
 describe('ReportRepository.createReport', () => {
