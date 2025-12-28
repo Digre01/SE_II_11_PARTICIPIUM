@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
-import { InsufficientRightsError } from "../../../errors/InsufficientRightsError.js";
-import {UnauthorizedError} from "../../../errors/UnauthorizedError.js";
+import { InsufficientRightsError } from "../../errors/InsufficientRightsError.js";
+import {UnauthorizedError} from "../../errors/UnauthorizedError.js";
 
 export function mockAuthorizeUserType(allowedTypes = []) {
     return (req, _res, next) => {

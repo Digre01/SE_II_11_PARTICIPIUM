@@ -1,8 +1,8 @@
 import request from 'supertest';
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { mockOfficeRepo } from "./mocks/office.mocks.js";
-import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "./mocks/common.mocks.js";
-import {mockCategoryRepo} from "./mocks/category.mocks.js";
+import { mockOfficeRepo } from "../mocks/office.repo.mock.js";
+import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "../mocks/common.mocks.js";
+import {mockCategoryRepo} from "../mocks/category.repo.mock.js";
 
 await setupEmailUtilsMock();
 await setupAuthorizationMocks()

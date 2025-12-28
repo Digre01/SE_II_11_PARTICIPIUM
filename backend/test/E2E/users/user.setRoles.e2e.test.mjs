@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
-import {setupEmailUtilsMock} from "../../integration/mocks/common.mocks.js";
+import {setupEmailUtilsMock} from "../../mocks/common.mocks.js";
 import {cleanupUsers, setupUsers} from "./users.setup.js";
 import {standardSetup, standardTeardown} from "../utils/standard.setup.js";
 

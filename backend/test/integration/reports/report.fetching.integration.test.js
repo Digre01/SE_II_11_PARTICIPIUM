@@ -1,11 +1,11 @@
 import {beforeEach, describe, expect, it, jest} from "@jest/globals";
-import { mockRepo } from "../mocks/reports.mock.js";
+import { mockRepo } from "../../mocks/reports.repo.mock.js";
 import request from "supertest";
 import {
     setupAuthorizationMocks,
     setupEmailUtilsMock,
     setUpLoginMock
-} from "../mocks/common.mocks.js";
+} from "../../mocks/common.mocks.js";
 
 await setupEmailUtilsMock();
 await setUpLoginMock()

@@ -3,85 +3,58 @@ import {reportRepoStub} from "../../mocks/shared.mocks.js";
 
 const { reportRepository } = await import('../../../../repositories/reportRepository.mjs');
 
+const emptyArray = [];
+
+const baseMockReports = [
+    {
+        id: 1,
+        title: 'Report 1',
+        description: 'Description 1',
+        status: 'pending',
+        categoryId: 1,
+        technicianId: 1,
+        assignedExternal: false,
+        category: { id: 1, name: 'Infrastructure' },
+        photos: [{ id: 1, link: '/public/photo1.jpg' }]
+    },
+    {
+        id: 2,
+        title: 'Report 2',
+        description: 'Description 2',
+        status: 'resolved',
+        categoryId: 1,
+        technicianId: 1,
+        assignedExternal: false,
+        category: { id: 1, name: 'Public Safety' },
+        photos: []
+    }
+];
+
 describe('ReportRepository.getAllReports', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
     it('returns all reports with photos and category relations', async () => {
-        const mockReports = [
-            {
-                id: 1,
-                title: 'Report 1',
-                description: 'Description 1',
-                status: 'pending',
-                category: { id: 5, name: 'Infrastructure' },
-                photos: [{ id: 1, link: '/public/photo1.jpg' }]
-            },
-            {
-                id: 2,
-                title: 'Report 2',
-                description: 'Description 2',
-                status: 'resolved',
-                category: { id: 6, name: 'Public Safety' },
-                photos: []
-            }
-        ];
-
-        reportRepoStub.find.mockResolvedValue(mockReports);
+        reportRepoStub.find.mockResolvedValue(baseMockReports);
 
         const result = await reportRepository.getAllReports();
 
         expect(reportRepoStub.find).toHaveBeenCalledWith({
             relations: ['photos', 'category']
         });
-        expect(result).toEqual(mockReports);
+        expect(result).toEqual(baseMockReports);
         expect(result).toHaveLength(2);
     });
 
     it('returns empty array when no reports exist', async () => {
-        reportRepoStub.find.mockResolvedValue([]);
+        reportRepoStub.find.mockResolvedValue(emptyArray);
 
         const result = await reportRepository.getAllReports();
 
         expect(reportRepoStub.find).toHaveBeenCalled();
-        expect(result).toEqual([]);
+        expect(result).toEqual(emptyArray);
         expect(result).toHaveLength(0);
-    });
-
-    it('returns reports with complete category and photos information', async () => {
-        const mockReportsWithRelations = [
-            {
-                id: 1,
-                title: 'Pothole on Main St',
-                description: 'Large pothole causing traffic issues',
-                status: 'pending',
-                latitude: 45.123,
-                longitude: 9.456,
-                userId: 10,
-                categoryId: 5,
-                category: {
-                    id: 5,
-                    name: 'Infrastructure',
-                    description: 'Roads, bridges, and public infrastructure'
-                },
-                photos: [
-                    { id: 1, link: '/public/photo1.jpg', reportId: 1 },
-                    { id: 2, link: '/public/photo2.jpg', reportId: 1 }
-                ]
-            }
-        ];
-
-        reportRepoStub.find.mockResolvedValue(mockReportsWithRelations);
-
-        const result = await reportRepository.getAllReports();
-
-        expect(reportRepoStub.find).toHaveBeenCalled();
-        expect(result[0]).toHaveProperty('category');
-        expect(result[0]).toHaveProperty('photos');
-        expect(result[0].category).toHaveProperty('id', 5);
-        expect(result[0].category).toHaveProperty('name', 'Infrastructure');
-        expect(result[0].photos).toHaveLength(2);
     });
 });
 
@@ -92,17 +65,9 @@ describe('ReportRepository.getReportById', () => {
 
     it('returns a specific report with relations when found', async () => {
         const mockReport = {
-            id: 1,
-            title: 'Pothole Report',
-            description: 'Large pothole on Main St',
-            status: 'pending',
+            ...baseMockReports[0],
             latitude: 45.123,
-            longitude: 9.456,
-            category: { id: 5, name: 'Infrastructure' },
-            photos: [
-                { id: 1, link: '/public/photo1.jpg' },
-                { id: 2, link: '/public/photo2.jpg' }
-            ]
+            longitude: 9.456
         };
 
         reportRepoStub.findOne.mockResolvedValue(mockReport);
@@ -114,8 +79,7 @@ describe('ReportRepository.getReportById', () => {
             relations: ['photos', 'category']
         });
         expect(result).toEqual(mockReport);
-        expect(result.photos).toHaveLength(2);
-        expect(result.category.name).toBe('Infrastructure');
+        expect(result.photos).toHaveLength(1);
     });
 
     it('returns null when report not found', async () => {
@@ -123,64 +87,95 @@ describe('ReportRepository.getReportById', () => {
 
         const result = await reportRepository.getReportById(999);
 
-        expect(reportRepoStub.findOne).toHaveBeenCalledWith({
-            where: { id: 999 },
-            relations: ['photos', 'category']
-        });
         expect(result).toBeNull();
     });
 
     it('converts string id to number', async () => {
-        const mockReport = { id: 42, title: 'Test', status: 'pending' };
-        reportRepoStub.findOne.mockResolvedValue(mockReport);
+        reportRepoStub.findOne.mockResolvedValue(baseMockReports[0]);
 
-        await reportRepository.getReportById('42');
+        await reportRepository.getReportById('1');
 
         expect(reportRepoStub.findOne).toHaveBeenCalledWith({
-            where: { id: 42 },
+            where: { id: 1 },
             relations: ['photos', 'category']
         });
     });
-
 });
 
 describe("ReportRepository.getReportsByCategory", () => {
-    const categoryId = 1
-    const mockReports = [
-        {
-            id: 1,
-            title: 'Report 1',
-            description: 'Description 1',
-            status: 'pending',
-            category: { id: categoryId, name: 'Infrastructure' },
-            photos: [{ id: 1, link: '/public/photo1.jpg' }]
-        },
-        {
-            id: 2,
-            title: 'Report 2',
-            description: 'Description 2',
-            status: 'resolved',
-            category: { id: categoryId, name: 'Public Safety' },
-            photos: []
-        }
+    const categoryId = 1;
+
+    it("returns reports for internal technician", async () => {
+        reportRepoStub.findBy.mockResolvedValue(baseMockReports);
+
+        const result = await reportRepository.getReportsByCategory(categoryId);
+
+        expect(result).toEqual(baseMockReports);
+        expect(reportRepoStub.findBy).toHaveBeenCalledWith({ categoryId });
+    });
+
+    it("returns reports for external technician", async () => {
+        const externalReports = baseMockReports.map(r => ({
+            ...r,
+            assignedExternal: true
+        }));
+
+        reportRepoStub.findBy.mockResolvedValue(externalReports);
+
+        const result = await reportRepository.getReportsByCategory(categoryId, true);
+
+        expect(result).toEqual(externalReports);
+        expect(reportRepoStub.findBy).toHaveBeenCalledWith({
+            categoryId,
+            assignedExternal: true
+        });
+    });
+});
+
+/* =========================
+   getReportsByTechnician
+========================= */
+
+describe("ReportRepository.getReportsByTechnicianId", () => {
+    const technicianId = 1;
+
+    it("returns reports for technician", async () => {
+        reportRepoStub.findBy.mockResolvedValue(baseMockReports);
+
+        const result = await reportRepository.getReportsByTechnician(technicianId);
+
+        expect(result).toEqual(baseMockReports);
+        expect(reportRepoStub.findBy).toHaveBeenCalledWith({ technicianId });
+    });
+
+    it("returns empty array if no reports are assigned", async () => {
+        reportRepoStub.findBy.mockResolvedValue(emptyArray);
+
+        const result = await reportRepository.getReportsByTechnician(technicianId);
+
+        expect(result).toEqual(emptyArray);
+    });
+});
+
+describe("ReportRepository.getAcceptedReports", () => {
+    const acceptedReports = [
+        { ...baseMockReports[0], status: 'assigned' },
+        { ...baseMockReports[1], status: 'in_progress' }
     ];
 
-    it("Returns report for internal technician", async () => {
-        reportRepoStub.findBy.mockResolvedValue(mockReports)
+    it("returns accepted reports", async () => {
+        reportRepoStub.find.mockResolvedValue(acceptedReports);
 
-        const result = await reportRepository.getReportsByCategory(categoryId)
+        const result = await reportRepository.getAcceptedReports();
 
-        expect(result).toEqual(mockReports);
-        expect(reportRepoStub.findBy).toHaveBeenCalledWith({categoryId})
-    })
+        expect(result).toEqual(acceptedReports);
+    });
 
-    it("Returns report for internal technician", async () => {
-        const mockExternalReports = mockReports.map(r => ({...r, assignedExternal: true}))
-        reportRepoStub.findBy.mockResolvedValue(mockExternalReports)
+    it("returns empty array if no reports are accepted", async () => {
+        reportRepoStub.find.mockResolvedValue(emptyArray);
 
-        const result = await reportRepository.getReportsByCategory(categoryId, true)
+        const result = await reportRepository.getAcceptedReports();
 
-        expect(result).toEqual(mockExternalReports);
-        expect(reportRepoStub.findBy).toHaveBeenCalledWith({categoryId, assignedExternal: true})
-    })
-})
+        expect(result).toEqual(emptyArray);
+    });
+});

@@ -5,7 +5,6 @@ await jest.unstable_mockModule('../../../wsHandler.js', () => ({
 }));
 
 
-// ---- Shared mock repo factory ----
 export const repoStub = (name) => ({
     findOneBy: jest.fn(),
     findBy: jest.fn(),
@@ -20,7 +19,6 @@ export const repoStub = (name) => ({
     delete: jest.fn(),
 });
 
-// ---- Individual repository stubs you will use in tests ----
 export const reportRepoStub = repoStub('Report');
 export const userRepoStub = repoStub('Users');
 export const categoryRepoStub = repoStub('Categories');
@@ -32,7 +30,6 @@ export const messageRepoStub = repoStub('Message');
 export const notificationRepoStub = repoStub('Notification');
 export const rolesRepoStub = repoStub('Roles');
 
-// ---- MOCK: data-source ----
 await jest.unstable_mockModule('../../../config/data-source.js', () => ({
     AppDataSourcePostgres: {
         getRepository: jest.fn((entity) => {
@@ -52,11 +49,9 @@ await jest.unstable_mockModule('../../../config/data-source.js', () => ({
     },
 }));
 
-// ---- Shared data arrays ----
 export const savedReports = [];
 export const photoEntities = [];
 
-// ---- MOCK: All entities ----
 await jest.unstable_mockModule('../../../entities/Conversation.js', () => ({
     Conversation: { options: { name: 'Conversation' } },
 }));

@@ -1,4 +1,4 @@
-import { setupEmailUtilsMock } from '../../integration/mocks/common.mocks.js';
+import { setupEmailUtilsMock } from '../../mocks/common.mocks.js';
 import { loginAndGetCookie } from './auth.utils.js';
 import {databaseSetup} from "./db.utils.js";
 import {jest} from "@jest/globals";

@@ -4,8 +4,8 @@ import { UnauthorizedError } from '../../errors/UnauthorizedError.js';
 import { InsufficientRightsError } from '../../errors/InsufficientRightsError.js';
 import { BadRequestError } from '../../errors/BadRequestError.js';
 import { NotFoundError } from '../../errors/NotFoundError.js';
-import { mockRepo } from "./mocks/messages.mocks.js";
-import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "./mocks/common.mocks.js";
+import { mockRepo } from "../mocks/message.repo.mock.js";
+import {setupAuthorizationMocks, setupEmailUtilsMock, setUpLoginMock} from "../mocks/common.mocks.js";
 
 await setupEmailUtilsMock();
 await setupAuthorizationMocks()
