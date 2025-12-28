@@ -1,6 +1,6 @@
 import {describe, it, expect, beforeEach, jest} from "@jest/globals";
-import { categoryRepoStub } from "../mocks/shared.mocks.js";
 import { createMockRes, createMockNext } from "../mocks/test-utils.mocks.js";
+import {mockCategoryRepo} from "../../mocks/repositories/category.repo.mock.js";
 
 const { getAllCategories } = await import('../../../controllers/categoryController.mjs');
 
@@ -15,7 +15,7 @@ describe('categoryController.getAllCategories', () => {
       { id: 2, name: 'Public Safety' }
     ];
 
-    categoryRepoStub.find.mockResolvedValue(mockCategories);
+    mockCategoryRepo.getAllCategories.mockResolvedValue(mockCategories);
 
     const req = {};
     const res = createMockRes();
@@ -29,7 +29,7 @@ describe('categoryController.getAllCategories', () => {
 
   it('should call next on error', async () => {
     const error = new Error('Database connection failed');
-    categoryRepoStub.find.mockRejectedValueOnce(error);
+    mockCategoryRepo.getAllCategories.mockRejectedValueOnce(error);
 
     const req = {};
     const res = createMockRes();
@@ -42,7 +42,7 @@ describe('categoryController.getAllCategories', () => {
   });
 
   it('should return empty array when no categories exist', async () => {
-    categoryRepoStub.find.mockResolvedValue([]);
+    mockCategoryRepo.getAllCategories.mockResolvedValue([]);
 
     const req = {};
     const res = createMockRes();

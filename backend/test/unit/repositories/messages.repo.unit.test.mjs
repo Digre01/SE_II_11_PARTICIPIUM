@@ -2,7 +2,7 @@ import { beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals
 import {
 	messageRepoStub,
 	conversationRepoStub
-} from '../mocks/shared.mocks.js';
+} from '../mocks/repo.stubs.js';
 
 import { UnauthorizedError } from '../../../errors/UnauthorizedError.js';
 import { NotFoundError } from '../../../errors/NotFoundError.js';

@@ -4,7 +4,7 @@ import {
 	setupAuthorizationMocks,
 	setupEmailUtilsMock, setUpLoginMock
 } from '../../mocks/common.mocks.js';
-import {mockRepo, mockUserService} from "../../mocks/users.repo.mock.js";
+import {mockRepo, mockUserService} from "../../mocks/repositories/users.repo.mock.js";
 import {ConflictError} from "../../../errors/ConflictError.js";
 
 await setupAuthorizationMocks();

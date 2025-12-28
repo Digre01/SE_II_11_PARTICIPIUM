@@ -4,7 +4,7 @@ import {
     rolesRepoStub,
     officeRepoStub,
     userOfficeRepoStub
-} from "../../mocks/shared.mocks.js";
+} from "../../mocks/repo.stubs.js";
 import { resetUserRepositoryMocks } from "./userRepository.setup.js";
 
 const { userRepository } = await import('../../../../repositories/userRepository.js');

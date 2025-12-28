@@ -6,9 +6,9 @@ import {
     photoRepoStub,
     savedReports,
     photoEntities
-} from '../../mocks/shared.mocks.js';
-import { mockConversationRepo } from '../../../mocks/conversation.repo.mock.js';
-import { mockMessageRepo } from '../../../mocks/message.repo.mock.js';
+} from '../../mocks/repo.stubs.js';
+import { mockConversationRepo } from '../../../mocks/repositories/conversation.repo.mock.js';
+import { mockMessageRepo } from '../../../mocks/repositories/message.repo.mock.js';
 
 const { reportRepository } = await import('../../../../repositories/reportRepository.mjs');
 

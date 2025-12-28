@@ -1,23 +1,22 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import {officeRepoStub} from "../mocks/shared.mocks.js";
+import {mockOfficeRepo} from "../../mocks/repositories/office.repo.mock.js";
 
-const { officeRepository } = await import('../../../repositories/officeRepository.js');
+const { default: officeController } = await import('../../../controllers/officeController.js');
 
 describe('userController - getAllOffices', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
-    it('should return all offices successfully', async () => {
-        const fakeOffices = [
+    it('returns office by id', async () => {
+        const fakeOffice = [
             { id: 1, name: 'Municipality Office' },
-            { id: 2, name: 'Technical Office' },
         ];
-        officeRepoStub.find.mockResolvedValue(fakeOffices);
+        mockOfficeRepo.findById.mockResolvedValue(fakeOffice)
 
-        const result = await officeRepository.findAll();
+        const result = await officeController.getOffice(1);
 
-        expect(officeRepoStub.find).toHaveBeenCalledTimes(1);
-        expect(result).toEqual(fakeOffices);
+        expect(mockOfficeRepo.findById).toHaveBeenCalledTimes(1);
+        expect(result).toEqual(fakeOffice);
     });
 });

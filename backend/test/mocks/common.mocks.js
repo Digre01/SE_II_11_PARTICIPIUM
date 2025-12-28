@@ -85,7 +85,7 @@ export function createUploadMiddlewareMock() {
 }
 
 export async function setupAuthorizationMocks() {
-    await jest.unstable_mockModule('../../../middlewares/userAuthorization.js', () => ({
+    await jest.unstable_mockModule('../../middlewares/userAuthorization.js', () => ({
         authorizeUserType: mockAuthorizeUserType,
         requireAdminIfCreatingStaff: mockRequireAdminIfCreatingStaff,
         authorizeRole: mockAuthorizeRole
@@ -94,14 +94,14 @@ export async function setupAuthorizationMocks() {
 
 // Setup upload middleware mock
 export async function setupUploadMiddlewareMock() {
-    await jest.unstable_mockModule('../../../middlewares/uploadMiddleware.js', () => ({
+    await jest.unstable_mockModule('../../middlewares/uploadMiddleware.js', () => ({
         default: createUploadMiddlewareMock()
     }));
 }
 
 // Setup email utils mock to avoid nodemailer dependency in tests
 export async function setupEmailUtilsMock() {
-    await jest.unstable_mockModule('../../../utils/email.js', () => ({
+    await jest.unstable_mockModule('../../utils/email.js', () => ({
         sendVerificationEmail: jest.fn().mockResolvedValue(true),
         sendNotificationEmail: jest.fn().mockResolvedValue(true),
     }));

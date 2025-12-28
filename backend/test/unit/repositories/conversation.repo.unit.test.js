@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { conversationRepoStub, userRepoStub } from "../mocks/shared.mocks.js";
+import { conversationRepoStub, userRepoStub } from "../mocks/repo.stubs.js";
 
 const {
   getConversationsForUser,

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest, beforeAll } from '@jest/globals';
-import { notificationRepoStub } from "../mocks/shared.mocks.js";
+import { notificationRepoStub } from "../mocks/repo.stubs.js";
 
 let createNotification;
 let getUnreadNotifications;

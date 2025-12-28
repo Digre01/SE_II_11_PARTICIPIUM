@@ -6,7 +6,7 @@ export const mockConversationRepo = {
     addParticipantToConversationMock: jest.fn(),
 }
 
-await jest.unstable_mockModule('../../repositories/conversationRepository.js', () => ({
+await jest.unstable_mockModule('../../../repositories/conversationRepository.js', () => ({
     getConversationsForUser: mockConversationRepo.getConversationsForUserMock,
     createConversation: mockConversationRepo.createConversationMock,
     addParticipantToConversation: mockConversationRepo.addParticipantToConversationMock

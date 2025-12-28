@@ -6,8 +6,8 @@ import {
     userOfficeRepoStub,
     officeRepoStub,
     conversationRepoStub
-} from '../../mocks/shared.mocks.js';
-import {mockConversationRepo} from "../../../mocks/conversation.repo.mock.js";
+} from '../../mocks/repo.stubs.js';
+import {mockConversationRepo} from "../../../mocks/repositories/conversation.repo.mock.js";
 
 const { reportRepository } = await import('../../../../repositories/reportRepository.mjs');
 

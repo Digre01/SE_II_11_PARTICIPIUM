@@ -7,7 +7,7 @@ export const mockMessageRepo = {
     createSystemMessageMock: jest.fn(),
 };
 
-await jest.unstable_mockModule('../../repositories/messageRepository.js', () => ({
+await jest.unstable_mockModule('../../../repositories/messageRepository.js', () => ({
     getMessagesForConversation: mockMessageRepo.getMessagesForConversationMock,
     sendStaffMessage: mockMessageRepo.sendStaffMessageMock,
     createMessage: mockMessageRepo.createMessageMock,

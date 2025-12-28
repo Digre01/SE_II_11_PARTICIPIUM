@@ -1,6 +1,6 @@
 import {describe, it, expect, beforeEach, jest} from "@jest/globals";
 import { createMockRes, createMockNext } from "../mocks/test-utils.mocks.js";
-import { getConversationsForUserMock } from '../mocks/external.mocks.js';
+import {mockConversationRepo} from "../../mocks/repositories/conversation.repo.mock.js";
 
 const { getUserConversations } = await import('../../../controllers/conversationController.js');
 
@@ -11,7 +11,7 @@ describe('conversationController.getUserConversations', () => {
 
   it('should return conversations as json', async () => {
     const mockConversations = [{ id: 1, title: 'TestConv' }];
-    getConversationsForUserMock.mockResolvedValue(mockConversations);
+    mockConversationRepo.getConversationsForUserMock.mockResolvedValue(mockConversations);
 
     const req = { user: { id: 42 } };
     const res = createMockRes();
@@ -25,7 +25,7 @@ describe('conversationController.getUserConversations', () => {
 
   it('should call next on error', async () => {
     const mockError = new Error('Database connection failed');
-    getConversationsForUserMock.mockRejectedValueOnce(mockError);
+    mockConversationRepo.getConversationsForUserMock.mockRejectedValueOnce(mockError);
 
     const req = { user: { id: 42 } };
     const res = createMockRes();

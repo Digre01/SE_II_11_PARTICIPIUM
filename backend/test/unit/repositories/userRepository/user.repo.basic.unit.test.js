@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
-import { userRepoStub, userOfficeRepoStub } from "../../mocks/shared.mocks.js";
+import { userRepoStub, userOfficeRepoStub } from "../../mocks/repo.stubs.js";
 import { resetUserRepositoryMocks } from "./userRepository.setup.js";
 
 const { userRepository } = await import("../../../../repositories/userRepository.js");

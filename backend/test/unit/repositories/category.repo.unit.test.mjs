@@ -1,5 +1,5 @@
 import {describe, it, expect, beforeEach, jest, beforeAll} from '@jest/globals';
-import { categoryRepoStub } from "../mocks/shared.mocks.js";
+import { categoryRepoStub } from "../mocks/repo.stubs.js";
 
 let categoryRepository;
 

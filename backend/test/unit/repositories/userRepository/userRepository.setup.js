@@ -3,7 +3,7 @@ import {
     rolesRepoStub,
     officeRepoStub,
     userOfficeRepoStub
-} from "../../mocks/shared.mocks.js";
+} from "../../mocks/repo.stubs.js";
 
 export const resetUserRepositoryMocks = () => {
     userRepoStub.findOneBy.mockResolvedValue({ id: 1, userType: 'STAFF' });

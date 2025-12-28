@@ -21,14 +21,15 @@ export const mockUserRepo = {
     getUserRoles: jest.fn(),
     getAvailableStaffForRoleAssignment: jest.fn(),
     getAssignedStaffForRoleModification: jest.fn(),
-    findOneBy: jest.fn()
+    findOneBy: jest.fn(),
+    deleteUser: jest.fn(),
 }
 
-await jest.unstable_mockModule('../../repositories/userRepository.js', () => ({
+await jest.unstable_mockModule('../../../repositories/userRepository.js', () => ({
     userRepository: mockUserRepo,
 }));
 
-await jest.unstable_mockModule('../../middlewares/uploadMiddleware.js', () => ({
+await jest.unstable_mockModule('../../../middlewares/uploadMiddleware.js', () => ({
     default: {
         single: () => (req, _res, next) => {
             req.file = { filename: 'mocked.png', path: 'mocked.png' };
@@ -46,6 +47,6 @@ export const mockUserService = {
     hashPassword: jest.fn()
 }
 
-await jest.unstable_mockModule("../../services/userService.js", () => ({
+await jest.unstable_mockModule("../../../services/userService.js", () => ({
     default: mockUserService
 }));

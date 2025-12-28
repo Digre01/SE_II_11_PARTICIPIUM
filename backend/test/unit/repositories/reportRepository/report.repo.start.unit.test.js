@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import {
     conversationRepoStub,
     reportRepoStub,
-} from '../../mocks/shared.mocks.js';
+} from '../../mocks/repo.stubs.js';
 const { reportRepository } = await import('../../../../repositories/reportRepository.mjs');
 
 describe('ReportRepository.startReport', () => {

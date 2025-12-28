@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { officeRepoStub } from '../mocks/shared.mocks.js';
+import { officeRepoStub } from '../mocks/repo.stubs.js';
 
 const { officeRepository } = await import('../../../repositories/officeRepository.js');
 

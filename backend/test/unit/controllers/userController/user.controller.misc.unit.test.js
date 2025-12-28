@@ -1,8 +1,10 @@
 import {describe, it, expect, beforeEach, jest, beforeAll} from '@jest/globals';
-import {
-    rolesRepositoryMock,
-    officeRepositoryMock, userRepositoryMock
-} from './user.controller.mock.js';
+import {mockRoleRepo} from "../../../mocks/repositories/roles.repo.mock.js";
+import {mockOfficeRepo} from "../../../mocks/repositories/office.repo.mock.js";
+import {mockUserRepo} from "../../../mocks/repositories/users.repo.mock.js";
+import {setupEmailUtilsMock} from "../../../mocks/common.mocks.js";
+
+await setupEmailUtilsMock()
 
 let controller;
 beforeAll(async () => {
@@ -15,7 +17,7 @@ beforeEach(() => {
 
 describe('getAllRoles', () => {
     it('returns roles', async () => {
-        rolesRepositoryMock.findAll.mockResolvedValue(['role']);
+        mockRoleRepo.findAll.mockResolvedValue(['role']);
         const result = await controller.getAllRoles();
         expect(result).toEqual(['role']);
     });
@@ -23,7 +25,7 @@ describe('getAllRoles', () => {
 
 describe('getAllOffices', () => {
     it('returns offices', async () => {
-        officeRepositoryMock.findAll.mockResolvedValue(['office']);
+        mockOfficeRepo.findAll.mockResolvedValue(['office']);
         const result = await controller.getAllOffices();
         expect(result).toEqual(['office']);
     });
@@ -31,13 +33,13 @@ describe('getAllOffices', () => {
 
 describe('getPfpUrl', () => {
     it('returns url', async () => {
-        userRepositoryMock.getPfpUrl.mockResolvedValue('url');
+        mockUserRepo.getPfpUrl.mockResolvedValue('url');
         const result = await controller.getPfpUrl(1);
         expect(result).toBe('url');
     });
 
     it('returns undefined if not found', async () => {
-        userRepositoryMock.getPfpUrl.mockResolvedValue(undefined);
+        mockUserRepo.getPfpUrl.mockResolvedValue(undefined);
         const result = await controller.getPfpUrl(1);
         expect(result).toBeUndefined();
     });
