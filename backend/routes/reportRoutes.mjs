@@ -90,7 +90,8 @@ router.get(
 
 
 // GET /api/v1/reports/assigned and /api/v1/reports/suspended (public map layer)
-router.get(['/assigned', '/suspended', '/in_progress'], authorizeUserType(['citizen']), async (req, res, next) => {
+// Public: allow unregistered users to fetch accepted reports for the interactive map
+router.get(['/assigned', '/suspended', '/in_progress'], async (req, res, next) => {
   try {
     const reports = await getAcceptedReports();
     // Filter by requested path to avoid duplicates when frontend merges both endpoints
