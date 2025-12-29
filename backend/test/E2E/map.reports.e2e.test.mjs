@@ -59,11 +59,11 @@ describe('E2E map: citizen sees approved reports on map', () => {
   it('zoomed-out: groups reports by coordinates and reports total counts', async () => {
     // prepare sample accepted reports: 3 at coord A, 2 at coord B
     const reports = [
-      { id: 1, title: 'A1', latitude: 50.0, longitude: 8.0, status: 'accepted', categoryId: 1, user: { username: 'u1', name: 'One', surname: 'Uno' }, photos: [] },
-      { id: 2, title: 'A2', latitude: 50.0, longitude: 8.0, status: 'accepted', categoryId: 1, user: null, photos: [] },
-      { id: 3, title: 'A3', latitude: 50.0, longitude: 8.0, status: 'accepted', categoryId: 1, user: null, photos: [] },
-      { id: 4, title: 'B1', latitude: 51.0, longitude: 9.0, status: 'accepted', categoryId: 2, user: { username: 'u2', name: 'Two', surname: 'Dos' }, photos: [] },
-      { id: 5, title: 'B2', latitude: 51.0, longitude: 9.0, status: 'accepted', categoryId: 2, user: null, photos: [] }
+      { id: 1, title: 'A1', latitude: 50.0, longitude: 8.0, status: 'assigned', categoryId: 1, user: { username: 'u1', name: 'One', surname: 'Uno' }, photos: [] },
+      { id: 2, title: 'A2', latitude: 50.0, longitude: 8.0, status: 'assigned', categoryId: 1, user: null, photos: [] },
+      { id: 3, title: 'A3', latitude: 50.0, longitude: 8.0, status: 'assigned', categoryId: 1, user: null, photos: [] },
+      { id: 4, title: 'B1', latitude: 51.0, longitude: 9.0, status: 'assigned', categoryId: 2, user: { username: 'u2', name: 'Two', surname: 'Dos' }, photos: [] },
+      { id: 5, title: 'B2', latitude: 51.0, longitude: 9.0, status: 'assigned', categoryId: 2, user: null, photos: [] }
     ];
 
     mockRepo.getAcceptedReports.mockResolvedValueOnce(reports);
@@ -89,8 +89,8 @@ describe('E2E map: citizen sees approved reports on map', () => {
 
   it('zoomed-in: returns individual reports with title and reporter name or Anonymous', async () => {
     const reports = [
-      { id: 10, title: 'Hole', latitude: 48.0, longitude: 10.0, status: 'accepted', categoryId: 1, user: { username: 'alpha', name: 'Alice', surname: 'A' }, photos: [] },
-      { id: 11, title: 'Broken light', latitude: 48.1, longitude: 10.1, status: 'accepted', categoryId: 1, user: null, photos: [] }
+      { id: 10, title: 'Hole', latitude: 48.0, longitude: 10.0, status: 'assigned', categoryId: 1, user: { username: 'alpha', name: 'Alice', surname: 'A' }, photos: [] },
+      { id: 11, title: 'Broken light', latitude: 48.1, longitude: 10.1, status: 'assigned', categoryId: 1, user: null, photos: [] }
     ];
 
     mockRepo.getAcceptedReports.mockResolvedValueOnce(reports);
@@ -116,5 +116,25 @@ describe('E2E map: citizen sees approved reports on map', () => {
     expect(anon.title).toBe('Broken light');
     // backend returns null for authorName when user is null; client should show 'Anonymous'
     expect(anon.authorName === null || anon.authorName === undefined).toBeTruthy();
+  });
+
+  it('zoomed-in: treats reports with isAnonymous=true as Anonymous even if user exists', async () => {
+    const reports = [
+      { id: 20, title: 'Hidden Reporter', latitude: 48.5, longitude: 10.5, status: 'assigned', categoryId: 1, isAnonymous: true, user: { username: 'hidden', name: 'Hidden', surname: 'User' }, photos: [] }
+    ];
+
+    mockRepo.getAcceptedReports.mockResolvedValueOnce(reports);
+
+    const res = await request(app)
+      .get('/api/v1/reports/assigned')
+      .set('Authorization', 'Bearer citizen-token');
+
+    expect(res.status).toBe(200);
+    const dtos = res.body;
+    expect(dtos).toHaveLength(1);
+    const item = dtos[0];
+    expect(item.id).toBe(20);
+    expect(item.authorUsername).toBeNull();
+    expect(item.authorName).toBeNull();
   });
 });
