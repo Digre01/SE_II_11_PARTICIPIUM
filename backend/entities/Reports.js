@@ -48,7 +48,12 @@ export const Report = new EntitySchema({
       assignedExternal: {
         type: Boolean,
         nullable: true,
-      }
+      },
+    isAnonymous: {
+      type: Boolean,
+      nullable: false,
+      default: false
+    }
   },
   relations: {
     user: {
