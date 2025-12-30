@@ -116,6 +116,10 @@ export async function getOfficeSection(page, officeName = "Public Lighting Offic
     return page.locator('section, div').filter({ hasText: `Reports assigned to: ${officeName}` }).first();
 }
 
+export async function getUserSection(page) {
+    return page.locator('section, div').filter({ hasText: "Reports assigned to you" }).first();
+}
+
 export async function selectOfficeAndWaitReports(page, officeName = "Public Lighting Office") {
     await page.goto(`/officeReports`);
     await page.waitForLoadState('networkidle');
