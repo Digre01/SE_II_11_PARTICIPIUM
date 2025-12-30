@@ -22,3 +22,7 @@ export const loginAsUser = async (page, { username, password }) => {
     // best-effort login verification (non bloccante)
     await page.waitForSelector('text=Logout', { timeout: 5000 }).catch(() => {});
 };
+
+export const logout = async (page) => {
+    await page.click("text=Logout")
+}

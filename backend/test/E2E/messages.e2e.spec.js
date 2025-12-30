@@ -1,55 +1,30 @@
 import { test, expect } from '@playwright/test';
-import {mockCurrentSession} from "./helpers/common.helpers.js";
+import {loginAsUser, logout, mockCurrentSession} from "./helpers/common.helpers.js";
 import {getMessageInput, gotoConversation, mockConversations, mockMessages} from "./helpers/messages.helpers.js";
 
 test.describe('Conversation Page', () => {
-  test('visit conversation triggers mark-as-read and shows messages', async ({ page }) => {
-    await mockCurrentSession(page, { id: 42, username: 'alice', userType: 'citizen' });
+  test('visit conversation shows status update message', async ({ page }) => {
+    await loginAsUser(page, {username: "citizen", password: "citizen"})
 
-    let markCalled = false;
-    let messageGetCalled = false;
+    await page.click('text=Notifications');
 
-    await page.route('**/api/v1/notifications/100/read', route => {
-      markCalled = true;
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ updated: 1 }),
-      });
-    });
+    await page.waitForSelector('li.list-group-item:has-text("Not working street lamp")', { timeout: 5000 });
+    await page.click('li.list-group-item:has-text("Public Lighting Report")');
 
-    await mockMessages(page, 100, route => {
-      messageGetCalled = true;
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify([
-          {
-            id: 10,
-            content: 'Hello from server',
-            createdAt: new Date().toISOString(),
-            sender: { id: 99, username: 'bob' },
-          },
-        ]),
-      });
-    });
+    await page.waitForSelector('text=Report status change to: Pending Approval', { timeout: 5000 });
+    const statusMessage = await page.$eval(
+        'text=Report status change to: Pending Approval',
+        el => el.textContent
+    );
 
-    await gotoConversation(page, 100, 500);
-
-    expect(markCalled).toBeTruthy();
-    expect(messageGetCalled).toBeTruthy();
+    expect(statusMessage).toContain('Report status change to: Pending Approval');
   });
 
   test('staff can send a message and POST is invoked', async ({ page }) => {
-    await mockCurrentSession(page, { id: 42, username: 'staff1', userType: 'staff' });
+    await logout(page);
+    await loginAsUser(page, {username: "staff2", password: "staff2"})
 
-    await page.route('**/api/v1/notifications/100/read', route =>
-        route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ updated: 0 }),
-        })
-    );
+    await page.click('text=Notifications');
 
     await mockConversations(page, [{ id: 100, report: { status: 'open' } }]);
 
@@ -122,9 +97,9 @@ test.describe('Conversation Page', () => {
       { id: 30, content: 'First', createdAt: new Date(now - 3600000).toISOString(), sender: null, isSystem: true },
     ];
 
-    let called = false;
+    console.log("messages created")
     await mockMessages(page, 200, route => {
-      called = true;
+      console.log('mockMessages triggered:', route.request().url());
       route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -134,13 +109,12 @@ test.describe('Conversation Page', () => {
 
     await mockConversations(page, [{ id: 200, report: { status: 'open' } }]);
 
-    await gotoConversation(page, 200);
-
-    while (!called) await page.waitForTimeout(100);
-
-    const fetched = await page.evaluate(() =>
-        fetch('/api/v1/conversations/200/messages', { credentials: 'include' }).then(r => r.json())
+    const response = await page.waitForResponse(resp =>
+        resp.url().includes('/api/v1/conversations/200/messages') && resp.status() === 200
     );
+    const fetched = await response.json();
+
+    await gotoConversation(page, 200);
 
     const sorted = fetched.slice().sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
     expect(sorted[0].content).toBe('First');

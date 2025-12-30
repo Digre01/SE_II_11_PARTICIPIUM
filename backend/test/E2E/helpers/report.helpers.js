@@ -35,17 +35,47 @@ export const navigateToCreateReport = async (page) => {
     }
 };
 
-export const fillReportForm = async (page) => {
-    await page.fill('#title', 'E2E test report');
-    await page.fill('#description', 'Report created during E2E test');
-    await page.selectOption('#categoryId', '1');
+export async function fillReportForm(page, data) {
+    if (data.title) await page.fill('#title', data.title);
+    if (data.description) await page.fill('#description', data.description);
 
-    await page.setInputFiles('#upload_foto', [{
-        name: 'photo.png',
-        mimeType: 'image/png',
-        buffer: Buffer.from('fake'),
-    }]);
-};
+    if (data.categoryId) {
+        await page.waitForSelector('#categoryId', { timeout: 10000 });
+        await page.selectOption('#categoryId', data.categoryId);
+    }
+
+    if (data.photos && data.photos.length > 0) {
+        await page.setInputFiles('#upload_foto', data.photos);
+    }
+
+    await page.waitForSelector('#latitude');
+    await page.waitForSelector('#longitude');
+}
+
+export async function getLastReport() {
+    const res = await fetch('http://localhost:3000/api/v1/reports', {
+        method: 'GET',
+        credentials: 'include'
+    });
+
+    const reports = await res.json();
+    console.log(reports)
+    if (!reports || reports.length === 0) return null;
+
+    reports.sort((a, b) => b.id - a.id);    //ordino decrescente e prendo il primo
+    return reports[0];
+}
+
+export async function deleteReport(reportId){
+    const res = await fetch(`http://localhost:3000/api/v1/test/reports/${reportId}`, {
+        method: 'DELETE',
+        credentials: "include"
+    });
+
+    if (!res.ok) throw new Error(`Failed to delete report ${reportId}`);
+    const data = await res.json();
+    console.log(data.message);
+}
 
 export const getLatLon = async (page) => {
     await page.waitForSelector('#latitude');
@@ -82,13 +112,29 @@ export async function fillRejectExplanation(page, text) {
     await page.fill('textarea.form-control', text);
 }
 
-export async function waitForOfficeReports(page) {
+export async function getOfficeSection(page, officeName = "Public Lighting Office") {
+    return page.locator('section, div').filter({ hasText: `Reports assigned to: ${officeName}` }).first();
+}
+
+export async function selectOfficeAndWaitReports(page, officeName = "Public Lighting Office") {
     await page.goto(`/officeReports`);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1000);
-    await page.waitForSelector('text=Reports assigned to your office');
-}
 
-export async function getOfficeSection(page) {
-    return page.locator('section, div').filter({ hasText: 'Reports assigned to your office' }).first();
+    await page.waitForSelector('select', { timeout: 5000 });
+
+    const value = await page.$eval(
+        'select',
+        (select, officeName) => {
+            const option = Array.from(select.options).find(o => o.textContent?.trim() === officeName);
+            return option?.value || "";
+        },
+        officeName
+    );
+
+    if (!value) throw new Error(`Office "${officeName}" not found in dropdown`);
+
+    await page.selectOption('select', value);
+
+    await page.waitForSelector('table tbody tr', { timeout: 5000 });
 }

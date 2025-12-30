@@ -8,8 +8,8 @@ export const waitForMap = async (page) => {
     }
 };
 
-export const waitForMapAndClickCenter = async (page) => {
-    const selector = waitForMap(page)
+export const selectPointOnMap = async (page) => {
+    const selector = await waitForMap(page)
 
     const map = await page.$(selector);
     const box = await map.boundingBox();

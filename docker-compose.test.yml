@@ -1,0 +1,27 @@
+services:
+  db:
+    container_name: se_ii_postgres_test
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d se_ii_db_test" ]
+    environment:
+      POSTGRES_DB: se_ii_db_test
+    volumes:
+      - db_test_data:/var/lib/postgresql/data
+
+  backend:
+    container_name: backend_test
+    env_file:
+      - tests.env
+    environment:
+      NODE_ENV: test
+      PG_DB: se_ii_db_test
+
+  frontend:
+    container_name: frontend_test
+
+  adminer:
+    profiles:
+      - dev
+
+volumes:
+  db_test_data:

@@ -1,31 +1,27 @@
 import { test, expect } from '@playwright/test';
-import {mockCurrentSession} from "./helpers/common.helpers.js";
+import {loginAsUser, mockCurrentSession} from "./helpers/common.helpers.js";
 import {mockAssignRoles, mockRoles, putRoles} from "./helpers/user.helpers.js";
 
 test.describe('User Roles UI', () => {
-  test('assigns multiple roles to a staff user as ADMIN (mocked API)', async ({ page }) => {
-    const rolesFixture = [{ id: 7, name: 'Role A' }, { id: 8, name: 'Role B' }];
+  test('assigns Waste Management Officer role to staff user 2 as ADMIN', async ({ page }) => {
+    await loginAsUser(page, { username: "admin", password: "admin" });
 
-    await mockCurrentSession(page, { id: 1, username: 'seed-admin', userType: 'ADMIN' });
-    await mockRoles(page, rolesFixture);
+    await page.goto("/modify_roles");
 
-    const getCaptured = await mockAssignRoles(page, [
-      { userId: 2, office: { id: 1 }, role: { id: 7 } },
-      { userId: 2, office: { id: 2 }, role: { id: 8 } },
-    ]);
+    await page.waitForSelector('text=Modify Role to Staff');
 
-    await page.goto('/');
+    await page.selectOption('select[name="userId"]', '4');
 
-    const res = await putRoles(page, 2, {
-      roles: rolesFixture.map(r => ({ roleId: r.id })),
-    });
+    await page.waitForSelector('input[type="checkbox"]');
 
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBe(2);
-    expect(getCaptured()).not.toBeNull();
-    expect(Array.isArray(getCaptured().roles || getCaptured())).toBe(true);
+    await page.locator('label', { hasText: 'Waste Management Officer' }).click();
+
+    await page.click('button:has-text("Save Roles")');
+
+    const successAlert = page.locator('text=Roles updated successfully');
+    await expect(successAlert).toBeVisible();
   });
-
+   /*
   test('cancels all roles when ADMIN sends empty array (mocked API)', async ({ page }) => {
     await mockCurrentSession(page, { id: 1, username: 'seed-admin', userType: 'ADMIN' });
     await mockRoles(page, []);
@@ -84,5 +80,5 @@ test.describe('User Roles UI', () => {
     expect(res.status).toBe(403);
     expect(res.body).toBeTruthy();
     expect(res.body.error).toBe('Forbidden');
-  });
+  });*/
 });

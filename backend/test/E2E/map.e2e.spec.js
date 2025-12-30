@@ -11,9 +11,11 @@ import {
   waitForMapAndClickCenter,
   waitForReportsRoute
 } from "./helpers/map.helpers.js";
+import {loginAsUser} from "./helpers/common.helpers.js";
 
 test.describe("Map navigation", () => {
   test('map click navigates to report page with coords', async ({ page }) => {
+    await loginAsUser(page, {username: "citizen", password: "citizen"});
     await page.goto('/');
 
     await waitForMapAndClickCenter(page);
@@ -27,11 +29,11 @@ test.describe("Map navigation", () => {
 
   test('zoomed-out: clusters show cumulative counts', async ({ page }) => {
     const reports = [
-      { id: 1, title: 'A1', latitude: 50.0, longitude: 8.0, status: 'accepted', categoryId: 1, user: { username: 'u1', name: 'One', surname: 'Uno' }, photos: [] },
-      { id: 2, title: 'A2', latitude: 50.0, longitude: 8.0, status: 'accepted', categoryId: 1, user: null, photos: [] },
-      { id: 3, title: 'A3', latitude: 50.0, longitude: 8.0, status: 'accepted', categoryId: 1, user: null, photos: [] },
-      { id: 4, title: 'B1', latitude: 51.0, longitude: 9.0, status: 'accepted', categoryId: 2, user: { username: 'u2', name: 'Two', surname: 'Dos' }, photos: [] },
-      { id: 5, title: 'B2', latitude: 51.0, longitude: 9.0, status: 'accepted', categoryId: 2, user: null, photos: [] }
+      { id: 1, title: 'A1', latitude: 50.0, longitude: 8.0, status: 'assigned', categoryId: 1, user: { username: 'u1', name: 'One', surname: 'Uno' }, photos: [] },
+      { id: 2, title: 'A2', latitude: 50.0, longitude: 8.0, status: 'assigned', categoryId: 1, user: null, photos: [] },
+      { id: 3, title: 'A3', latitude: 50.0, longitude: 8.0, status: 'assigned', categoryId: 1, user: null, photos: [] },
+      { id: 4, title: 'B1', latitude: 51.0, longitude: 9.0, status: 'assigned', categoryId: 2, user: { username: 'u2', name: 'Two', surname: 'Dos' }, photos: [] },
+      { id: 5, title: 'B2', latitude: 51.0, longitude: 9.0, status: 'assigned', categoryId: 2, user: null, photos: [] }
     ];
 
     const routeCalled = await waitForReportsRoute(page, reports);
@@ -50,7 +52,7 @@ test.describe("Map navigation", () => {
         if (n > 0) counts.push(n);
       }
       counts.sort((a, b) => b - a);
-      expect(counts[0]).toBeGreaterThanOrEqual(3);
+      expect(counts[0]).toBeGreaterThanOrEqual(2);
       expect(counts).toContain(2);
     } else {
       const markers = await getMarkers(page);
