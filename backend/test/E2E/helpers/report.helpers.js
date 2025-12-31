@@ -1,4 +1,8 @@
 import {expect} from "@playwright/test";
+import {loginAsUser} from "./common.helpers.js";
+import {selectPointOnMap} from "./map.helpers.js";
+import {AppDataSourcePostgres} from "../../../config/data-source.js";
+import {Report} from "../../../entities/Reports.js";
 
 export const mockCategories = async (page, categories) => {
     await page.route('**/api/v1/categories', route =>
@@ -141,4 +145,60 @@ export async function selectOfficeAndWaitReports(page, officeName = "Public Ligh
     await page.selectOption('select', value);
 
     await page.waitForSelector('table tbody tr', { timeout: 5000 });
+}
+
+
+export async function getTestReport(page, request) {
+    const URL = "http://localhost:3000"
+
+    await request.post(`${URL}/api/v1/sessions/login`, {
+        data: { username: 'staff1', password: 'staff1' },
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    });
+    const response = await request.get(`${URL}/api/v1/reports`)
+    const reports = await response.json();
+    return reports.filter(r => r.title === "Test Report")[0]
+}
+
+export async function createTestReport(page, request) {
+    if (await getTestReport(page, request) !== undefined) {
+        console.log("Test report is present")
+        return
+    }
+
+    await loginAsUser(page, { username: "citizen", password: "citizen" } )
+
+    await page.goto('/');
+
+    await selectPointOnMap(page);
+
+    await page.waitForSelector('text=Create Report', { timeout: 5000 });
+    await page.click('text=Create Report');
+
+    await page.waitForSelector('#categoryId', { timeout: 10000 });
+    const categoryValue = await page.$eval('#categoryId', el => {
+        const options = Array.from(el.querySelectorAll('option'));
+        const publicLighting = options
+            .find(o => o.textContent?.trim().toLowerCase() === 'public lighting');
+        return publicLighting?.value || '';
+    });
+
+    await fillReportForm(page, {
+        title: `Test Report`,
+        description: 'Testing public lighting issue via map click',
+        categoryId: categoryValue,
+        photos: [{
+            name: 'lampione.png',
+            mimeType: 'image/png',
+            buffer: Buffer.from('test'),
+        }],
+    });
+
+    await page.waitForSelector('button[type="submit"]:not([disabled])', { timeout: 5000 });
+    await page.click('button[type="submit"]');
+
+    const successAlert = await page.locator('text=Report submitted successfully', { timeout: 5000 });
+    await expect(successAlert).toBeVisible()
 }
