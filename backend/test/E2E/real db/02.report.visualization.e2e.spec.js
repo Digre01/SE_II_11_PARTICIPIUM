@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import {loginAsUser, logout} from "../helpers/common.helpers.js";
+import {loginAsUser} from "../helpers/common.helpers.js";
 import {gotoReports, gotoReview} from "../helpers/report.helpers.js";
 
 test.describe("Report visualization", () => {

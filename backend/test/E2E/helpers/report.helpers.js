@@ -95,7 +95,7 @@ export async function selectOfficeAndWaitReports(page, officeName = "Public Ligh
     await page.waitForSelector('table tbody tr', { timeout: 5000 });
 }
 
-export async function createTestReport(page, request) {
+export async function createTestReport(page, request, title) {
     if (await getTestReport(page, request) !== undefined) {
         console.log("Test report is present")
         return
@@ -119,7 +119,7 @@ export async function createTestReport(page, request) {
     });
 
     await fillReportForm(page, {
-        title: `Test Report`,
+        title,
         description: 'Testing public lighting issue via map click',
         categoryId: categoryValue,
         photos: [{

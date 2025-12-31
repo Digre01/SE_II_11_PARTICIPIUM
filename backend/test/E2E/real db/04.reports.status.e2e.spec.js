@@ -108,11 +108,21 @@ test.describe('report starting, finishing, suspending and resuming', () => {
     });
 
     test.describe("Assign report to external", async () => {
+
+        test.beforeEach(async ({ page, request }) => {
+            await createTestReport(page, request, "External Report")
+        })
+
         test('assigning report to external office shows confirmation alert', async ({ page }) => {
 
             await selectOfficeAndWaitReports(page);
 
-            const officeSection = await getSection(page, "Reports assigned to: Public Lighting Office");
+            const officeSection = page
+                .locator('div, section', { hasText: "Reports assigned to: Public Lighting Office" })
+                .first();
+            const row = officeSection
+                .locator('table tbody tr', { hasText: "External Report" })
+                .first();
 
             const assignButton = officeSection.locator('button', { hasText: /ASSIGN|Assign/ });
             const assignBtnCount = await assignButton.count();
