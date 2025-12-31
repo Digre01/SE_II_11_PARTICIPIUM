@@ -116,12 +116,11 @@ export async function fillRejectExplanation(page, text) {
     await page.fill('textarea.form-control', text);
 }
 
-export async function getOfficeSection(page, officeName = "Public Lighting Office") {
-    return page.locator('section, div').filter({ hasText: `Reports assigned to: ${officeName}` }).first();
-}
-
-export async function getUserSection(page) {
-    return page.locator('section, div').filter({ hasText: "Reports assigned to you" }).first();
+export async function getSection(page, sectionTitle) {
+    const section = page.locator('div, section', { hasText: sectionTitle }).first();
+    return section
+        .locator('table tbody tr', { hasText: "Test Report" })
+        .first();
 }
 
 export async function selectOfficeAndWaitReports(page, officeName = "Public Lighting Office") {
@@ -201,4 +200,5 @@ export async function createTestReport(page, request) {
 
     const successAlert = await page.locator('text=Report submitted successfully', { timeout: 5000 });
     await expect(successAlert).toBeVisible()
+    console.log("Created test report")
 }

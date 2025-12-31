@@ -1,20 +1,23 @@
 import { test, expect } from '@playwright/test';
 import {loginAsUser} from "../helpers/common.helpers.js";
 import {
-    getOfficeSection,
-    getUserSection,
+    createTestReport,
+    getSection,
     selectOfficeAndWaitReports,
 } from "../helpers/report.helpers.js";
 
 test.describe('report starting, finishing, suspending and resuming', () => {
-    const CREDENTIALS = {username: "staff2", password: "staff2"}
+
+    test.beforeEach(async ( {page, request}) => {
+        await createTestReport(page, request)
+        await loginAsUser(page, {username: "staff2", password: "staff2"})
+
+    })
 
     test('pressing START button changes report status to IN PROGRESS', async ({ page }) => {
-        await loginAsUser(page, CREDENTIALS)
-
         await selectOfficeAndWaitReports(page);
 
-        const officeSection = await getOfficeSection(page);
+        const officeSection = await getSection(page, "Reports assigned to: Public Lighting Office");
 
         const startButton = officeSection.locator('button', { hasText: 'START' });
         await expect(startButton.first()).toBeVisible();
@@ -33,11 +36,9 @@ test.describe('report starting, finishing, suspending and resuming', () => {
     });
 
     test('pressing SUSPEND button changes report status to SUSPENDED', async ({ page }) => {
-        await loginAsUser(page, CREDENTIALS)
-
         await page.goto("/officeReports")
 
-        const userSection = await getUserSection(page);
+        const userSection = await getSection(page, "Reports assigned to you");
 
         const suspendButton = userSection.locator('button', { hasText: 'SUSPEND' });
         await expect(suspendButton.first()).toBeVisible();
@@ -59,11 +60,9 @@ test.describe('report starting, finishing, suspending and resuming', () => {
     });
 
     test('pressing RESUME button changes report status back from SUSPENDED', async ({ page }) => {
-        await loginAsUser(page, CREDENTIALS)
-
         await page.goto("/officeReports")
 
-        const userSection = await getUserSection(page)
+        const userSection = await getSection(page, "Reports assigned to you");
 
         const resumeButton = userSection.locator('button', { hasText: 'RESUME' });
         await expect(resumeButton.first()).toBeVisible();
@@ -85,11 +84,9 @@ test.describe('report starting, finishing, suspending and resuming', () => {
     });
 
     test('pressing FINISH button changes report status from IN PROGRESS', async ({ page }) => {
-        await loginAsUser(page, CREDENTIALS)
-
         await page.goto("/officeReports")
 
-        const userSection = await getUserSection(page)
+        const userSection = await getSection(page, "Reports assigned to you");
 
         const finishButton = userSection.locator('button', { hasText: 'FINISH' });
         await expect(finishButton.first()).toBeVisible();
@@ -110,30 +107,31 @@ test.describe('report starting, finishing, suspending and resuming', () => {
         expect(finishButtonsBefore).toBeGreaterThan(finishButtonsAfter);
     });
 
-    test('assigning report to external office shows confirmation alert', async ({ page }) => {
-        await loginAsUser(page, CREDENTIALS)
+    test.describe("Assign report to external", async () => {
+        test('assigning report to external office shows confirmation alert', async ({ page }) => {
 
-        await selectOfficeAndWaitReports(page);
+            await selectOfficeAndWaitReports(page);
 
-        const officeSection = await getOfficeSection(page);
+            const officeSection = await getSection(page, "Reports assigned to: Public Lighting Office");
 
-        const assignButton = officeSection.locator('button', { hasText: /ASSIGN|Assign/ });
-        const assignBtnCount = await assignButton.count();
+            const assignButton = officeSection.locator('button', { hasText: /ASSIGN|Assign/ });
+            const assignBtnCount = await assignButton.count();
 
-        if (assignBtnCount === 0 || !(await assignButton.first().isVisible())) {
-            console.log('No assign-to-external button visible; skipping test');
-            return;
-        }
+            if (assignBtnCount === 0 || !(await assignButton.first().isVisible())) {
+                console.log('No assign-to-external button visible; skipping test');
+                return;
+            }
 
-        await expect(assignButton.first()).toBeVisible();
+            await expect(assignButton.first()).toBeVisible();
 
-        await assignButton.first().click();
-        await page.waitForTimeout(500);
+            await assignButton.first().click();
+            await page.waitForTimeout(500);
 
-        const alert = page.locator('.alert');
-        await expect(alert).toBeVisible();
-        await expect(alert).toContainText('Report assigned to external office.');
-    });
+            const alert = page.locator('.alert');
+            await expect(alert).toBeVisible();
+            await expect(alert).toContainText('Report assigned to external office.');
+        });
+    })
 
 });
 
