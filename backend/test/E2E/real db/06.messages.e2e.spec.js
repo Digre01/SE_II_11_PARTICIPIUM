@@ -70,11 +70,11 @@ test.describe('Conversation Page', () => {
 
 test.describe("Internal conversation", () => {
   test.beforeEach(async ({page, request}) => {
+    await createTestReport(page, request, "External Report")
+
     await loginAsUser(page, {username: "staff2", password: "staff2"})
 
     await page.click('text=Notifications');
-
-    await createTestReport(page, request, "External Report")
 
     await page.waitForSelector('li.list-group-item:has-text("External Report")', { timeout: 5000 });
     await page.click('li.list-group-item:has-text("External Report")');

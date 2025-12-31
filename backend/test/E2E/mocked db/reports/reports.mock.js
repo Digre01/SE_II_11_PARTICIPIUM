@@ -16,6 +16,6 @@ export const mockRepo = {
     findOneBy: jest.fn()
 };
 
-jest.unstable_mockModule('../../../repositories/reportRepository.mjs', () => ({
+jest.unstable_mockModule('../../../../repositories/reportRepository.mjs', () => ({
     reportRepository: mockRepo
 }));

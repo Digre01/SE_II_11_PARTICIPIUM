@@ -6,9 +6,7 @@ export default {
     verbose: true,
     testMatch: [
     '**/test/**/*.test.mjs',
-    '**/test/**/*.spec.mjs',
     '**/test/**/*.test.js',
-    '**/test/**/*.spec.js',
         '**/test/**/**/*.test.js',
     ],
     coveragePathIgnorePatterns: [
