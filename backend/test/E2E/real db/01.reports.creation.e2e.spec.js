@@ -3,8 +3,9 @@ import {loginAsUser} from "../helpers/common.helpers.js";
 import {
     createTestReport,
     fillRejectExplanation,
-    getTestReport, gotoReports
+    gotoReports
 } from "../helpers/report.helpers.js";
+import {getTestReport} from "../helpers/requests.helpers.js";
 
 
 test.describe("Full report creation flow", () => {

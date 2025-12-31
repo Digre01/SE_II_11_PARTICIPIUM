@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from '@jest/globals';
 import request from 'supertest';
-import {standardSetup, standardTeardown} from "../utils/standard.setup.js";
-import {cleanupUsers} from "../utils/db.utils.js";
+import {standardSetup, standardTeardown} from "../../utils/standard.setup.js";
+import {cleanupUsers} from "../../utils/db.utils.js";
 
 describe('POST /api/v1/sessions/signup (E2E)', () => {
   const staffUsernames = [

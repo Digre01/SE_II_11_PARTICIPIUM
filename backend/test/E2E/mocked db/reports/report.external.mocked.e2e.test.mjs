@@ -9,7 +9,7 @@ import {
 } from '@jest/globals';
 import request from 'supertest';
 import { mockRepo } from './reports.mock.js';
-import { standardSetup, standardTeardown } from '../utils/standard.setup.js';
+import { standardSetup, standardTeardown } from '../../utils/standard.setup.js';
 
 describe('PATCH /api/v1/reports/:id/assign_external (E2E - mocked)', () => {
   let app;

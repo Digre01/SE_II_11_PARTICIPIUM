@@ -20,16 +20,6 @@ export const selectPointOnMap = async (page) => {
     );
 };
 
-
-export const waitForReportsRoute = async (page, reports) => {
-    let routeCalled = false;
-    await page.route('**/api/v1/reports/assigned', route => {
-        routeCalled = true;
-        route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(reports) });
-    });
-    return () => routeCalled;
-};
-
 export const getClusters = async (page) => page.$$('.marker-cluster');
 export const getMarkers = async (page) => page.$$('.leaflet-marker-icon');
 
@@ -43,8 +33,13 @@ export const clickMarkersUntilFound = async (page, titles) => {
             const popup = await page.$('.leaflet-popup-content');
             if (!popup) continue;
             const text = (await popup.textContent()) || '';
+
             titles.forEach(title => {
-                if (text.includes(title)) found[title] = text;
+                const cleanText = text.toLowerCase();
+                const cleanTitle = title.toLowerCase().replace(/\s+/g, '');
+                if (!found[title] && cleanText.replace(/\s+/g, '').includes(cleanTitle)) {
+                    found[title] = text;
+                }
             });
             if (Object.keys(found).length === titles.length) break;
         } catch { /* empty */ }

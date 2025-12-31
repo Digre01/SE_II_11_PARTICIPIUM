@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import {loginAsUser, mockCurrentSession} from "./helpers/common.helpers.js";
-import {mockAssignRoles, mockRoles, putRoles} from "./helpers/user.helpers.js";
+import {loginAsUser, mockCurrentSession} from "../helpers/common.helpers.js";
+import {mockAssignRoles, mockRoles, putRoles} from "../helpers/user.helpers.js";
 
 test.describe('User Roles UI', () => {
   test('assigns Waste Management Officer role to staff user 2 as ADMIN', async ({ page }) => {
@@ -63,7 +63,7 @@ test.describe('User Roles UI', () => {
     await mockCurrentSession(page, { id: 5, username: 'regular-user', userType: 'USER' });
     await mockRoles(page, [{ id: 21, name: 'Some Role' }]);
 
-    await page.route('**/api/v1/sessions/*/roles', route =>
+    await page.route('les', route =>
         route.fulfill({
           status: 403,
           contentType: 'application/json',

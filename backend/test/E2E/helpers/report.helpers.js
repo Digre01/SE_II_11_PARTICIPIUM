@@ -1,33 +1,7 @@
 import {expect} from "@playwright/test";
 import {loginAsUser} from "./common.helpers.js";
 import {selectPointOnMap} from "./map.helpers.js";
-import {AppDataSourcePostgres} from "../../../config/data-source.js";
-import {Report} from "../../../entities/Reports.js";
-
-export const mockCategories = async (page, categories) => {
-    await page.route('**/api/v1/categories', route =>
-        route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify(categories),
-        })
-    );
-};
-
-export const captureReportPost = async (page) => {
-    let capturedPost = null;
-
-    await page.route('**/api/v1/reports', async route => {
-        capturedPost = route.request();
-        await route.fulfill({
-            status: 201,
-            contentType: 'application/json',
-            body: JSON.stringify({ id: 123 }),
-        });
-    });
-
-    return () => capturedPost;
-};
+import {getTestReport} from "./requests.helpers.js";
 
 export const navigateToCreateReport = async (page) => {
     try {
@@ -54,31 +28,6 @@ export async function fillReportForm(page, data) {
 
     await page.waitForSelector('#latitude');
     await page.waitForSelector('#longitude');
-}
-
-export async function getLastReport() {
-    const res = await fetch('http://localhost:3000/api/v1/reports', {
-        method: 'GET',
-        credentials: 'include'
-    });
-
-    const reports = await res.json();
-    console.log(reports)
-    if (!reports || reports.length === 0) return null;
-
-    reports.sort((a, b) => b.id - a.id);    //ordino decrescente e prendo il primo
-    return reports[0];
-}
-
-export async function deleteReport(reportId){
-    const res = await fetch(`http://localhost:3000/api/v1/test/reports/${reportId}`, {
-        method: 'DELETE',
-        credentials: "include"
-    });
-
-    if (!res.ok) throw new Error(`Failed to delete report ${reportId}`);
-    const data = await res.json();
-    console.log(data.message);
 }
 
 export const getLatLon = async (page) => {
@@ -144,21 +93,6 @@ export async function selectOfficeAndWaitReports(page, officeName = "Public Ligh
     await page.selectOption('select', value);
 
     await page.waitForSelector('table tbody tr', { timeout: 5000 });
-}
-
-
-export async function getTestReport(page, request) {
-    const URL = "http://localhost:3000"
-
-    await request.post(`${URL}/api/v1/sessions/login`, {
-        data: { username: 'staff1', password: 'staff1' },
-        headers: {
-            'Content-Type': 'application/json'
-        },
-    });
-    const response = await request.get(`${URL}/api/v1/reports`)
-    const reports = await response.json();
-    return reports.filter(r => r.title === "Test Report")[0]
 }
 
 export async function createTestReport(page, request) {

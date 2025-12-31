@@ -1,6 +1,6 @@
 import {describe, it, expect, beforeAll, jest, afterAll} from '@jest/globals';
 import request from 'supertest';
-import { standardSetup, standardTeardown } from '../utils/standard.setup.js';
+import { standardSetup, standardTeardown } from '../../utils/standard.setup.js';
 import { mockRepo } from './reports.mock.js';
 
 describe('GET /api/v1/reports/:id (E2E - mocked)', () => {

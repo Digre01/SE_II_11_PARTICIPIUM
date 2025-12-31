@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import {loginAsUser, logout, mockCurrentSession} from "./helpers/common.helpers.js";
-import {getMessageInput, gotoConversation, mockConversations, mockMessages} from "./helpers/messages.helpers.js";
+import {loginAsUser, logout, mockCurrentSession} from "../helpers/common.helpers.js";
+import {getMessageInput, gotoConversation, mockConversations, mockMessages} from "../helpers/messages.helpers.js";
 
 test.describe('Conversation Page', () => {
   test('visit conversation shows status update message', async ({ page }) => {
@@ -8,8 +8,8 @@ test.describe('Conversation Page', () => {
 
     await page.click('text=Notifications');
 
-    await page.waitForSelector('li.list-group-item:has-text("Not working street lamp")', { timeout: 5000 });
-    await page.click('li.list-group-item:has-text("Public Lighting Report")');
+    await page.waitForSelector('li.list-group-item:has-text("Test Report")', { timeout: 5000 });
+    await page.click('li.list-group-item:has-text("Test Report")');
 
     await page.waitForSelector('text=Report status change to: Pending Approval', { timeout: 5000 });
     const statusMessage = await page.$eval(
@@ -21,7 +21,6 @@ test.describe('Conversation Page', () => {
   });
 
   test('staff can send a message and POST is invoked', async ({ page }) => {
-    await logout(page);
     await loginAsUser(page, {username: "staff2", password: "staff2"})
 
     await page.click('text=Notifications');

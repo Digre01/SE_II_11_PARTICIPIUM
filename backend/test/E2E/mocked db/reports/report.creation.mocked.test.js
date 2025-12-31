@@ -1,8 +1,8 @@
 import {describe, it, expect, beforeAll, afterAll, jest, afterEach} from '@jest/globals';
 import request from 'supertest';
 
-import { standardSetup, standardTeardown } from '../utils/standard.setup.js';
-import { attachFakeImage, deleteReturnedPhotos } from '../utils/files.utils.js';
+import { standardSetup, standardTeardown } from '../../utils/standard.setup.js';
+import { attachFakeImage, deleteReturnedPhotos } from '../../utils/files.utils.js';
 
 describe('POST /api/v1/reports (E2E)', () => {
     let app, dataSource;

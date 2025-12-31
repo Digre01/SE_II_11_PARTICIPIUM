@@ -1,16 +1,16 @@
-import {standardSetup} from "../utils/standard.setup.js";
+import {standardSetup} from "../../utils/standard.setup.js";
 
 export async function setupUsers() {
     const base = await standardSetup();
 
     const { userRepository } =
-        await import('../../../repositories/userRepository.js');
+        await import('../../../../repositories/userRepository.js');
 
     const { rolesRepository } =
-        await import('../../../repositories/rolesRepository.js');
+        await import('../../../../repositories/rolesRepository.js');
 
     const { default: userService } =
-        await import('../../../services/userService.js');
+        await import('../../../../services/userService.js');
 
     return {
         ...base,

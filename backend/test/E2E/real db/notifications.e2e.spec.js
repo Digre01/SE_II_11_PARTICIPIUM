@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import {mockCurrentSession} from "./helpers/common.helpers.js";
-import {gotoHomeAndWaitHeader, mockNotifications, notificationsBadge} from "./helpers/notifications.helpers.js";
+import {mockCurrentSession} from "../helpers/common.helpers.js";
+import {gotoHomeAndWaitHeader, mockNotifications, notificationsBadge} from "../helpers/notifications.helpers.js";
 
 test.describe('Notifications UI', () => {
   const citizenSession = { id: 42, username: 'alice', userType: 'citizen' };

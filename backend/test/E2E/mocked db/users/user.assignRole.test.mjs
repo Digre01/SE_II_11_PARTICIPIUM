@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
 import {cleanupUsers, setupUsers} from "./users.setup.js";
-import {standardSetup, standardTeardown} from "../utils/standard.setup.js";
+import {standardSetup, standardTeardown} from "../../utils/standard.setup.js";
 
 
 describe('E2E: userRoutes assign role', () => {
