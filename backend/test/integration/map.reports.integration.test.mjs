@@ -75,4 +75,24 @@ describe('E2E map: citizen sees approved reports on map', () => {
     // backend returns null for authorName when user is null; client should show 'Anonymous'
     expect(anon.authorName === null || anon.authorName === undefined).toBeTruthy();
   });
+
+  it('zoomed-in: treats reports with isAnonymous=true as Anonymous even if user exists', async () => {
+    const reports = [
+      { id: 20, title: 'Hidden Reporter', latitude: 48.5, longitude: 10.5, status: 'assigned', categoryId: 1, isAnonymous: true, user: { username: 'hidden', name: 'Hidden', surname: 'User' }, photos: [] }
+    ];
+
+    mockRepo.getAcceptedReports.mockResolvedValueOnce(reports);
+
+    const res = await request(app)
+      .get('/api/v1/reports/assigned')
+      .set('Authorization', 'Bearer citizen-token');
+
+    expect(res.status).toBe(200);
+    const dtos = res.body;
+    expect(dtos).toHaveLength(1);
+    const item = dtos[0];
+    expect(item.id).toBe(20);
+    expect(item.authorUsername).toBeNull();
+    expect(item.authorName).toBeNull();
+  });
 });

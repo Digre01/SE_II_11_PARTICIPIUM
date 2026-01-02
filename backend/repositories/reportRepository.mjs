@@ -12,7 +12,7 @@ export class ReportRepository {
 		return AppDataSourcePostgres.getRepository(Report);
 	}
 
-	async createReport({ title, description, categoryId, userId, latitude, longitude, photos }) {
+	async createReport({ title, description, categoryId, userId, latitude, longitude, photos, isAnonymous }) {
 		const userRepo = AppDataSourcePostgres.getRepository(Users);
 		const userExists = await userRepo.findOneBy({ id: Number(userId) });
 		if (!userExists) {
@@ -33,7 +33,8 @@ export class ReportRepository {
 			userId: Number(userId),
 			latitude: Number(latitude),
 			longitude: Number(longitude),
-			status: 'pending'
+			status: 'pending',
+			isAnonymous: isAnonymous === 'true' || isAnonymous === true
 		});
 		const savedReport = await this.repo.save(reportEntity);
 

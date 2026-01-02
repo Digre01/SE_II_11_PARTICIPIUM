@@ -31,7 +31,7 @@ router.post('/',
     };
 
     try {
-      const { title, description, categoryId, latitude, longitude } = req.body;
+      const { title, description, categoryId, latitude, longitude, isAnonymous } = req.body;
       const userId = req.user?.id;
       const photos = req.files ? req.files.map(file => `/public/${file.filename}`) : [];
 
@@ -44,7 +44,7 @@ router.post('/',
         return next(new BadRequestError('You must upload between 1 and 3 photos.'));
       }
 
-      await createReport({ title, description, categoryId, userId, latitude, longitude, photos });
+      await createReport({ title, description, categoryId, userId, latitude, longitude, photos, isAnonymous });
       res.status(201).json({ message: 'Report created successfully', photos });
     } catch (error) {
       deleteUploadedFiles();
@@ -105,8 +105,8 @@ router.get(['/assigned', '/suspended', '/in_progress'], async (req, res, next) =
       longitude: r.longitude,
       status: r.status,
       categoryId: r.categoryId,
-      authorUsername: r.user?.username || null,
-      authorName: r.user ? `${r.user.name} ${r.user.surname}` : null,
+      authorUsername: r.isAnonymous ? null : (r.user?.username || null),
+      authorName: r.isAnonymous ? null : (r.user ? `${r.user.name} ${r.user.surname}` : null),
       photos: r.photos?.map(p => ({ link: p.link })) || []
     }));
     res.json(dto);
