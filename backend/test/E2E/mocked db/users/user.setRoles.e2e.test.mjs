@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
-import request from 'supertest';
+import {describe, it, expect, beforeAll, afterAll, beforeEach} from '@jest/globals';
 import {setupEmailUtilsMock} from "../../../mocks/common.mocks.js";
 import {cleanupUsers, setupUsers} from "./users.setup.js";
 import {standardSetup, standardTeardown} from "../../utils/standard.setup.js";
+import {createAdminAndLogin, createStaffUser, getTwoRoles} from "../../helpers/user.helpers.js";
 
 await setupEmailUtilsMock()
 
-let app, dataSource, userRepository, userService, rolesRepository;
+let agent, app, dataSource, userRepository, userService, rolesRepository;
 
 describe('E2E: setUserRoles story (multiple roles + cancellation)', () => {
   const testUsernames = [];
@@ -22,305 +22,90 @@ describe('E2E: setUserRoles story (multiple roles + cancellation)', () => {
     rolesRepository = userSetup.rolesRepository;
   }, 30000);
 
+  beforeEach(async () => {
+    agent = await createAdminAndLogin({app, testUsernames, userService, userRepository})
+  })
+
   afterAll(async () => {
     await cleanupUsers(dataSource, userRepository, testUsernames);
     await standardTeardown(dataSource)
   });
 
   it('assigns multiple roles to a staff user as ADMIN and persists them', async () => {
-    // create admin
-    const salt = 'e2e_admin_salt';
-    const password = 'Admin#e2e!';
-    const hashed = await userService.hashPassword(password, salt);
-    const adminUsername = `admin_e2e_${Math.random().toString(36).slice(2,6)}`;
-    testUsernames.push(adminUsername);
-    await userRepository.createUser(
-      adminUsername,
-      `${adminUsername}@example.com`,
-      'Admin',
-      'E2E',
-      hashed,
-      salt,
-      'ADMIN',
-      true,
-      null,
-      null
-    );
+    const staff = await createStaffUser({testUsernames, userService, userRepository});
+    const [r1, r2] = await getTwoRoles(rolesRepository);
 
-    const agent = request.agent(app);
-    const loginRes = await agent.post('/api/v1/sessions/login').send({ username: adminUsername, password });
-    expect([200,201]).toContain(loginRes.status);
+    const res = await agent
+        .put(`/api/v1/sessions/${staff.id}/roles`)
+        .send({ roles: [{ roleId: r1.id }, { roleId: r2.id }] });
 
-    // find or create a staff user
-    let staff = await userRepository.getUserByUsername('staff1');
-    if (!staff) {
-      const saltS = 'e2e_staff_salt';
-      const passS = 'Staff#e2e!';
-      const hashS = await userService.hashPassword(passS, saltS);
-      const uname = `staff_e2e_${Math.random().toString(36).slice(2,6)}`;
-      testUsernames.push(uname);
-      staff = await userRepository.createUser(
-        uname,
-        `${uname}@example.com`,
-        'Staff',
-        'E2E',
-        hashS,
-        saltS,
-        'STAFF',
-        true,
-        null,
-        null
-      );
-    }
-
-    const roles = await rolesRepository.findAll();
-    expect(Array.isArray(roles)).toBe(true);
-    expect(roles.length).toBeGreaterThanOrEqual(2);
-    const [r1, r2] = roles;
-
-    const res = await agent.put(`/api/v1/sessions/${staff.id}/roles`).send({ roles: [{ roleId: r1.id }, { roleId: r2.id }] });
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBe(2);
+    expect(res.body).toHaveLength(2);
 
-    // verify persisted via repository
-    const userOffices = await userRepository.getUserRoles(staff.id);
-    const persistedRoleIds = userOffices.map(u => u.role?.id || u.roleId);
-    const sortedPersistedRoleIds = persistedRoleIds.sort((a, b) => a - b);
-    const ids = [roles[0].id, roles[1].id];
-    const sortedIds = ids.sort((a, b) => a - b);
+    const persisted = await userRepository.getUserRoles(staff.id);
+    const ids = persisted.map(u => u.role?.id || u.roleId).sort();
 
-    expect(sortedPersistedRoleIds).toEqual(sortedIds);
-
-    // cleanup created mapping
-    const userOfficeRepo = dataSource.getRepository('UserOffice');
-    await userOfficeRepo.delete({ userId: staff.id });
-  }, 30000);
+    expect(ids).toEqual([r1.id, r2.id].sort());
+  });
 
   it('cancels all roles when ADMIN sends empty array', async () => {
-    // create admin and login again
-    const salt = 'e2e_admin_salt2';
-    const password = 'Admin#e2e2!';
-    const hashed = await userService.hashPassword(password, salt);
-    const adminUsername = `admin_e2e2_${Math.random().toString(36).slice(2,6)}`;
-    testUsernames.push(adminUsername);
-    await userRepository.createUser(
-      adminUsername,
-      `${adminUsername}@example.com`,
-      'Admin',
-      'E2E',
-      hashed,
-      salt,
-      'ADMIN',
-      true,
-      null,
-      null
-    );
+    const staff = await createStaffUser({testUsernames, userService, userRepository});
+    const [r1, r2] = await getTwoRoles(rolesRepository);
 
-    const agent = request.agent(app);
-    const loginRes = await agent.post('/api/v1/sessions/login').send({ username: adminUsername, password });
-    expect([200,201]).toContain(loginRes.status);
+    await agent
+        .patch(`/api/v1/sessions/${staff.id}/role`)
+        .send({ roleId: r1.id });
 
-    // create a staff user to cancel roles on
-    const saltS = 'e2e_staff_salt2';
-    const passS = 'Staff#e2e2!';
-    const hashS = await userService.hashPassword(passS, saltS);
-    const uname = `staff_e2e_cancel_${Math.random().toString(36).slice(2,6)}`;
-    testUsernames.push(uname);
-    const staff = await userRepository.createUser(
-      uname,
-      `${uname}@example.com`,
-      'Staff',
-      'E2E',
-      hashS,
-      saltS,
-      'STAFF',
-      true,
-      null,
-      null
-    );
+    const res = await agent
+        .put(`/api/v1/sessions/${staff.id}/roles`)
+        .send({ roles: [] });
 
-    // assign a role first so cancellation has effect
-    const roles = await rolesRepository.findAll();
-    const rId = roles[0].id;
-    const assignRes = await agent.patch(`/api/v1/sessions/${staff.id}/role`).send({ roleId: rId });
-    expect([200,500]).toContain(assignRes.status);
-
-    const res = await agent.put(`/api/v1/sessions/${staff.id}/roles`).send({ roles: [] });
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBe(0);
+    expect(res.body).toEqual([]);
 
-    const userOffices = await userRepository.getUserRoles(staff.id);
-    expect(userOffices.length).toBe(0);
-  }, 30000);
+    const persisted = await userRepository.getUserRoles(staff.id);
+    expect(persisted).toHaveLength(0);
+  });
 
-  it('accepts numeric shorthand `roleIds` array and applies roles', async () => {
-    // admin + login
-    const salt = 'e2e_admin_shorthand';
-    const password = 'Admin#sh1';
-    const hashed = await userService.hashPassword(password, salt);
-    const adminUsername = `admin_e2e_sh_${Math.random().toString(36).slice(2,6)}`;
-    testUsernames.push(adminUsername);
-    await userRepository.createUser(
-      adminUsername,
-      `${adminUsername}@example.com`,
-      'Admin',
-      'E2E',
-      hashed,
-      salt,
-      'ADMIN',
-      true,
-      null,
-      null
-    );
+  it('accepts numeric shorthand roleIds array', async () => {
+    const staff = await createStaffUser({testUsernames, userService, userRepository});
+    const [r1, r2] = await getTwoRoles(rolesRepository);
 
-    const agent = request.agent(app);
-    const loginRes = await agent.post('/api/v1/sessions/login').send({ username: adminUsername, password });
-    expect([200,201]).toContain(loginRes.status);
+    const res = await agent
+        .put(`/api/v1/sessions/${staff.id}/roles`)
+        .send({ roleIds: [r1.id, r2.id] });
 
-    // ensure a staff user
-    let staff = await userRepository.getUserByUsername('staff1');
-    if (!staff) {
-      const saltS = 'e2e_staff_sh';
-      const passS = 'Staff#sh1';
-      const hashS = await userService.hashPassword(passS, saltS);
-      const uname = `staff_e2e_sh_${Math.random().toString(36).slice(2,6)}`;
-      testUsernames.push(uname);
-      staff = await userRepository.createUser(
-        uname,
-        `${uname}@example.com`,
-        'Staff',
-        'E2E',
-        hashS,
-        saltS,
-        'STAFF',
-        true,
-        null,
-        null
-      );
-    }
-
-    const roles = await rolesRepository.findAll();
-    expect(roles.length).toBeGreaterThanOrEqual(2);
-    const ids = [roles[0].id, roles[1].id];
-
-    const res = await agent.put(`/api/v1/sessions/${staff.id}/roles`).send({ roleIds: ids });
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    const persistedRoleIds = (await userRepository.getUserRoles(staff.id)).map(u => u.role?.id || u.roleId);
-    expect(persistedRoleIds.sort((a, b) => a - b)).toEqual(ids.sort((a, b) => a - b));
 
-    // cleanup mapping
-    const userOfficeRepo = dataSource.getRepository('UserOffice');
-    await userOfficeRepo.delete({ userId: staff.id });
-  }, 30000);
+    const persisted = await userRepository.getUserRoles(staff.id);
+    const ids = persisted.map(u => u.role?.id || u.roleId).sort();
 
-  it('returns 400 when payload is invalid (not an array) for PUT roles', async () => {
-    const salt = 'e2e_admin_badpayload';
-    const password = 'Admin#bad1';
-    const hashed = await userService.hashPassword(password, salt);
-    const adminUsername = `admin_e2e_bad_${Math.random().toString(36).slice(2,6)}`;
-    testUsernames.push(adminUsername);
-    await userRepository.createUser(
-      adminUsername,
-      `${adminUsername}@example.com`,
-      'Admin',
-      'E2E',
-      hashed,
-      salt,
-      'ADMIN',
-      true,
-      null,
-      null
-    );
+    expect(ids).toEqual([r1.id, r2.id].sort());
+  });
 
-    const agent = request.agent(app);
-    const loginRes = await agent.post('/api/v1/sessions/login').send({ username: adminUsername, password });
-    expect([200,201]).toContain(loginRes.status);
+  it('returns 400 for invalid payload', async () => {
+    const staff = await createStaffUser({testUsernames, userService, userRepository});
 
-    let staff = await userRepository.getUserByUsername('staff1');
-    if (!staff) {
-      const saltS = 'e2e_staff_bad';
-      const passS = 'Staff#bad1';
-      const hashS = await userService.hashPassword(passS, saltS);
-      const uname = `staff_e2e_bad_${Math.random().toString(36).slice(2,6)}`;
-      testUsernames.push(uname);
-      staff = await userRepository.createUser(
-        uname,
-        `${uname}@example.com`,
-        'Staff',
-        'E2E',
-        hashS,
-        saltS,
-        'STAFF',
-        true,
-        null,
-        null
-      );
-    }
+    const res = await agent
+        .put(`/api/v1/sessions/${staff.id}/roles`)
+        .send({ roles: 'not-an-array' });
 
-    const res = await agent.put(`/api/v1/sessions/${staff.id}/roles`).send({ roles: 'not-an-array' });
     expect(res.status).toBe(400);
-  }, 30000);
+  });
 
   it('is idempotent when sending same roles twice', async () => {
-    const salt = 'e2e_admin_idemp';
-    const password = 'Admin#id1';
-    const hashed = await userService.hashPassword(password, salt);
-    const adminUsername = `admin_e2e_id_${Math.random().toString(36).slice(2,6)}`;
-    testUsernames.push(adminUsername);
-    await userRepository.createUser(
-      adminUsername,
-      `${adminUsername}@example.com`,
-      'Admin',
-      'E2E',
-      hashed,
-      salt,
-      'ADMIN',
-      true,
-      null,
-      null
-    );
+    const staff = await createStaffUser({testUsernames, userService, userRepository});
+    const [r1, r2] = await getTwoRoles(rolesRepository);
 
-    const agent = request.agent(app);
-    const loginRes = await agent.post('/api/v1/sessions/login').send({ username: adminUsername, password });
-    expect([200,201]).toContain(loginRes.status);
+    await agent
+        .put(`/api/v1/sessions/${staff.id}/roles`)
+        .send({ roles: [{ roleId: r1.id }, { roleId: r2.id }] });
 
-    let staff = await userRepository.getUserByUsername('staff1');
-    if (!staff) {
-      const saltS = 'e2e_staff_id';
-      const passS = 'Staff#id1';
-      const hashS = await userService.hashPassword(passS, saltS);
-      const uname = `staff_e2e_id_${Math.random().toString(36).slice(2,6)}`;
-      testUsernames.push(uname);
-      staff = await userRepository.createUser(
-        uname,
-        `${uname}@example.com`,
-        'Staff',
-        'E2E',
-        hashS,
-        saltS,
-        'STAFF',
-        true,
-        null,
-        null
-      );
-    }
+    await agent
+        .put(`/api/v1/sessions/${staff.id}/roles`)
+        .send({ roles: [{ roleId: r1.id }, { roleId: r2.id }] });
 
-    const roles = await rolesRepository.findAll();
-    const ids = [roles[0].id, roles[1].id];
-
-    const res1 = await agent.put(`/api/v1/sessions/${staff.id}/roles`).send({ roles: [{ roleId: ids[0] }, { roleId: ids[1] }] });
-    expect(res1.status).toBe(200);
-    const res2 = await agent.put(`/api/v1/sessions/${staff.id}/roles`).send({ roles: [{ roleId: ids[0] }, { roleId: ids[1] }] });
-    expect(res2.status).toBe(200);
-    const uroles = await userRepository.getUserRoles(staff.id);
-    expect(uroles.length).toBe(2);
-
-    // cleanup mapping
-    const userOfficeRepo = dataSource.getRepository('UserOffice');
-    await userOfficeRepo.delete({ userId: staff.id });
-  }, 30000);
-
+    const persisted = await userRepository.getUserRoles(staff.id);
+    expect(persisted).toHaveLength(2);
+  });
 });

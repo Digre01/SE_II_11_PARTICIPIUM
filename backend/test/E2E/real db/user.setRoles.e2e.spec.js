@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import {loginAsUser, mockCurrentSession} from "../helpers/common.helpers.js";
-import {mockAssignRoles, mockRoles, putRoles} from "../helpers/user.helpers.js";
 
 test.describe('User Roles UI', () => {
   test('assigns Waste Management Officer role to staff user 2 as ADMIN', async ({ page }) => {
