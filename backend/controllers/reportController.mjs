@@ -1,8 +1,7 @@
-import { reportRepository } from "../repositories/reportRepository.mjs";
+import {reportRepository} from "../repositories/reportRepository.mjs";
 
 export async function createReport(reportData) {
-  const report = await reportRepository.createReport(reportData);
-  return report;
+  return await reportRepository.createReport(reportData);
 }
 
 export async function getAllReports() {
@@ -11,6 +10,14 @@ export async function getAllReports() {
 
 export async function getReport(id) {
   return await reportRepository.getReportById(id);
+}
+
+export async function getReportsByTechnician(userId) {
+  return await reportRepository.getReportsByTechnician(userId)
+}
+
+export async function getReportsByCategory(categoryId, isExternal) {
+  return await reportRepository.getReportsByCategory(categoryId, isExternal)
 }
 
 export async function getAcceptedReports(){
@@ -38,7 +45,6 @@ export async function finishReport({ reportId, technicianId }) {
 }
 
 export async function assignReportToExternalMaintainer({reportId, internalStaffMemberId}) {
-    console.log("Controller - Assigning report to external maintainer, report id:", reportId);
     return await reportRepository.assignReportToExternalMaintainer(reportId, internalStaffMemberId);
 }
 

@@ -6,9 +6,7 @@ export default {
     verbose: true,
     testMatch: [
     '**/test/**/*.test.mjs',
-    '**/test/**/*.spec.mjs',
     '**/test/**/*.test.js',
-    '**/test/**/*.spec.js',
         '**/test/**/**/*.test.js',
     ],
     coveragePathIgnorePatterns: [
@@ -30,4 +28,5 @@ export default {
         "<rootDir>/services/**/*.{js,mjs}",
     ],
     coverageReporters: ["text", "html", "lcov"],
+    maxWorkers: 1
 };

@@ -84,6 +84,18 @@ export class ReportRepository {
 		return await this.repo.findOne({ where: { id: Number(id) }, relations: ['photos', 'category'] });
 	}
 
+	async getReportsByCategory(categoryId, isExternal) {
+		if(isExternal) {
+			return await this.repo.findBy({categoryId, assignedExternal: isExternal})
+		} else {
+			return await this.repo.findBy({categoryId})
+		}
+	}
+
+	async getReportsByTechnician(technicianId) {
+		return await this.repo.findBy({technicianId})
+	}
+
 	async getAcceptedReports() {
 		// Include both 'assigned' and 'suspended' statuses
 		return await this.repo.find({

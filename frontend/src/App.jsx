@@ -13,12 +13,12 @@ import ReportReview from './components/ReportReview.jsx';
 import StaffReports from './components/StaffReports';
 import API from "./API/API.mjs";
 import { useState, useEffect, useRef } from "react";
-import { LoginForm } from "./components/authComponents/loginForm.jsx";
-import SignUpForm from "./components/authComponents/signUpForm.jsx";
+import { LoginForm } from "./components/authComponents/LoginForm.jsx";
+import SignUpForm from "./components/authComponents/SignUpForm.jsx";
 import VerifyEmail from "./components/authComponents/VerifyEmail.jsx";
 import ConversationsPage from './components/messageComponents/ConversationsPage.jsx';
 import ConversationPage from './components/messageComponents/ConversationPage.jsx';
-import ReportsPage from './components/reportsPage/ReportsPage.jsx';
+import ReportsPage from './components/Reports/ReportsPage.jsx';
 import NotFoundPage from './components/NotFoundPage.jsx';
 
 

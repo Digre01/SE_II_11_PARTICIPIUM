@@ -7,7 +7,7 @@
     "dev": "vite --host",
     "build": "vite build",
     "test": "vitest",
-    "e2e": "npx playwright test --config=e2e/playwright.config.cjs",
+    "e2e": "cross-env NODE_ENV=test npx playwright test tests --config=tests/playwright.config.cjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },

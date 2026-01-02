@@ -1,5 +1,12 @@
 import { Router } from "express";
-import { createReport, getAllReports, getReport, reviewReport, getAcceptedReports } from "../controllers/reportController.mjs";
+import {
+  createReport,
+  getAllReports,
+  getReport,
+  reviewReport,
+  getAcceptedReports,
+  getReportsByCategory, getReportsByTechnician
+} from "../controllers/reportController.mjs";
 import upload from '../middlewares/uploadMiddleware.js';
 import { authorizeUserType, authorizeRole } from '../middlewares/userAuthorization.js';
 import { BadRequestError } from '../errors/BadRequestError.js';
@@ -41,6 +48,7 @@ router.post('/',
       res.status(201).json({ message: 'Report created successfully', photos });
     } catch (error) {
       deleteUploadedFiles();
+      console.log(error)
       next(error);
     }
   }
@@ -48,12 +56,38 @@ router.post('/',
 
 // GET /api/v1/reports (list)
 // Only staff members with the 'Municipal Public Relations Officer' role can access
-router.get('/', authorizeUserType(['staff']), async (req, res, next) => {
-  try {
-    const reports = await getAllReports();
-    res.json(reports);
-  } catch (err) { next(err); }
-});
+router.get(
+    '/',
+    authorizeUserType(['staff']),
+    async (req, res, next) => {
+      try {
+        const categoryId = req.query.categoryId;
+        const isExternal = req.query.isExternal === "true" ? true : null;
+
+        const reports = categoryId
+            ? await getReportsByCategory(categoryId, isExternal)
+            : await getAllReports();
+
+        res.json(reports);
+      } catch (err) {
+        next(err);
+      }
+    }
+);
+
+router.get(
+    '/technician/:userId',
+    authorizeUserType(['staff']),
+    async (req, res, next) => {
+      try {
+        const reports = await getReportsByTechnician(req.params.userId);
+        res.json(reports);
+      } catch (err) {
+        next(err);
+      }
+    }
+);
+
 
 // GET /api/v1/reports/assigned and /api/v1/reports/suspended (public map layer)
 // Public: allow unregistered users to fetch accepted reports for the interactive map
@@ -154,7 +188,9 @@ router.patch('/:id/assign_external', authorizeUserType(['staff']), async (
 });
 
 // External-specific start/finish/suspend/resume
-router.patch('/:id/external/start', async (req, res, next) => {
+router.patch('/:id/external/start',
+    authorizeUserType(["staff"]),
+    async (req, res, next) => {
   try {
     if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
     const userId = req.user?.id;
@@ -164,7 +200,9 @@ router.patch('/:id/external/start', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.patch('/:id/external/finish', async (req, res, next) => {
+router.patch('/:id/external/finish',
+    authorizeUserType(["staff"]),
+    async (req, res, next) => {
   try {
     if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
     const userId = req.user?.id;
@@ -174,7 +212,9 @@ router.patch('/:id/external/finish', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.patch('/:id/external/suspend', async (req, res, next) => {
+router.patch('/:id/external/suspend',
+    authorizeUserType(["staff"]),
+    async (req, res, next) => {
   try {
     if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
     const userId = req.user?.id;
@@ -184,7 +224,9 @@ router.patch('/:id/external/suspend', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.patch('/:id/external/resume', async (req, res, next) => {
+router.patch('/:id/external/resume',
+    authorizeUserType(["staff"]),
+    async (req, res, next) => {
   try {
     if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
     const userId = req.user?.id;

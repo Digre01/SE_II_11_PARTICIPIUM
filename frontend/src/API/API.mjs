@@ -87,14 +87,27 @@ const createReport = async (formData) => {
   if (response.ok) {
     return await response.json();
   } else {
-    const errDetails = await response.text();
-    throw errDetails;
+    throw await response.text();
   }
 };
 
 // GET /api/v1/reports (staff)
-const fetchReports = async () => {
-  const response = await fetch(SERVER_URL + '/api/v1/reports', { credentials: 'include' });
+const fetchReports = async (categoryId, isExternal) => {
+  const url = new URL(SERVER_URL + '/api/v1/reports');
+
+  if (categoryId !== undefined && categoryId !== null) {
+    url.searchParams.append('categoryId', categoryId);
+  }
+
+  if (isExternal !== undefined && isExternal !== null) {
+    url.searchParams.append('isExternal', String(isExternal));
+  }
+
+  const response = await fetch(url, {
+    method: "GET",
+    credentials: 'include'
+  });
+
   if (response.ok) return await response.json();
   throw await response.text();
 };
@@ -412,6 +425,33 @@ const resendVerification = async () => {
   throw await response.text();
 };
 
+const fetchOfficeCategory = async (officeId, isExternal) => {
+  const url = new URL(`${SERVER_URL}/api/v1/offices/${officeId}/categories`);
+  url.searchParams.append("isExternal", isExternal); // flag come query string
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages, fetchReports, fetchReportPhotos, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchAssignedStaff, fetchRoles, fetchOffices, fetchOffice, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, assignReportToExternalMaintainer, sendMessage, fetchMyRoles, fetchUserRoles, setUserRoles, verifyEmail, checkEmailVerified, resendVerification };
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  if (response.ok) return await response.json();
+  throw await response.text();
+}
+
+const fetchReportsByTechnician = async (userId) => {
+    const response = await fetch(`${SERVER_URL}/api/v1/reports/technician/${userId}`, {
+        method: 'GET',
+        credentials: 'include'
+    });
+  if (response.ok) return await response.json();
+  throw await response.text();
+}
+
+const API = {
+  signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages,
+  fetchReports, fetchReportPhotos, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchAssignedStaff,
+  fetchRoles, fetchOffices, fetchOffice, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts,
+  markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, assignReportToExternalMaintainer,
+  sendMessage, fetchMyRoles, fetchUserRoles, setUserRoles, verifyEmail, checkEmailVerified, resendVerification,
+  fetchOfficeCategory, fetchReportsByTechnician };
 export default API;

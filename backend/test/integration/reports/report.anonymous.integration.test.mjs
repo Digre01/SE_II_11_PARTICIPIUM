@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
-import { mockRepo } from '../mocks/reports.mocks.js';
+import {mockRepo} from "../../mocks/repositories/reports.repo.mock.js";
 
 // Import app after mocks
 const { default: app } = await import('../../../app.js');
