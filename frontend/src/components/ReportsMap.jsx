@@ -34,17 +34,13 @@ async function GeocodeResearch({ query, signal }) {
   url.searchParams.set('bounded', '1');
   url.searchParams.set('countrycodes', 'it');
   url.searchParams.set('addressdetails', '1');
-  url.searchParams.set('limit', '6');
+  url.searchParams.set('autocomplete', '1');
+  url.searchParams.set('dedupe', '1');
+  url.searchParams.set('limit', '7');
 
   const q = String(query || '').trim();
-  const hasNumber = /\d/.test(q);
-  if (hasNumber) {
-    // Structured search improves precision for house numbers within Turin
-    url.searchParams.set('street', q);
-    url.searchParams.set('city', 'Torino');
-  } else {
-    url.searchParams.set('q', q);
-  }
+  // Bias query explicitly to Turin; Nominatim handles house numbers in q
+  url.searchParams.set('q', q ? `${q}, Torino` : 'Torino');
 
   const res = await fetch(url.toString(), {
     headers: { 'Accept-Language': 'it' },
@@ -75,7 +71,7 @@ function SearchAddress({ onPointChange, user }) {
   };
 
   useEffect(() => {
-    if( !query || query.trim().length < 3 ) {
+    if( !query || query.trim().length < 1 ) {
       setResults([]);
       setShowList(false);
       if (requestRef.current) { requestRef.current.abort(); }
