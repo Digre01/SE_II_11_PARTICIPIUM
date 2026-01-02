@@ -591,18 +591,6 @@ export async function seedDatabase() {
 
   // Conversation Participants (many-to-many)
   // Popola la tabella conversation_participants_users
-  const convParticipants = [
-    { conversationId: 1, usersId: 2 },
-    { conversationId: 1, usersId: 3 },
-    { conversationId: 2, usersId: 2 },
-    { conversationId: 2, usersId: 3 },
-    { conversationId: 3, usersId: 2 },
-    { conversationId: 3, usersId: 3 },
-    { conversationId: 4, usersId: 2 },
-    { conversationId: 4, usersId: 3 },
-    { conversationId: 5, usersId: 2 },
-    { conversationId: 5, usersId: 3 }
-  ];
   const conversationParticipantsTable = await AppDataSourcePostgres.query('SELECT * FROM "conversation_participants_users"');
   if (conversationParticipantsTable.length === 0) {
     // Recupera repo e oggetti
@@ -613,8 +601,8 @@ export async function seedDatabase() {
     conversations.forEach(c => { convMap[c.id] = c; });
     const userMap = {};
     users.forEach(u => { userMap[u.id] = u; });
-    // Per ogni conversazione, aggiungi i partecipanti
-    for (let i = 1; i <= 5; i++) {
+    // Per ogni conversazione, aggiungi i partecipanti (userId 2 e 3)
+    for (let i = 1; i <= 21; i++) {
       const conv = convMap[i];
       if (conv) {
         conv.participants = [userMap[2], userMap[3]];
