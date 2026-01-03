@@ -6,6 +6,9 @@ import {BadRequestError} from "../errors/BadRequestError.js";
 import upload from '../middlewares/uploadMiddleware.js';
 import fs from 'fs';
 import { sendVerificationEmail } from '../utils/email.js';
+import { UnauthorizedError } from '../errors/UnauthorizedError.js';
+import { userRepository } from "../repositories/userRepository.js";
+import { mapUserToDTO } from "../mappers/userMappers.js";
 
 const router = Router();
 
@@ -199,7 +202,6 @@ router.post("/signup", requireAdminIfCreatingStaff,
 
 
 // verify email for currently authenticated session user 
-import { UnauthorizedError } from '../errors/UnauthorizedError.js';
 router.post('/current/verify_email', async function(req, res, next) {
     try {
         if (!req.isAuthenticated?.() || !req.user?.id) {
@@ -259,6 +261,39 @@ router.post('/current/resend_verification', async function(req, res, next) {
         }
         const result = await userController.resendEmailVerification(Number(req.user.id));
         return res.status(200).json({ message: 'Verification code resent', ...result });
+    } catch (err) {
+        next(err);
+    }
+});
+
+// Request Telegram verification code for the current authenticated user
+router.post('/current/telegram/request_code', authorizeUserType(['CITIZEN']), async function(req, res, next) {
+    try {
+        if (!req.isAuthenticated?.() || !req.user?.id) {
+            return next(new UnauthorizedError('Not authenticated'));
+        }
+        const result = await userController.requestTelegramCode(Number(req.user.id));
+        return res.status(200).json(result);
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.post('/telegram/verify', async function(req, res, next) {
+    try {
+        const { username, code } = req.body || {};
+        const result = await userController.verifyTelegramCode(username, code);
+
+        // Auto-login the user into this session so bot requests are authenticated
+        const user = await userRepository.getUserById(Number(result.userId));
+        if (!user) {
+            return next(new UnauthorizedError('Linked user not found'));
+        }
+        const dto = mapUserToDTO(user);
+        req.login(dto, (err) => {
+            if (err) return next(err);
+            return res.status(200).json(result);
+        });
     } catch (err) {
         next(err);
     }

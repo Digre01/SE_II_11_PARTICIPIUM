@@ -20,6 +20,7 @@ import ConversationsPage from './components/messageComponents/ConversationsPage.
 import ConversationPage from './components/messageComponents/ConversationPage.jsx';
 import ReportsPage from './components/Reports/ReportsPage.jsx';
 import NotFoundPage from './components/NotFoundPage.jsx';
+import TelegramVerify from './components/authComponents/TelegramVerify.jsx';
 
 
 
@@ -286,6 +287,10 @@ function App() {
           (!loggedIn)
             ? <Navigate to="/login" replace />
             : <ConversationPage user={user} loggedIn={loggedIn} handleNotificationsUpdate={handleNotificationsUpdate} wsMessage={wsMessage} />
+        } />
+
+        <Route path='/verify_telegram' element={
+          <TelegramVerify user={user} loggedIn={loggedIn} />
         } />
 
         <Route path='*' element={<NotFoundPage/>} />

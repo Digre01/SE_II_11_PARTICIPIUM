@@ -45,8 +45,7 @@ const logOut = async() => {
         return null;
 }
 // PATCH /api/v1/sessions/:id/config
-// Update account (multipart/form-data)
-// Expects FormData with optional fields: telegramId (string), emailNotifications (boolean-like), photo (File)
+// telegramId (string), emailNotifications (boolean-like), photo (File)
 const updateAccount = async (userId, formData) => {
   const response = await fetch(SERVER_URL + `/api/v1/sessions/${userId}/config`, {
     method: 'PATCH',
@@ -58,6 +57,25 @@ const updateAccount = async (userId, formData) => {
   } else {
     const errDetails = await response.text();
     throw errDetails;
+  }
+}
+
+// POST /api/v1/sessions/current/telegram/request_code
+export async function requestTelegramCode() {
+  const response = await fetch(SERVER_URL + `/api/v1/sessions/current/telegram/request_code`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    try {
+      const errJson = await response.json();
+      throw errJson?.message || JSON.stringify(errJson);
+    } catch {
+      throw await response.text();
+    }
   }
 }
 
@@ -447,11 +465,5 @@ const fetchReportsByTechnician = async (userId) => {
   throw await response.text();
 }
 
-const API = {
-  signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages,
-  fetchReports, fetchReportPhotos, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchAssignedStaff,
-  fetchRoles, fetchOffices, fetchOffice, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts,
-  markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, assignReportToExternalMaintainer,
-  sendMessage, fetchMyRoles, fetchUserRoles, setUserRoles, verifyEmail, checkEmailVerified, resendVerification,
-  fetchOfficeCategory, fetchReportsByTechnician };
+const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages, fetchReports, fetchReportPhotos, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchAssignedStaff, fetchRoles, fetchOffices, fetchOffice, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, assignReportToExternalMaintainer, sendMessage, fetchMyRoles, fetchUserRoles, setUserRoles, verifyEmail, checkEmailVerified, resendVerification, requestTelegramCode };
 export default API;

@@ -37,7 +37,7 @@ router.post('/',
 
       if (!title || !description || !categoryId || !userId || !latitude || !longitude) {
         deleteUploadedFiles();
-        return next(new BadRequestError('All fields are required.'));
+        return next(new BadRequestError(`All fields are required. ${title} ${description} ${categoryId} ${userId} ${latitude} ${longitude}`));
       }
       if (photos.length < 1 || photos.length > 3) {
         deleteUploadedFiles();

@@ -10,11 +10,12 @@ import {
     Row,
     Icon,
     AvatarIcon,
-    Col
+    Col,
 } from 'design-react-kit';
+import { Link } from 'react-router';
 import API, { SERVER_URL } from "../API/API.mjs";
 
-// Local persistence helpers
+// Local persistence helpers (Invariato)
 const loadSettings = async (userId) => {
     try {
         if (!userId) return null;
@@ -23,9 +24,7 @@ const loadSettings = async (userId) => {
         let photoUrl = '';
         try {
             photoUrl = await API.fetchProfilePicture(userId);
-        } catch {
-            // If no photo is set or fetch fails, just ignore
-        }
+        } catch { }
         return { ...stored, photoUrl };
     } catch {
         return null;
@@ -35,26 +34,19 @@ const loadSettings = async (userId) => {
 const saveSettings = async (userId, formData, { emailNotifications } = {}) => {
     try {
         await API.updateAccount(userId, formData);
-
-        // Try to refresh the stored photo URL after update
         let photoUrl = '';
         try {
             photoUrl = await API.fetchProfilePicture(userId);
-        } catch {
-            // ignore
-        }
-
+        } catch { }
         const stored = { emailNotifications: !!emailNotifications, photoUrl: photoUrl || '' };
         localStorage.setItem(`accountSettings:${userId}`, JSON.stringify(stored));
-
         return { photoUrl };
     } catch {
-        // ignore failures
         return {};
     }
 };
 
-// Convert File -> base64 data URL
+// Convert File -> base64 data URL (Invariato)
 const fileToDataUrl = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
@@ -70,10 +62,10 @@ export default function AccountConfig({ user, loggedIn }) {
     const [emailNotifications, setEmailNotifications] = useState(user?.emailNotifications ?? true);
 
     // Photo state
-    const [photoFile, setPhotoFile] = useState(null);          // newly selected file
-    const [photoPreview, setPhotoPreview] = useState('');      // blob URL for selected file
-    const [photoDataUrl, setPhotoDataUrl] = useState('');      // base64 for selected file (if needed)
-    const [currentPhotoUrl, setCurrentPhotoUrl] = useState(''); // existing photo from server
+    const [photoFile, setPhotoFile] = useState(null);
+    const [photoPreview, setPhotoPreview] = useState('');
+    const [photoDataUrl, setPhotoDataUrl] = useState('');
+    const [currentPhotoUrl, setCurrentPhotoUrl] = useState('');
 
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState('');
@@ -81,15 +73,14 @@ export default function AccountConfig({ user, loggedIn }) {
     const [successOpen, setSuccessOpen] = useState(true);
     const [errorOpen, setErrorOpen] = useState(true);
 
-    // Initialize from user when available
+    // Initialize (Invariato)
     useEffect(() => {
         if (!userId) return;
-        console.log(user);
         setTelegram(user?.telegramId || '');
         setEmailNotifications(user?.emailNotifications ?? true);
     }, [userId, user?.telegramId, user?.emailNotifications]);
 
-    // Load saved settings at mount (only current photo)
+    // Load saved settings (Invariato)
     useEffect(() => {
         let ignore = false;
         (async () => {
@@ -100,7 +91,6 @@ export default function AccountConfig({ user, loggedIn }) {
                 const absoluteUrl = saved.photoUrl.startsWith('http')
                     ? saved.photoUrl
                     : `${SERVER_URL}${saved.photoUrl}`;
-                // Do NOT set photoPreview here; keep it only for user-selected files
                 setCurrentPhotoUrl(absoluteUrl);
                 setPhotoDataUrl('');
             }
@@ -108,7 +98,7 @@ export default function AccountConfig({ user, loggedIn }) {
         return () => { ignore = true; };
     }, [userId]);
 
-    // Keep preview URL in sync with selected file
+    // Preview logic (Invariato)
     useEffect(() => {
         if (!photoFile) return;
         const url = URL.createObjectURL(photoFile);
@@ -148,7 +138,6 @@ export default function AccountConfig({ user, loggedIn }) {
         setPhotoFile(null);
         setPhotoPreview('');
         setPhotoDataUrl('');
-        // Do not touch currentPhotoUrl here; it's the existing server image
     };
 
     const handleSave = async (e) => {
@@ -168,13 +157,11 @@ export default function AccountConfig({ user, loggedIn }) {
             const { photoUrl } = await saveSettings(userId, formData, { emailNotifications });
             setSuccess('Profile updated successfully.');
 
-            // If a new photo was uploaded, refresh the current photo shown
             if (photoUrl) {
                 const absoluteUrl = photoUrl.startsWith('http') ? photoUrl : `${SERVER_URL}${photoUrl}`;
                 setCurrentPhotoUrl(absoluteUrl);
             }
 
-            // Clear selected file state after successful save
             setPhotoFile(null);
             setPhotoPreview('');
             setPhotoDataUrl('');
@@ -185,149 +172,181 @@ export default function AccountConfig({ user, loggedIn }) {
         }
     };
 
-    // Only show UploadList if the user has selected a new file
     const avatarList = useMemo(() => {
         if (!photoFile && !photoDataUrl) return [];
         const src = photoDataUrl || photoPreview;
         return src ? [{ name: 'profile-photo', size: 0, src }] : [];
     }, [photoFile, photoPreview, photoDataUrl]);
 
-    const telegramHelp = 'Your Telegram username (without @).';
-
     const activePhoto = photoPreview || photoDataUrl || currentPhotoUrl;
 
     return (
         <div className="container mt-5">
+            {/* --- AVATAR SECTION --- */}
             <div className='d-flex justify-content-center mb-4'>
-                {activePhoto && (
-                    <AvatarIcon size="xxl">
-                        <img
-                            alt="Profile photo preview"
-                            src={activePhoto}
-                        />
-                    </AvatarIcon>
-                )}
-                {!activePhoto && (
-                    <AvatarIcon size="xxl">
-                        <Icon icon="it-user" />
-                    </AvatarIcon>
-                )}
+                <div className="position-relative">
+                    {activePhoto ? (
+                        <AvatarIcon size="xxl">
+                            <img alt="Profile photo preview" src={activePhoto} />
+                        </AvatarIcon>
+                    ) : (
+                        <AvatarIcon size="xxl">
+                            <Icon icon="it-user" />
+                        </AvatarIcon>
+                    )}
+                </div>
             </div>
 
-            <Form onSubmit={handleSave} className="mb-4">
+            <Form onSubmit={handleSave} className="mb-5">
                 <Row className="gy-2">
                     <Input id="info_username" label="Username" value={user?.username ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
                     <Input id="info_email" label="Email" value={user?.email ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
-                    <Input id="info_name" label="Name" value={user?.name ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
-                    <Input id="info_surname" label="Surname" value={user?.surname ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
+                    <Input id="info_name" label="First name" value={user?.name ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
+                    <Input id="info_surname" label="Last name" value={user?.surname ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
                     <Input id="info_role" label="Role" value={user?.userType ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
                 </Row>
-                <div className="form-text mt-1 mb-3">These details are read-only.</div>
-
-                <h6 className="mb-2 mt-3">Profile</h6>
-                <div className="text-center mb-3">
-                    <Upload
-                        id="profile_photo"
-                        label="Upload an image (max 2MB)"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        multiple={false}
-                        style={{ margin: '0 auto', display: 'inline-block' }}
-                    />
+                
+                {/* --- UPLOAD PHOTO --- */}
+                <div className="mt-4 pb-4 border-bottom">
+                    <p className="fw-bold mb-2 text-primary">Change Profile Photo</p>
+                    <div className="d-flex flex-column flex-md-row align-items-center gap-4">
+                         <div className="flex-grow-1 w-100">
+                             <Upload
+                                 id="profile_photo"
+                                 label="Select image (max 2MB)"
+                                 accept="image/*"
+                                 onChange={handleFileChange}
+                                 multiple={false}
+                             />
+                         </div>
+                    </div>
+                    {avatarList.length > 0 && (
+                        <div className="mt-3">
+                            <UploadList previewImage tipologia="file">
+                                {avatarList.map((f, idx) => (
+                                    <UploadListItem
+                                        key={idx}
+                                        fileName={f.name}
+                                        previewImage
+                                        previewImageAlt={f.name}
+                                        previewImageSrc={f.src}
+                                        uploadStatus="success"
+                                        onDispose={handleRemovePhoto}
+                                    />
+                                ))}
+                            </UploadList>
+                        </div>
+                    )}
                 </div>
 
-                {avatarList.length > 0 && (
-                    <div className="d-flex justify-content-center mb-3 overflow-auto" style={{ maxWidth: '100%' }}>
-                        <UploadList previewImage tipologia="file">
-                            {avatarList.map((f, idx) => (
-                                <UploadListItem
-                                    key={idx}
-                                    fileName={f.name}
-                                    fileWeight={''}
-                                    previewImage
-                                    previewImageAlt={f.name}
-                                    previewImageSrc={f.src}
-                                    uploadStatus="success"
-                                    onDispose={handleRemovePhoto}
+                {/* --- SETTINGS --- */}
+                <div className="mt-4">
+                    <h6 className="text-uppercase text-secondary fw-bold mb-3">Settings & Notifications</h6>
+                    
+                    <Row className="g-4">
+                        {/* Telegram */}
+                        <Col xs={12} md={7} lg={8}>
+                            <div className="bg-light p-3 rounded">
+                                <Input
+                                    id="telegram"
+                                    name="telegram"
+                                    label="Telegram username"
+                                    placeholder="e.g. john_doe"
+                                    value={telegram}
+                                    onChange={(e) => setTelegram(e.target.value)}
+                                    infoText="Enter your username without @"
+                                    wrapperClassName="mb-0 bg-white"
                                 />
-                            ))}
-                        </UploadList>
-                    </div>
-                )}
+                                
+                                {/* Telegram Verify */}
+                                {Boolean(user?.telegramId) && (
+                                    <div className="d-flex align-items-start mt-3 p-3 bg-white border-start border-primary border-4 shadow-sm">
+                                        <Icon icon="it-info-circle" className="text-primary me-3 flex-shrink-0" size="sm" />
+                                        <div>
+                                            <p className="mb-2 text-muted small lh-sm">
+                                                To receive notifications you must complete verification on Telegram.
+                                            </p>
+                                            <Link
+                                                className="fw-bold text-decoration-none d-inline-flex align-items-center"
+                                                to="/verify_telegram"
+                                            >
+                                                <span>Go to verification</span>
+                                                <Icon icon="it-arrow-right" size="xs" className="ms-1" />
+                                            </Link>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </Col>
 
-                <Row className="gy-2 align-items-center mt-4">
-                    <Input
-                        id="telegram"
-                        name="telegram"
-                        label="Telegram username"
-                        placeholder="e.g. john_doe"
-                        value={telegram}
-                        onChange={(e) => setTelegram(e.target.value)}
-                        infoText={telegramHelp}
-                        wrapperClassName="col-12 col-md-6"
-                    />
-                </Row>
-				<Row>
-                        <div className="form-check form-switch mt-3 mt-md-0">
-                            <input
-                                id="emailNotifications"
-                                className="form-check-input"
-                                type="checkbox"
-                                checked={emailNotifications}
-                                onChange={(e) => setEmailNotifications(e.target.checked)}
-                                aria-label="Toggle email notifications"
-                            />
-                            <label className="form-check-label" htmlFor="emailNotifications">
-                                Email notifications
-                            </label>
-                            <div className="form-text">Emails are not implemented; this toggle is saved locally only.</div>
-                        </div>
-				</Row>
+                        {/* Switches */}
+                        <Col xs={12} md={5} lg={4}>
+                            <div className="p-3 border rounded h-100 d-flex flex-column justify-content-center">
+                                <div className="form-check form-switch">
+                                    <input
+                                        id="emailNotifications"
+                                        className="form-check-input"
+                                        type="checkbox"
+                                        checked={emailNotifications}
+                                        onChange={(e) => setEmailNotifications(e.target.checked)}
+                                    />
+                                    <label className="form-check-label fw-bold" htmlFor="emailNotifications">
+                                        Email notifications
+                                    </label>
+                                </div>
+                                <small className="text-muted mt-2 d-block">
+                                    Enable or disable receiving informational emails (this setting is saved locally only).
+                                </small>
+                            </div>
+                        </Col>
+                    </Row>
+                </div>
 
-                {error && (
-                    <Alert color="danger" isOpen={errorOpen} toggle={() => setErrorOpen(false)}>
-                        {error}
-                    </Alert>
-                )}
-                {success && (
-                    <Alert color="success" isOpen={successOpen} toggle={() => setSuccessOpen(false)}>
-                        {success}
-                    </Alert>
-                )}
+                {/* --- FEEDBACK MESSAGES --- */}
+                <div className="mt-4">
+                    {error && (
+                        <Alert color="danger" isOpen={errorOpen} toggle={() => setErrorOpen(false)}>
+                            {error}
+                        </Alert>
+                    )}
+                    {success && (
+                        <Alert color="success" isOpen={successOpen} toggle={() => setSuccessOpen(false)}>
+                            {success}
+                        </Alert>
+                    )}
+                </div>
 
-                <Row className="gy-3 mt-2">
-                    <Col className="col-12 col-sm-auto">
-                        <Button
-                            color="primary"
-                            outline
-                            type="button"
-                            className="w-100 w-sm-auto"
-                            onClick={() => {
-                                setTelegram(user?.telegramId || '');
-                                setEmailNotifications(user?.emailNotifications ?? true);
-                                setPhotoDataUrl('');
-                                setPhotoPreview('');
-                                setPhotoFile(null);
-                                setSuccess('');
-                                setError('');
-                            }}
-                        >
-                            Cancel
-                        </Button>
-                    </Col>
-                    <Col className="col-12 col-sm-auto">
-                        <Button
-                            color="primary"
-                            type="submit"
-                            className="w-100 w-sm-auto"
-                            disabled={saving}
-                        >
-                            {saving ? 'Saving…' : 'Save changes'}
-                        </Button>
-                    </Col>
-                </Row>
+                {/* --- FOOTER ACTIONS --- */}
+                <div className="d-flex justify-content-end gap-3 mt-5 pt-3 border-top">
+                    <Button
+                        color="secondary"
+                        outline
+                        type="button"
+                        className="px-4"
+                        onClick={() => {
+                            setTelegram(user?.telegramId || '');
+                            setEmailNotifications(user?.emailNotifications ?? true);
+                            setPhotoDataUrl('');
+                            setPhotoPreview('');
+                            setPhotoFile(null);
+                            setSuccess('');
+                            setError('');
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        color="primary"
+                        type="submit"
+                        className="px-5"
+                        disabled={saving}
+                    >
+                        {saving ? (
+                            <span><span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...</span>
+                        ) : 'Save changes'}
+                    </Button>
+                </div>
             </Form>
         </div>
     );
 }
-

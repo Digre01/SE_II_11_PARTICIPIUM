@@ -45,6 +45,16 @@ services:
       db:
         condition: service_healthy
   
+  # Telegram Bot
+  telegram:
+    image: matteodigregorio/team-11-participium:telegram
+    container_name: telegram
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+  
 volumes:
   db_data:
    
