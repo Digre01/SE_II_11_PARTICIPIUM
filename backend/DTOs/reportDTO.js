@@ -12,7 +12,8 @@ class ReportDTO {
         reject_explanation,
         userId,
         categoryId,
-        photos
+        photos,
+        isAnonymous
     }) {
         this.id = id;
         this.title = title;
@@ -26,6 +27,7 @@ class ReportDTO {
         this.photos = Array.isArray(photos)
             ? photos.map(p => typeof p === 'string' ? p : p.link).filter(Boolean)
             : [];
+        this.isAnonymous = isAnonymous ?? false;
     }
 }
 

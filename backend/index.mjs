@@ -4,7 +4,11 @@ import app from "./app.js";
 import http from "node:http";
 import { setupWebSocket } from "./wsHandler.js";
 
-dotenv.config();
+dotenv.config({
+    path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
+});
+
+console.log(process.env.NODE_ENV)
 
 const PORT = process.env.PORT || 3000;
 

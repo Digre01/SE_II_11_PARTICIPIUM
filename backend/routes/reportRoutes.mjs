@@ -1,5 +1,12 @@
 import { Router } from "express";
-import { createReport, getAllReports, getReport, reviewReport, getAcceptedReports } from "../controllers/reportController.mjs";
+import {
+  createReport,
+  getAllReports,
+  getReport,
+  reviewReport,
+  getAcceptedReports,
+  getReportsByCategory, getReportsByTechnician
+} from "../controllers/reportController.mjs";
 import upload from '../middlewares/uploadMiddleware.js';
 import { authorizeUserType, authorizeRole } from '../middlewares/userAuthorization.js';
 import { BadRequestError } from '../errors/BadRequestError.js';
@@ -24,7 +31,7 @@ router.post('/',
     };
 
     try {
-      const { title, description, categoryId, latitude, longitude } = req.body;
+      const { title, description, categoryId, latitude, longitude, isAnonymous } = req.body;
       const userId = req.user?.id;
       const photos = req.files ? req.files.map(file => `/public/${file.filename}`) : [];
 
@@ -37,10 +44,11 @@ router.post('/',
         return next(new BadRequestError('You must upload between 1 and 3 photos.'));
       }
 
-      await createReport({ title, description, categoryId, userId, latitude, longitude, photos });
+      await createReport({ title, description, categoryId, userId, latitude, longitude, photos, isAnonymous });
       res.status(201).json({ message: 'Report created successfully', photos });
     } catch (error) {
       deleteUploadedFiles();
+      console.log(error)
       next(error);
     }
   }
@@ -48,15 +56,42 @@ router.post('/',
 
 // GET /api/v1/reports (list)
 // Only staff members with the 'Municipal Public Relations Officer' role can access
-router.get('/', authorizeUserType(['staff']), async (req, res, next) => {
-  try {
-    const reports = await getAllReports();
-    res.json(reports);
-  } catch (err) { next(err); }
-});
+router.get(
+    '/',
+    authorizeUserType(['staff']),
+    async (req, res, next) => {
+      try {
+        const categoryId = req.query.categoryId;
+        const isExternal = req.query.isExternal === "true" ? true : null;
+
+        const reports = categoryId
+            ? await getReportsByCategory(categoryId, isExternal)
+            : await getAllReports();
+
+        res.json(reports);
+      } catch (err) {
+        next(err);
+      }
+    }
+);
+
+router.get(
+    '/technician/:userId',
+    authorizeUserType(['staff']),
+    async (req, res, next) => {
+      try {
+        const reports = await getReportsByTechnician(req.params.userId);
+        res.json(reports);
+      } catch (err) {
+        next(err);
+      }
+    }
+);
+
 
 // GET /api/v1/reports/assigned and /api/v1/reports/suspended (public map layer)
-router.get(['/assigned', '/suspended', '/in_progress'], authorizeUserType(['citizen']), async (req, res, next) => {
+// Public: allow unregistered users to fetch accepted reports for the interactive map
+router.get(['/assigned', '/suspended', '/in_progress'], async (req, res, next) => {
   try {
     const reports = await getAcceptedReports();
     // Filter by requested path to avoid duplicates when frontend merges both endpoints
@@ -70,8 +105,8 @@ router.get(['/assigned', '/suspended', '/in_progress'], authorizeUserType(['citi
       longitude: r.longitude,
       status: r.status,
       categoryId: r.categoryId,
-      authorUsername: r.user?.username || null,
-      authorName: r.user ? `${r.user.name} ${r.user.surname}` : null,
+      authorUsername: r.isAnonymous ? null : (r.user?.username || null),
+      authorName: r.isAnonymous ? null : (r.user ? `${r.user.name} ${r.user.surname}` : null),
       photos: r.photos?.map(p => ({ link: p.link })) || []
     }));
     res.json(dto);
@@ -153,7 +188,9 @@ router.patch('/:id/assign_external', authorizeUserType(['staff']), async (
 });
 
 // External-specific start/finish/suspend/resume
-router.patch('/:id/external/start', async (req, res, next) => {
+router.patch('/:id/external/start',
+    authorizeUserType(["staff"]),
+    async (req, res, next) => {
   try {
     if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
     const userId = req.user?.id;
@@ -163,7 +200,9 @@ router.patch('/:id/external/start', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.patch('/:id/external/finish', async (req, res, next) => {
+router.patch('/:id/external/finish',
+    authorizeUserType(["staff"]),
+    async (req, res, next) => {
   try {
     if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
     const userId = req.user?.id;
@@ -173,7 +212,9 @@ router.patch('/:id/external/finish', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.patch('/:id/external/suspend', async (req, res, next) => {
+router.patch('/:id/external/suspend',
+    authorizeUserType(["staff"]),
+    async (req, res, next) => {
   try {
     if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
     const userId = req.user?.id;
@@ -183,7 +224,9 @@ router.patch('/:id/external/suspend', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.patch('/:id/external/resume', async (req, res, next) => {
+router.patch('/:id/external/resume',
+    authorizeUserType(["staff"]),
+    async (req, res, next) => {
   try {
     if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
     const userId = req.user?.id;

@@ -43,7 +43,8 @@ const ReportForm = ({ user, loggedIn }) => {
     categoryId: "",
     photos: [],
     latitude: passedLat ?? defaultLat,
-    longitude: passedLon ?? defaultLon
+    longitude: passedLon ?? defaultLon,
+    isAnonymous: false
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -82,6 +83,7 @@ const ReportForm = ({ user, loggedIn }) => {
     data.append("categoryId", form.categoryId);
     data.append("latitude", form.latitude);
     data.append("longitude", form.longitude);
+    data.append("isAnonymous", form.isAnonymous);
     form.photos.forEach(photo => data.append("photos", photo));
     try {
       await API.createReport(data);
@@ -93,7 +95,8 @@ const ReportForm = ({ user, loggedIn }) => {
         categoryId: "",
         photos: [],
         latitude: passedLat ?? defaultLat,
-        longitude: passedLon ?? defaultLon
+        longitude: passedLon ?? defaultLon,
+        isAnonymous: false
       });
     } catch (err) {
       setError(typeof err === "string" ? err : "Network error. Please try again later.");
@@ -176,6 +179,7 @@ const ReportForm = ({ user, loggedIn }) => {
               readOnly
             />
           </FormGroup>
+          
           <div className="row">
             <div className="col-6">
               <Input
@@ -194,6 +198,18 @@ const ReportForm = ({ user, loggedIn }) => {
               />
             </div>
           </div>
+
+          <FormGroup className="mb-3" check>
+            <Input
+              type="checkbox"
+              id="isAnonymous"
+              checked={form.isAnonymous}
+              onChange={(e) => setForm(prev => ({ ...prev, isAnonymous: e.target.checked }))}
+            />
+            <label htmlFor="isAnonymous" className="form-check-label">
+              Submit report anonymously
+            </label>
+          </FormGroup>
 
           {error && (
             <div className="mb-4">
