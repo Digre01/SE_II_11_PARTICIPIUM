@@ -131,5 +131,74 @@ test.describe("Map navigation", () => {
     expect(page.url()).toMatch(/\//);
     expect(page.url()).not.toMatch(/\/report/);
   })
+
+  test('search bar: citizen types "via genova 1" and create new report from marker', async ({ page }) => {
+    await loginAsUser(page, {username: "citizen", password: "citizen"});
+
+    await page.goto('/');
+    await waitForMap(page);
+    await page.waitForTimeout(1000);
+
+    // Find the search input by placeholder
+    const searchInput = await page.getByPlaceholder('Search address in Turin...');
+    expect(searchInput).toBeTruthy();
+
+    // Type "via genova 1" in the search bar
+    await searchInput.fill('via genova 1');
+    await page.waitForTimeout(500);
+
+    // Press Enter to select the first result
+    await searchInput.press('Enter');
+    await page.waitForTimeout(1500);
+
+    // Verify that a marker appears on the map
+    // The search creates a marker with class 'leaflet-marker-icon'
+    const markers = await page.$$('.leaflet-marker-icon');
+    expect(markers.length).toBeGreaterThan(0);
+
+    // Optionally verify that the marker has a popup with address information
+    const popup = await page.$('.leaflet-popup-content');
+    const popupText = await popup.textContent();
+    expect(popupText).toMatch(/Genova/i);
+    
+    await navigateToCreateReport(page);
+
+    const { lat, lon } = await getLatLon(page);
+
+    expect(lat).not.toBeNull();
+    expect(lon).not.toBeNull();
+
+  })
+
+  test('search bar: typing "via roma" and pressing enter shows marker', async ({ page }) => {
+    await page.goto('/');
+    await waitForMap(page);
+    await page.waitForTimeout(1000);
+
+    // Find the search input by placeholder
+    const searchInput = await page.getByPlaceholder('Search address in Turin...');
+    expect(searchInput).toBeTruthy();
+
+    // Type "via roma" in the search bar
+    await searchInput.fill('via roma');
+    await page.waitForTimeout(500);
+
+    // Press Enter to select the first result
+    await searchInput.press('Enter');
+    await page.waitForTimeout(1500);
+
+    // Verify that a marker appears on the map
+    // The search creates a marker with class 'leaflet-marker-icon'
+    const markers = await page.$$('.leaflet-marker-icon');
+    expect(markers.length).toBeGreaterThan(0);
+
+    // Optionally verify that the marker has a popup with address information
+    const popup = await page.$('.leaflet-popup-content');
+    if (popup) {
+      const popupText = await popup.textContent();
+      expect(popupText).toMatch(/roma/i);
+    }
+  })
+
 })
 
