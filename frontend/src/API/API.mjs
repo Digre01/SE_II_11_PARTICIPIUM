@@ -465,5 +465,11 @@ const fetchReportsByTechnician = async (userId) => {
   throw await response.text();
 }
 
-const API = { signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages, fetchReports, fetchReportPhotos, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchAssignedStaff, fetchRoles, fetchOffices, fetchOffice, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts, markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, assignReportToExternalMaintainer, sendMessage, fetchMyRoles, fetchUserRoles, setUserRoles, verifyEmail, checkEmailVerified, resendVerification, requestTelegramCode };
+const API = {
+  signUp, logIn, logOut, createReport, fetchCategories, fetchAssignedReports, fetchConversations, fetchMessages,
+  fetchReports, fetchReportPhotos, fetchReport, reviewReport, assignRole, fetchAvailableStaff, fetchAssignedStaff,
+  fetchRoles, fetchOffices, fetchOffice, updateAccount, fetchProfilePicture, fetchNotifications, fetchNotificationCounts,
+  markNotificationsAsRead, startReport, finishReport, suspendReport, resumeReport, assignReportToExternalMaintainer,
+  sendMessage, fetchMyRoles, fetchUserRoles, setUserRoles, verifyEmail, checkEmailVerified, resendVerification,
+  requestTelegramCode, fetchReportsByTechnician, fetchOfficeCategory };
 export default API;
