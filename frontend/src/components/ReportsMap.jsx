@@ -1,5 +1,5 @@
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap, GeoJSON } from 'react-leaflet';
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef, use } from 'react';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import './HomePage.css';
@@ -27,6 +27,226 @@ async function reverseGeocode({ lat, lon, signal }) {
   return res.json();
 }
 
+async function GeocodeResearch({ query, signal }) {
+  const url = new URL('https://nominatim.openstreetmap.org/search');
+  url.searchParams.set('format', 'jsonv2');
+  url.searchParams.set('viewbox', '7.5703,45.144,7.7783,45.0027'); // Bounding box for Turin
+  url.searchParams.set('bounded', '1');
+  url.searchParams.set('countrycodes', 'it');
+  url.searchParams.set('addressdetails', '1');
+  url.searchParams.set('autocomplete', '1');
+  url.searchParams.set('dedupe', '1');
+  url.searchParams.set('limit', '7');
+
+  const q = String(query || '').trim();
+  // Bias query explicitly to Turin; Nominatim handles house numbers in q
+  url.searchParams.set('q', q ? `${q}, Torino` : 'Torino');
+
+  const res = await fetch(url.toString(), {
+    headers: { 'Accept-Language': 'it' },
+    signal
+  });
+  if (!res.ok) throw new Error(`Search address failed: ${res.status}`);
+  return res.json();
+}
+
+function SearchAddress({ onPointChange, user }) {
+  const map = useMap();
+  const navigate = useNavigate();
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [showList, setShowList] = useState(false);
+  const [selectedPoint, setSelectedPoint] = useState(null);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const requestRef = useRef(null);
+  const debounceRef = useRef(null);
+  const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
+  const stopAll = (e) => {
+    // Stop event from reaching Leaflet map handlers, but do not prevent default
+    // so the input can still receive focus and clicks.
+    e.stopPropagation();
+    if (e.nativeEvent) {
+      e.nativeEvent.stopPropagation && e.nativeEvent.stopPropagation();
+    }
+  };
+
+  useEffect(() => {
+    if( !query || query.trim().length < 1 ) {
+      setResults([]);
+      setShowList(false);
+      if (requestRef.current) { requestRef.current.abort(); }
+      return;
+    }
+    if (debounceRef.current) { clearTimeout(debounceRef.current); }
+    debounceRef.current = setTimeout(() => {
+      try {
+        if (requestRef.current) requestRef.current.abort();
+        const ctrl = new AbortController();
+        requestRef.current = ctrl;
+        GeocodeResearch({ query: query.trim(),signal: ctrl.signal })
+          .then((data) => {
+            setResults(Array.isArray(data) ? data : []);
+            setShowList(true);
+          })
+          .catch((err) => {
+            if (err.name !== 'AbortError') {
+              setResults([]);
+              setShowList(false);
+            }
+          })
+          .finally(() => { requestRef.current = null; });
+      } catch {
+        setResults([]);
+        setShowList(false);
+      }
+    }, 300);
+    return () => {
+      if (debounceRef.current) { clearTimeout(debounceRef.current); }
+    };
+    }, [query]);
+
+    function selectResult(item) {
+      const lat = parseFloat(item.lat);
+      const lng = parseFloat(item.lon);
+      const addr = item.address || {};
+      const neighborhood = (addr.neighbourhood || addr.suburb || '').trim();
+      const cityLike = (addr.city || addr.town || addr.village || '').trim();
+      const street = String(addr.road || '').trim();
+      const formattedAddress = [street, neighborhood, cityLike].filter(Boolean).join(', ');
+      setSelectedPoint({ lat, lng });
+      setSelectedAddress(formattedAddress);
+      setShowList(false);
+      if(map) map.flyTo([lat, lng], 16, {duration: 0.8});
+      onPointChange?.({ lat, lng });
+    }
+
+    function clearSelection() {
+      setSelectedPoint(null);
+      setSelectedAddress('');
+      setQuery('');
+      setResults([]);
+      setShowList(false);
+    }
+    function formatSuggestionLabel(item) {
+      const addr = item.address || {};
+      const street = String(addr.road || '').trim();
+      const neighborhood = String(addr.neighbourhood || addr.suburb || '').trim();
+      const cityLike = String(addr.city || addr.town || addr.village || '').trim();
+      const parts = [street, neighborhood, cityLike].filter(Boolean);
+      if (parts.length) return parts.join(', ');
+      const dn = String(item.display_name || '').trim();
+      return dn ? dn.split(',')[0] : '';
+    }
+
+    return (
+    <div
+      style={{ position: 'absolute', top: 12, left: 64, zIndex: 1000, width: 'min(420px, 70vw)' }}
+      onMouseDownCapture={stopAll}
+        onWheelCapture={stopAll}
+        onPointerDownCapture={stopAll}
+        onPointerUpCapture={stopAll}
+    >
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+            onMouseDownCapture={stopAll}
+            onClickCapture={stopAll}
+            onFocus={(e) => { /* prevent map interactions when focusing input */ }}
+          onKeyDown={async (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              // If we already have results, pick the first
+              if (results && results.length > 0) {
+                selectResult(results[0]);
+                setShowList(false);
+                return;
+              }
+              // Otherwise, try to fetch immediately and pick first result
+              const q = query.trim();
+              if (q.length >= 3) {
+                try {
+                  const ctrl = new AbortController();
+                  const data = await GeocodeResearch({ query: q, signal: ctrl.signal });
+                  if (Array.isArray(data) && data.length > 0) {
+                    selectResult(data[0]);
+                    setShowList(false);
+                  }
+                } catch {}
+              }
+            }
+          }}
+          placeholder="Search address in Turin..."
+          aria-label="Search address"
+          style={{
+            width: '100%',
+            padding: '10px 12px',
+            borderRadius: 6,
+            border: '1px solid #c2c8d0',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
+            background: 'white'
+          }}
+        />
+        {selectedPoint && (
+          <button onClick={clearSelection} title="Pulisci selezione" style={{ padding: '8px 10px' }}
+            onMouseDownCapture={stopAll}
+            onWheelCapture={stopAll}
+            onPointerDownCapture={stopAll}
+            onPointerUpCapture={stopAll}
+          >
+            ✕
+          </button>
+        )}
+      </div>
+      {showList && results.length > 0 && (
+        <div style={{
+          marginTop: 6,
+          background: 'white',
+          border: '1px solid #c2c8d0',
+          borderRadius: 6,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+          maxHeight: '280px',
+          overflowY: 'auto'
+        }}>
+          {results.map((r) => (
+            <button
+              key={`${r.place_id}`}
+              type="button"
+                onClick={(e) => { stopAll(e); selectResult(r); }}
+              style={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                padding: '10px 12px',
+                border: 'none',
+                background: 'transparent',
+                color: '#1c1c1c',
+                cursor: 'pointer'
+              }}
+            >
+              {formatSuggestionLabel(r)}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {selectedPoint && (
+        <Marker position={selectedPoint} eventHandlers={{ add: ev => ev.target.openPopup() }}> 
+        {isCitizen && (
+          <Popup>{selectedAddress || `${selectedPoint.lat.toFixed(3)}, ${selectedPoint.lng.toFixed(3)}`}<br />
+            <button
+                  onClick={() => navigate('/report', { state: { lat: selectedPoint.lat, lng: selectedPoint.lng, address: selectedAddress || null } })}
+                >
+                  Create Report
+                </button>
+          </Popup>
+        )}
+        </Marker>
+      )}
+    </div>
+  );
+}
 function SingleClickMarker({ onPointChange, user, loggedIn }) {
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -89,7 +309,6 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
       {selectedPoint && (
         <Marker
           position={selectedPoint}
-          //icon={selectedPinIcon}
           eventHandlers={{ add: ev => ev.target.openPopup() }}
         >
           {isCitizen && (
@@ -231,6 +450,10 @@ export default function ReportsMap({ user, loggedIn, onPointChange }) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
 
+      {/* Search Address Component */}
+      <SearchAddress onPointChange={onPointChange} user={user} />
+
+      
       {/* External Mask */}
       {maskData && (
         <GeoJSON 
