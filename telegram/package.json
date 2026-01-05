@@ -6,12 +6,16 @@
   "main": "src/bot.js",
   "scripts": {
     "start": "node src/bot.js",
-    "dev": "NODE_ENV=development node src/bot.js"
+    "dev": "NODE_ENV=development node src/bot.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "dependencies": {
-    "dotenv": "^16.4.5",
-    "telegraf": "^4.16.2",
+    "@turf/boolean-point-in-polygon": "^7.3.1",
     "@turf/helpers": "^6.5.0",
-    "@turf/boolean-point-in-polygon":"^7.3.1"
+    "dotenv": "^16.4.5",
+    "telegraf": "^4.16.2"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0"
   }
 }
