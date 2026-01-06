@@ -97,7 +97,17 @@ router.get(['/assigned', '/suspended', '/in_progress'], async (req, res, next) =
     // Filter by requested path to avoid duplicates when frontend merges both endpoints
     const isAssignedPath = req.path.endsWith('/assigned');
     const isInProgressPath = req.path.endsWith('/in_progress');
-    const filtered = reports.filter(r => isAssignedPath ? r.status === 'assigned' : isInProgressPath ? r.status === 'in_progress' : r.status === 'suspended');
+    let targetStatus = 'suspended';
+
+    if (isAssignedPath) {
+      targetStatus = 'assigned';
+    } else if (isInProgressPath) {
+      targetStatus = 'in_progress';
+    }
+
+   
+    const filtered = reports.filter(r => r.status === targetStatus);
+    
     const dto = filtered.map(r => ({
       id: r.id,
       title: r.title,
@@ -192,7 +202,7 @@ router.patch('/:id/external/start',
     authorizeUserType(["staff"]),
     async (req, res, next) => {
   try {
-    if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
+    if (!req.isAuthenticated?.()) return next(new UnauthorizedError('UNAUTHORIZED'));
     const userId = req.user?.id;
     const updated = await import('../controllers/reportController.mjs').then(mod => mod.externalStart({ reportId: req.params.id, externalMaintainerId: userId }));
     if (!updated) return next(new NotFoundError('Not found or not allowed'));
@@ -204,7 +214,7 @@ router.patch('/:id/external/finish',
     authorizeUserType(["staff"]),
     async (req, res, next) => {
   try {
-    if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
+    if (!req.isAuthenticated?.()) return next(new UnauthorizedError('UNAUTHORIZED'));
     const userId = req.user?.id;
     const updated = await import('../controllers/reportController.mjs').then(mod => mod.externalFinish({ reportId: req.params.id, externalMaintainerId: userId }));
     if (!updated) return next(new NotFoundError('Not found or not allowed'));
@@ -216,7 +226,7 @@ router.patch('/:id/external/suspend',
     authorizeUserType(["staff"]),
     async (req, res, next) => {
   try {
-    if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
+   if (!req.isAuthenticated?.()) return next(new UnauthorizedError('UNAUTHORIZED'));
     const userId = req.user?.id;
     const updated = await import('../controllers/reportController.mjs').then(mod => mod.externalSuspend({ reportId: req.params.id, externalMaintainerId: userId }));
     if (!updated) return next(new NotFoundError('Not found or not allowed'));
@@ -228,7 +238,7 @@ router.patch('/:id/external/resume',
     authorizeUserType(["staff"]),
     async (req, res, next) => {
   try {
-    if (!req.isAuthenticated || !req.isAuthenticated()) return next(new UnauthorizedError('UNAUTHORIZED'));
+   if (!req.isAuthenticated?.()) return next(new UnauthorizedError('UNAUTHORIZED'));
     const userId = req.user?.id;
     const updated = await import('../controllers/reportController.mjs').then(mod => mod.externalResume({ reportId: req.params.id, externalMaintainerId: userId }));
     if (!updated) return next(new NotFoundError('Not found or not allowed'));

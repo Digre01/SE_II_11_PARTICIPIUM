@@ -57,7 +57,7 @@ export async function gotoReview(page) {
 
 export async function selectFirstCategory(page) {
     await page.waitForSelector('select.form-select');
-    const firstValue = await page.$eval('select.form-select', el => [...el.options].filter(o => o.value)[0]?.value);
+    const firstValue = await page.$eval('select.form-select', el =>  Array.from(el.options).find(o => o.value)?.value);
     await page.selectOption('select.form-select', firstValue);
 }
 

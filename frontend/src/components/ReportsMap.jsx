@@ -103,8 +103,8 @@ function SearchAddress({ onPointChange, user }) {
     }, [query]);
 
     function selectResult(item) {
-      const lat = parseFloat(item.lat);
-      const lng = parseFloat(item.lon);
+      const lat = Number.parseFloat(item.lat);
+      const lng = Number.parseFloat(item.lon);
       const addr = item.address || {};
       const neighborhood = (addr.neighbourhood || addr.suburb || '').trim();
       const cityLike = (addr.city || addr.town || addr.village || '').trim();

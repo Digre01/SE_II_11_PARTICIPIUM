@@ -55,7 +55,7 @@ export class ReportRepository {
 		const municipalStaff = staffMembers.filter(u => {
 			if (!u.userOffice) return false;
 			const uos = Array.isArray(u.userOffice) ? u.userOffice : [u.userOffice];
-			return uos.some(uo => uo && uo.role && uo.role.name === 'Municipal Public Relations Officer');
+			return uos.some(uo => uo?.role?.name === 'Municipal Public Relations Officer');
 		});
 
 		// Conversation creation
@@ -311,7 +311,7 @@ export class ReportRepository {
 
 		const categoryRepo = AppDataSourcePostgres.getRepository(Categories);
 		const category = await categoryRepo.findOne({ where: { id: Number(report.categoryId) }, relations: ['externalOffice'] });
-		const externalOfficeId = category?.externalOfficeId || (category?.externalOffice && category.externalOffice.id) || null;
+		const externalOfficeId = category?.externalOfficeId ?? category?.externalOffice?.id ?? null;
 		if (!externalOfficeId) return null;
 
 		const userOfficeRepo = AppDataSourcePostgres.getRepository(UserOffice);
@@ -320,7 +320,7 @@ export class ReportRepository {
 
 		const officeRepo = AppDataSourcePostgres.getRepository(Office);
 		const office = await officeRepo.findOneBy({ id: Number(externalOfficeId) });
-		if (!office || !office.isExternal) return null;
+		if (!office?.isExternal) return null;
 
 		report.status = status;
 		const savedReport = await this.repo.save(report);

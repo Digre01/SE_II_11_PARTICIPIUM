@@ -16,5 +16,5 @@ export async function getTestReport(page, request) {
     });
     const response = await request.get(`${URL}/api/v1/reports`)
     const reports = await response.json();
-    return reports.filter(r => r.title === "Test Report")[0]
+    return reports.find(r => r.title === "Test Report");
 }

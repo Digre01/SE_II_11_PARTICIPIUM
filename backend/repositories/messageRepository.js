@@ -14,7 +14,9 @@ export async function sendStaffMessage(conversationId, userId, content) {
   if (!isParticipant) throw new UnauthorizedError('Forbidden: user not in conversation');
 
 
-  if (conversation.report && conversation.report.status && (conversation.report.status.toLowerCase() === 'resolved' || conversation.report.status.toLowerCase() === 'rejected')) {
+  const status = conversation.report?.status?.toLowerCase();
+
+  if (status === 'resolved' || status === 'rejected') {
     throw new BadRequestError('Cannot send messages: report is closed');
   }
 

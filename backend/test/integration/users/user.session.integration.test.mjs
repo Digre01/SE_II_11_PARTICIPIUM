@@ -72,22 +72,6 @@ describe('GET /sessions/current', () => {
 		expect(res.body).toMatchObject({ username: 'testuser', userType: 'CITIZEN' });
 	});
 
-
-	/*it('should return current session if authenticated', async () => {
-		const agent = request.agent(app); // agent mantiene i cookie tra le richieste
-
-		await agent
-			.post('/api/v1/sessions/login')
-			.send({ username: 'john', password: 'password' }) // password finta per test
-			.expect(201);
-
-		const res = await agent
-			.get('/api/v1/sessions/current')
-			.expect(200);
-
-		expect(res.body).toHaveProperty('username', 'john');
-	});*/
-
 });
 
 describe('DELETE /sessions/current', () => {

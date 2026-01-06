@@ -5,7 +5,7 @@ import {UnauthorizedError} from "../../errors/UnauthorizedError.js";
 export function mockAuthorizeUserType(allowedTypes = []) {
     return (req, _res, next) => {
         // Controlla se l'utente è autenticato (già impostato da Passport)
-        if (!req.isAuthenticated || !req.isAuthenticated()) {
+        if (!req.isAuthenticated?.()) {
             return next(new UnauthorizedError('UNAUTHORIZED'));
         }
 
@@ -29,7 +29,7 @@ export function mockRequireAdminIfCreatingStaff(req, _res, next) {
         return next();
     }
 
-    if (!req.isAuthenticated || !req.isAuthenticated()) {
+    if ((!req.isAuthenticated?.())) {
         return next(new UnauthorizedError('Unauthorized'));
     }
 
@@ -43,7 +43,7 @@ export function mockRequireAdminIfCreatingStaff(req, _res, next) {
 
 export function mockAuthorizeRole(requiredRole) {
     return (req, _res, next) => {
-        if (!req.isAuthenticated || !req.isAuthenticated()) {
+        if ((!req.isAuthenticated?.())) {
             return next(new UnauthorizedError('UNAUTHORIZED'));
         }
 
