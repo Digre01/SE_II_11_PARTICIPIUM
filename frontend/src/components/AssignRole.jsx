@@ -157,9 +157,9 @@ function AssignRole() {
                                         style={{ margin: 0 }}
                                     />
                                     <Label for="isExternal" check style={{ margin: 0, padding: 0 } }>
-                                        <Button innerRef={refTooltip} style={{ padding: '0 6px', fontWeight: 400, fontSize: '1rem', lineHeight: 1 }}>
+                                        <span ref={refTooltip} style={{ padding: '0 6px', fontWeight: 400, fontSize: '1rem', lineHeight: 1, cursor: 'pointer' }}>
                                             Assign as External Maintainer
-                                        </Button>
+                                        </span>
                                     </Label>
                                 </div>
                             </FormGroup>
