@@ -28,6 +28,7 @@ describe('GET /me/roles', () => {
 
         expect(res.status).toBe(200);
         expect(res.body).toEqual(mockRoles);
+        expect(mockUserRepo.getUserRoles).toHaveBeenCalledWith(1);
     });
 
     it('should return 200 and user roles for STAFF', async () => {
@@ -85,6 +86,7 @@ describe('GET /me/roles', () => {
 
         expect(res.status).toBe(200);
         expect(res.body).toEqual(mockRoles);
+        expect(mockUserRepo.getUserRoles).toHaveBeenCalledWith(userId);
     });
 
     it('should return 403 if user is not ADMIN or STAFF', async () => {
@@ -94,6 +96,7 @@ describe('GET /me/roles', () => {
 
         expect(res.status).toBe(403);
     });
+
 });
 
 describe('GET /available_staff', () => {

@@ -8,7 +8,7 @@ function setSessionCookiesFromResponse(res) {
   if (setCookie) {
     // Keep only name=value pairs; drop attributes like Path, HttpOnly, SameSite
     const cookiePairs = setCookie
-      .split(/,\s*(?=[^;]+=)/) // split multiple cookies safely
+      .split(/,(?=[^,;]+=[^,;]+)/) // split multiple cookies safely
       .map(c => c.split(';')[0])
       .filter(Boolean);
     COOKIE_HEADER = cookiePairs.join('; ');

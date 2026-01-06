@@ -23,6 +23,8 @@ export const mockUserRepo = {
     getAssignedStaffForRoleModification: jest.fn(),
     findOneBy: jest.fn(),
     deleteUser: jest.fn(),
+    requestTelegramVerificationCode: jest.fn(),
+    verifyTelegramCode: jest.fn(),
 }
 
 await jest.unstable_mockModule('../../../repositories/userRepository.js', () => ({

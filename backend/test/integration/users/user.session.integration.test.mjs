@@ -7,8 +7,10 @@ import {
 import {ConflictError} from "../../../errors/ConflictError.js";
 import {mockUserRepo, mockUserService} from "../../mocks/repositories/users.repo.mock.js";
 
-await setupAuthorizationMocks();
 await setupEmailUtilsMock();
+const { sendVerificationEmail } = await import('../../../utils/email.js');
+
+await setupAuthorizationMocks();
 await setUpLoginMock()
 
 const { default: app } = await import('../../../app.js');
@@ -59,6 +61,15 @@ describe('GET /sessions/current', () => {
 		const res = await request(app).get('/api/v1/sessions/current');
 		expect(res.status).toBe(401);
 		expect(res.body).toHaveProperty('error');
+	});
+
+	it('should return current session if authenticated', async () => {
+		const res = await request(app)
+			.get('/api/v1/sessions/current')
+			.set('X-Test-User-Type', 'CITIZEN');
+
+		expect(res.status).toBe(200);
+		expect(res.body).toMatchObject({ username: 'testuser', userType: 'CITIZEN' });
 	});
 
 
@@ -214,6 +225,41 @@ describe('POST /sessions/signup', () => {
 			expect.any(String), // verification code
 			expect.any(Date) // expiry date
 		);
+	});
+
+	it('keeps signup successful when verification email fails', async () => {
+		const mockCitizenUser = {
+			id: 789,
+			username: 'citizen2',
+			email: 'cit2@email.com',
+			userType: 'CITIZEN',
+			name: 'Nome',
+			surname: 'Cognome',
+			isVerified: false
+		};
+
+		mockUserRepo.createUser.mockResolvedValue(mockCitizenUser);
+		mockUserRepo.getUserById.mockResolvedValue(mockCitizenUser);
+		sendVerificationEmail.mockRejectedValueOnce(new Error('smtp down'));
+
+		const res = await request(app)
+			.post('/api/v1/sessions/signup')
+			.set('Authorization', 'Bearer citizen')
+			.set('X-Test-User-Type', 'CITIZEN')
+			.send({
+				username: 'citizen2',
+				email: 'cit2@email.com',
+				name: 'Nome',
+				surname: 'Cognome',
+				password: 'pw',
+				userType: 'CITIZEN'
+			});
+
+		expect(res.status).toBe(201);
+		expect(res.body.user).toMatchObject({ id: 789, email: 'cit2@email.com' });
+		expect(res.body.emailSent).toBe(false);
+		expect(String(res.body.emailReason || '')).toMatch(/smtp down/i);
+		expect(sendVerificationEmail).toHaveBeenCalledWith('cit2@email.com', expect.any(String));
 	});
 
 	it('fails if username already exists', async () => {

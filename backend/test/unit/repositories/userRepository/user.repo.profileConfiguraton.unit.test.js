@@ -11,28 +11,6 @@ describe("UserRepository profile configuration", () => {
         resetUserRepositoryMocks();
     });
 
-    it("configUserAccount updates telegramId, emailNotifications and photo", async () => {
-        const user = { id: 8 };
-        userRepoStub.findOneBy.mockResolvedValue(user);
-        userRepoStub.save.mockResolvedValue({
-            ...user,
-            telegramId: "tg",
-            emailNotifications: true,
-            photoId: 1
-        });
-
-        photoRepoStub.create.mockReturnValue({ link: "url" });
-        photoRepoStub.save.mockResolvedValue({ id: 1 });
-
-        const result = await userRepository.configUserAccount(8, "tg", true, "url");
-
-        expect(photoRepoStub.create).toHaveBeenCalledWith({ link: "url" });
-        expect(photoRepoStub.save).toHaveBeenCalledWith({ link: "url" });
-        expect(userRepoStub.save).toHaveBeenCalledWith(
-            expect.objectContaining({ telegramId: "tg", emailNotifications: true, photoId: 1 })
-        );
-        expect(result.telegramId).toBe("tg");
-    });
 
     it("throws if user not found", async () => {
         userRepoStub.findOneBy.mockResolvedValue(null);

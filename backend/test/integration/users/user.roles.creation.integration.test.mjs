@@ -98,6 +98,31 @@ describe('PATCH /sessions/:id/role', () => {
     expect(res.status).toBe(401);
   });
 
+  it('should default isExternal to false when not provided', async () => {
+    mockUserRepo.assignRoleToUser.mockResolvedValueOnce({
+      userId: 1,
+      roleId: 2,
+      officeId: null,
+      role: { id: 2, name: 'STAFF' },
+      office: null,
+    });
+
+    const res = await request(app)
+        .patch('/api/v1/sessions/1/role')
+        .set('X-Test-User-Type', 'ADMIN')
+        .send({ roleId: 2 });
+
+    expect(res.status).toBe(200);
+    expect(mockUserRepo.assignRoleToUser).toHaveBeenCalledWith(1, 2, false);
+    expect(res.body).toEqual({
+      userId: 1,
+      officeId: null,
+      roleId: 2,
+      role: { id: 2, name: 'STAFF' },
+      office: null,
+    });
+  });
+
   it('should assign role to staff as ADMIN', async () => {
     mockUserRepo.assignRoleToUser.mockResolvedValueOnce({ id: 1, roleId: 2 });
     const res = await request(app)

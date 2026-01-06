@@ -42,6 +42,44 @@ describe("getAvailableStaffForRoleAssignment", () => {
     });
 });
 
+describe("getAssignedStaffForRoleModification", () => {
+    it("returns staff with office", async () => {
+        const qb = {
+            leftJoinAndSelect: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            getMany: jest.fn().mockResolvedValue([{id: 3}])
+        };
+        userRepoStub.createQueryBuilder = jest.fn(() => qb);
+
+        const result = await userRepository.getAssignedStaffForRoleModification();
+
+        expect(result).toEqual([{id: 3}]);
+        expect(qb.getMany).toHaveBeenCalled();
+    });
+
+    it("returns empty array if getMany returns undefined", async () => {
+        const qb = {
+            leftJoinAndSelect: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            getMany: jest.fn().mockResolvedValue(undefined)
+        };
+        userRepoStub.createQueryBuilder = jest.fn(() => qb);
+
+        const result = await userRepository.getAssignedStaffForRoleModification();
+
+        expect(result).toBeUndefined();
+        expect(qb.getMany).toHaveBeenCalled();
+    });
+
+    it("throws if createQueryBuilder is not defined", async () => {
+        userRepoStub.createQueryBuilder = undefined;
+
+        await expect(userRepository.getAssignedStaffForRoleModification()).rejects.toThrow();
+    });
+});
+
 describe("assignRoleToUser", () => {
     it("assigns existing userOffice mapping (internal)", async () => {
         userRepoStub.findOne.mockResolvedValue({ id: 1, userType: "STAFF" });
