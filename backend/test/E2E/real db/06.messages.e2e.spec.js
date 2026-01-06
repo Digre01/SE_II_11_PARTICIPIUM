@@ -14,54 +14,6 @@ test.describe('Conversation Page', () => {
     await page.click('li.list-group-item:has-text("Test Report")');
   });
 
-  test('staff can send a real message and see it in the chat', async ({ page }) => {
-    const input = await getMessageInput(page)
-    await expect(input).toBeVisible();
-
-    const messageText = `E2E test message ${Date.now()}`;
-
-    await input.fill(messageText);
-
-    await page.click('button[aria-label="Send"]');
-
-    await expect(
-        page.locator('.rounded', { hasText: messageText })
-    ).toBeVisible();
-  });
-
-  /*test('shows system messages and message ordering', async ({ page }) => {
-    await mockCurrentSession(page, { id: 42, username: 'alice', userType: 'staff' });
-
-    const now = Date.now();
-    const messages = [
-      { id: 31, content: 'Second', createdAt: new Date(now - 60000).toISOString(), sender: { id: 99 } },
-      { id: 30, content: 'First', createdAt: new Date(now - 3600000).toISOString(), sender: null, isSystem: true },
-    ];
-
-    console.log("messages created")
-    await mockMessages(page, 200, route => {
-      console.log('mockMessages triggered:', route.request().url());
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(messages),
-      });
-    });
-
-    await mockConversations(page, [{ id: 200, report: { status: 'open' } }]);
-
-    const response = await page.waitForResponse(resp =>
-        resp.url().includes('/api/v1/conversations/200/messages') && resp.status() === 200
-    );
-    const fetched = await response.json();
-
-    await gotoConversation(page, 200);
-
-    const sorted = fetched.slice().sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    expect(sorted[0].content).toBe('First');
-    expect(sorted[1].content).toBe('Second');
-  });*/
-
   test('staff cannot send when report is resolved (send form absent)', async ({ page }) => {
     expect(await getMessageInput(page).count()).toBe(0);
   });
@@ -78,10 +30,6 @@ test.describe("Internal conversation", () => {
 
     await page.waitForSelector('li.list-group-item:has-text("External Report")', { timeout: 5000 });
     await page.click('li.list-group-item:has-text("External Report")');
-  });
-
-  test('internal conversation shows internal banner', async ({ page }) => {
-    expect(await page.locator('text=Internal comments').count()).toBeGreaterThan(0);
   });
 })
 

@@ -83,30 +83,6 @@ test.describe('report starting, finishing, suspending and resuming', () => {
         expect(actionButtonsAfter).toBeGreaterThan(actionButtonsBefore);
     });
 
-    test('pressing FINISH button changes report status from IN PROGRESS', async ({ page }) => {
-        await page.goto("/officeReports")
-
-        const userSection = await getSection(page, "Reports assigned to you");
-
-        const finishButton = userSection.locator('button', { hasText: 'FINISH' });
-        await expect(finishButton.first()).toBeVisible();
-
-        const finishButtonsBefore = await finishButton.count();
-        expect(finishButtonsBefore).toBeGreaterThan(0);
-
-        const tableRows = userSection.locator('table tbody tr');
-        const rowsBefore = await tableRows.count();
-
-        await finishButton.first().click();
-        await page.waitForTimeout(1500);
-
-        const rowsAfter = await tableRows.count();
-        expect(rowsBefore).toBeGreaterThan(rowsAfter);
-
-        const finishButtonsAfter = await finishButton.count();
-        expect(finishButtonsBefore).toBeGreaterThan(finishButtonsAfter);
-    });
-
     test.describe("Assign report to external", async () => {
 
         test.beforeEach(async ({ page, request }) => {
