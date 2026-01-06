@@ -45,7 +45,7 @@ describe('E2E: setUserRoles story (multiple roles + cancellation)', () => {
     const persisted = await userRepository.getUserRoles(staff.id);
     const ids = persisted.map(u => u.role?.id || u.roleId).sort();
 
-    expect(ids).toEqual([r1.id, r2.id].sort());
+    expect(ids).toEqual([r1.id, r2.id].sort((a, b) => a - b));
   });
 
   it('cancels all roles when ADMIN sends empty array', async () => {
@@ -80,7 +80,7 @@ describe('E2E: setUserRoles story (multiple roles + cancellation)', () => {
     const persisted = await userRepository.getUserRoles(staff.id);
     const ids = persisted.map(u => u.role?.id || u.roleId).sort();
 
-    expect(ids).toEqual([r1.id, r2.id].sort());
+    expect(ids).toEqual([r1.id, r2.id].sort((a, b) => a - b));
   });
 
   it('returns 400 for invalid payload', async () => {
