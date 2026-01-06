@@ -139,7 +139,7 @@ export const newReportWizard = new Scenes.WizardScene(
             return;
         }
 
-        ctx.wizard.state.report.anonymous = txt === 'yes';
+        ctx.wizard.state.report.isAnonymous = txt === 'yes';
 
         const r = ctx.wizard.state.report;
         await ctx.reply(
@@ -148,7 +148,7 @@ export const newReportWizard = new Scenes.WizardScene(
                 `Title: ${r.title}`,
                 `Category: ${r.categoryName}`,
                 `Photos: ${r.photos.length}`,
-                `Anonymous: ${r.anonymous ? 'Yes' : 'No'}`
+                `Anonymous: ${r.isAnonymous ? 'Yes' : 'No'}`
             ].join('\n')
         );
 

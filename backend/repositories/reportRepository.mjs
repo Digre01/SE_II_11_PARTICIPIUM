@@ -47,7 +47,6 @@ export class ReportRepository {
 			}
 		}
 
-		// Trova tutti gli staff member con ruolo 'Municipal Public Relations Officer' tramite join
 		const staffRepo = AppDataSourcePostgres.getRepository(Users);
 		const staffMembers = await staffRepo.find({
 			where: { userType: 'STAFF' },
@@ -151,7 +150,6 @@ export class ReportRepository {
 		report.technicianId = Number(technicianId);
 		const savedReport = await this.repo.save(report);
 
-		// Trova tutte le conversazioni associate al report
 		const convRepo = AppDataSourcePostgres.getRepository((await import('../entities/Conversation.js')).Conversation);
 		const conversations = await convRepo.find({ where: { report: { id: report.id } }, relations: ['participants'] });
 		if (conversations && conversations.length > 0) {
@@ -208,7 +206,7 @@ export class ReportRepository {
 	async resumeReport({ reportId, technicianId }) {
 		const report = await this.repo.findOneBy({ id: Number(reportId) });
 		if (!report) return null;
-		// Se technicianId è valorizzato, torna in_progress, altrimenti torna assigned
+		
 		if (report.technicianId) {
 			report.status = 'in_progress';
 		} else {

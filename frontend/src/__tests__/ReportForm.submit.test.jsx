@@ -5,8 +5,6 @@ import { MemoryRouter } from 'react-router-dom';
 import React from 'react';
 globalThis.React = React;
 
-// We'll stub global.fetch in the test and import ReportForm afterwards so
-// the component's initial fetch (fetchCategories) uses the stub.
 
 describe('ReportForm submit', () => {
   it('submits the form (happy path) and calls API.createReport', async () => {
@@ -48,7 +46,7 @@ describe('ReportForm submit', () => {
     const file = new File(['dummy'], 'test.png', { type: 'image/png' });
     fireEvent.change(upload, { target: { files: [file] } });
 
-    // submit
+  // submit
   const submitButton = screen.getByRole('button', { name: /submit/i });
   // ensure button is enabled
   await waitFor(() => expect(submitButton).not.toBeDisabled());

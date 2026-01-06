@@ -4,7 +4,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 globalThis.React = React;
 
-// Use the existing mocks (react-leaflet is resolved to our __mocks__ file)
 const HomePage = (await import('../components/HomePage')).default;
 
 describe('HomePage map interactions', () => {

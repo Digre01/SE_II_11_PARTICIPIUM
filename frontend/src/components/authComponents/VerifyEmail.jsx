@@ -11,6 +11,7 @@ function VerifyEmail({ user, onVerified }) {
   const [info, setInfo] = useState(null);
   const navigate = useNavigate();
   const recipientEmail = user.email;
+  const expireTime = user.expireTime;
   const getErrorMessage = (err) => {
     if (!err) return 'Verification failed.';
     if (typeof err === 'string') {
@@ -33,11 +34,10 @@ function VerifyEmail({ user, onVerified }) {
     }
     try {
       await API.verifyEmail(code);
-      // refresh status from server to confirm verification
+
       const check = await API.checkEmailVerified();
       const verified = Boolean(check?.isVerified);
       setStatus({ isVerified: verified, loading: false, error: null, success: verified ? 'Email verified successfully.' : null });
-      // notify parent to refresh current user/session so homepage sees updated verification state
       if (typeof onVerified === 'function') {
         await onVerified();
       }
@@ -62,7 +62,7 @@ function VerifyEmail({ user, onVerified }) {
       }
     };
 
-    // If there's no user or no id, stop loading and show an error
+
     if (!user || !user.id) {
       setStatus({ isVerified: false, loading: false, error: 'User not available. Please log in again.', success: null });
       return;
@@ -71,7 +71,6 @@ function VerifyEmail({ user, onVerified }) {
     fetchStatus();
   }, [user, navigate]);
 
-  // Redirect logic: only navigate when actually verified
   useEffect(() => {
     if (status.loading) return;
     if (status.isVerified) {
@@ -136,7 +135,7 @@ function VerifyEmail({ user, onVerified }) {
             <Alert color="success" className="mt-3">{status.success}</Alert>
           )}
           {!status.isVerified ? (
-            <Alert color="warning">Your email is not verified yet. Please enter the code sent to your email: <strong>{recipientEmail}</strong>, Check also your spam</Alert>
+            <Alert color="warning">Your email is not verified yet. Please enter the code sent to your email: <strong>{recipientEmail}</strong>, Check also your spam. Your code will expire in <strong>30 minutes</strong></Alert>
           ) : null}
           {info && <Alert color="info" className="mt-2">{info}</Alert>}
           {state.error && <Alert color="danger">{String(state.error)}</Alert>}

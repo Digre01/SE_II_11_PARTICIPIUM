@@ -1,9 +1,4 @@
-// Simple API client for the Telegram bot to interact with the webapp backend
-// Uses multipart/form-data for report creation and supports downloading photos by Telegram file_id
-// Adds a minimal cookie jar to persist session between verification and report creation.
-
 // In Docker Compose, the backend service is reachable at http://backend:3000 from the telegram container.
-// Fall back to that hostname instead of localhost, which would point to the bot container itself.
 const SERVER_URL = process.env.SERVER_URL || 'http://backend:3000';
 
 let COOKIE_HEADER = '';
@@ -33,13 +28,11 @@ export async function fetchCategories() {
   throw await res.text();
 }
 
-// Helper: fetch a file from Telegram by file_id and return { filename, blob }
-// Uses bot API to get file path; forces an image content-type to satisfy backend filter.
+
 export async function fetchTelegramPhoto(bot, fileId) {
-  // Prefer official API via bot to get file meta
+
   const file = await bot.telegram.getFile(fileId);
   if (!file || !file.file_path) {
-    // Fallback to link method
     const url = await bot.telegram.getFileLink(fileId);
     const response = await fetch(url.href || url.toString());
     if (!response.ok) throw new Error(`Failed to download photo ${fileId}`);
@@ -58,7 +51,6 @@ export async function fetchTelegramPhoto(bot, fileId) {
   const fileUrl = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
   const res = await fetch(fileUrl);
   if (!res.ok) throw new Error(`Failed to download telegram file ${fileId}`);
-  // Guess extension from path
   const path = file.file_path.toLowerCase();
   const isPng = path.endsWith('.png');
   const ext = isPng ? 'png' : 'jpg';
@@ -69,7 +61,7 @@ export async function fetchTelegramPhoto(bot, fileId) {
 }
 
 
-// wizardReport = { title, description, category, location: {lat, lon}, photos: [{file_id}], anonymous }
+// wizardReport = { title, description, category, location: {lat, lon}, photos: [{file_id}], isAnonymous }
 export async function buildReportFormData(bot, wizardReport, options = {}) {
   const fd = new FormData();
   fd.append('title', wizardReport.title);
@@ -77,7 +69,7 @@ export async function buildReportFormData(bot, wizardReport, options = {}) {
   fd.append('categoryId', String(wizardReport.categoryId));
   fd.append('latitude', String(wizardReport.location.lat));
   fd.append('longitude', String(wizardReport.location.lon));
-  fd.append('anonymous', wizardReport.anonymous ? 'true' : 'false');
+  fd.append('isAnonymous', wizardReport.isAnonymous ? 'true' : 'false');
 
   // Photos: up to 3
   const limit = Math.min(3, wizardReport.photos?.length || 0);
@@ -123,7 +115,6 @@ export async function verifyTelegram(username, code) {
     const errText = await res.text();
     throw new Error(errText || 'Verification failed');
   }
-  // Capture Set-Cookie to keep the session alive for later API calls
   setSessionCookiesFromResponse(res);
   const data = await res.json();
   return data;

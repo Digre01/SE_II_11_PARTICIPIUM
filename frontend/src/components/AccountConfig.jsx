@@ -15,7 +15,6 @@ import {
 import { Link } from 'react-router';
 import API, { SERVER_URL } from "../API/API.mjs";
 
-// Local persistence helpers (Invariato)
 const loadSettings = async (userId) => {
     try {
         if (!userId) return null;
@@ -46,7 +45,7 @@ const saveSettings = async (userId, formData, { emailNotifications } = {}) => {
     }
 };
 
-// Convert File -> base64 data URL (Invariato)
+// Convert File -> base64 data URL 
 const fileToDataUrl = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
@@ -60,6 +59,7 @@ export default function AccountConfig({ user, loggedIn }) {
     // Editable fields
     const [telegram, setTelegram] = useState(user?.telegramId ?? '');
     const [emailNotifications, setEmailNotifications] = useState(user?.emailNotifications ?? true);
+    const [showTelegramVerify, setShowTelegramVerify] = useState(Boolean(user?.telegramId));
 
     // Photo state
     const [photoFile, setPhotoFile] = useState(null);
@@ -73,14 +73,13 @@ export default function AccountConfig({ user, loggedIn }) {
     const [successOpen, setSuccessOpen] = useState(true);
     const [errorOpen, setErrorOpen] = useState(true);
 
-    // Initialize (Invariato)
     useEffect(() => {
         if (!userId) return;
         setTelegram(user?.telegramId || '');
         setEmailNotifications(user?.emailNotifications ?? true);
+        setShowTelegramVerify(Boolean(user?.telegramId));
     }, [userId, user?.telegramId, user?.emailNotifications]);
 
-    // Load saved settings (Invariato)
     useEffect(() => {
         let ignore = false;
         (async () => {
@@ -98,7 +97,6 @@ export default function AccountConfig({ user, loggedIn }) {
         return () => { ignore = true; };
     }, [userId]);
 
-    // Preview logic (Invariato)
     useEffect(() => {
         if (!photoFile) return;
         const url = URL.createObjectURL(photoFile);
@@ -165,6 +163,7 @@ export default function AccountConfig({ user, loggedIn }) {
             setPhotoFile(null);
             setPhotoPreview('');
             setPhotoDataUrl('');
+            setShowTelegramVerify(Boolean(telegram.trim()));
         } catch (err) {
             setError(typeof err === 'string' ? err : 'Unable to update profile.');
         } finally {
@@ -259,7 +258,7 @@ export default function AccountConfig({ user, loggedIn }) {
                                 />
                                 
                                 {/* Telegram Verify */}
-                                {Boolean(user?.telegramId) && (
+                                {showTelegramVerify && (
                                     <div className="d-flex align-items-start mt-3 p-3 bg-white border-start border-primary border-4 shadow-sm">
                                         <Icon icon="it-info-circle" className="text-primary me-3 flex-shrink-0" size="sm" />
                                         <div>
@@ -331,6 +330,7 @@ export default function AccountConfig({ user, loggedIn }) {
                             setPhotoFile(null);
                             setSuccess('');
                             setError('');
+                            setShowTelegramVerify(Boolean(user?.telegramId));
                         }}
                     >
                         Cancel

@@ -209,7 +209,7 @@ const ConversationPage = ({ user, handleNotificationsUpdate, wsMessage }) => {
           <Card className="shadow-sm" style={{ position: 'sticky', top: 20 }}>
             <CardBody className="p-4">
               {isInternal && (
-                <div className="alert alert-info mt-2 mb-2 py-2 px-2 small">
+                <div className="alert mt-2 mb-2 py-2 px-2 small">
                   <strong>Internal conversation</strong>
                 </div>
               )}

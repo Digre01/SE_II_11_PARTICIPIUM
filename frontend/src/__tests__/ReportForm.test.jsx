@@ -54,7 +54,6 @@ describe('ReportForm map integration', () => {
 
     expect(latInput).toBeInTheDocument();
     expect(lonInput).toBeInTheDocument();
-    // value may be string in DOM input
     expect(latInput).toHaveValue('12.34');
     expect(lonInput).toHaveValue('56.78');
   });

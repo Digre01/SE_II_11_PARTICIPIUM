@@ -111,7 +111,6 @@ router.patch(
         try {
             const userId = Number(req.params.id);
 
-            // Optional fields via multipart/form-data
             const telegramId = req.body?.telegramId ?? undefined;
             const emailNotificationsRaw = req.body?.emailNotifications ?? undefined;
             let emailNotifications;

@@ -4,7 +4,6 @@ import path from 'path';
 // Multer storage configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // Use a stable absolute path to backend/public compatible with Windows
     const dest = path.resolve(process.cwd(), 'public');
     cb(null, dest);
   },

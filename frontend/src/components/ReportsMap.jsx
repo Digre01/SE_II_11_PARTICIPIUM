@@ -39,7 +39,6 @@ async function GeocodeResearch({ query, signal }) {
   url.searchParams.set('limit', '7');
 
   const q = String(query || '').trim();
-  // Bias query explicitly to Turin; Nominatim handles house numbers in q
   url.searchParams.set('q', q ? `${q}, Torino` : 'Torino');
 
   const res = await fetch(url.toString(), {
@@ -62,8 +61,6 @@ function SearchAddress({ onPointChange, user }) {
   const debounceRef = useRef(null);
   const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
   const stopAll = (e) => {
-    // Stop event from reaching Leaflet map handlers, but do not prevent default
-    // so the input can still receive focus and clicks.
     e.stopPropagation();
     if (e.nativeEvent) {
       e.nativeEvent.stopPropagation && e.nativeEvent.stopPropagation();
@@ -189,7 +186,7 @@ function SearchAddress({ onPointChange, user }) {
           }}
         />
         {selectedPoint && (
-          <button onClick={clearSelection} title="Pulisci selezione" style={{ padding: '8px 10px' }}
+          <button onClick={clearSelection} title="Clean selection" style={{ padding: '8px 10px' }}
             onMouseDownCapture={stopAll}
             onWheelCapture={stopAll}
             onPointerDownCapture={stopAll}
@@ -331,7 +328,6 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
 
 function ClusteredReports({ reports, reportsPinIcon }) {
   const map = useMap();
-  // Simple HTML escape
   const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
   useEffect(() => {
     if (!map) return;
@@ -341,7 +337,7 @@ function ClusteredReports({ reports, reportsPinIcon }) {
       const imgHtml = (r.photos && r.photos[0] && r.photos[0].link)
         ? `<img src='${esc(SERVER_URL + r.photos[0].link)}' alt='${esc(r.title)}' style='max-width:120px;margin-top:6px'/>`
         : '';
-      const author = r.authorName ? `<span style='font-size:0.75rem'>by ${esc(r.authorName)}</span><br/>` : '';
+      const author =`<span style='font-size:0.75rem'>by ${r.authorName ? esc(r.authorName) : esc('Anonymous')}</span><br/>`;
       marker.bindPopup(`<strong>${esc(r.title)}</strong><br/>${author}${imgHtml}`);
       clusterGroup.addLayer(marker);
     });
@@ -365,9 +361,6 @@ export default function ReportsMap({ user, loggedIn, onPointChange }) {
   const maskData = useMemo(() => {
     if (!cityBoundary || !cityBoundary.geojson) return null;
 
-    // CORREZIONE: Usa [Longitudine, Latitudine] per il GeoJSON
-    // Torino è circa a Lat 45, Lon 7.
-    // Il box deve coprire un'area più ampia.
     const outerCoords = [
       [6.50, 46.60], // Top Left (Lon, Lat)
       [9.30, 46.60], // Top Right
@@ -379,12 +372,10 @@ export default function ReportsMap({ user, loggedIn, onPointChange }) {
     let cityCoords = [];
     const geo = cityBoundary.geojson;
 
-    // Assumiamo che geo.coordinates siano già nel formato standard GeoJSON [Lon, Lat]
+
     if (geo.type === 'Polygon') {
       cityCoords = geo.coordinates[0];
     } else if (geo.type === 'MultiPolygon') {
-      // Nota: Se Torino è un MultiPolygon (es. ha isole), questo prende solo la forma principale.
-      // Per una maschera perfetta servirebbe gestire tutti i poligoni, ma spesso basta il principale.
       cityCoords = geo.coordinates[0][0];
     }
 
@@ -392,7 +383,6 @@ export default function ReportsMap({ user, loggedIn, onPointChange }) {
       type: 'Feature',
       geometry: {
         type: 'Polygon',
-        // In GeoJSON: primo array = forma esterna, array successivi = buchi interni
         coordinates: [outerCoords, cityCoords]
       }
     };
@@ -431,7 +421,7 @@ export default function ReportsMap({ user, loggedIn, onPointChange }) {
     color: '#001c50ff', 
     weight: 3,       
     opacity: 1,       // Opacity of the border line
-    fillOpacity: 0,   // IMPORTANT: 0 makes the inside transparent
+    fillOpacity: 0,   // 0 makes the inside transparent
   };
 
   return (

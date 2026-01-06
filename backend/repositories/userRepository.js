@@ -42,9 +42,7 @@ class UserRepository {
     }
 
     async getAvailableStaffForRoleAssignment() {
-        // return users with userType = 'STAFF' that do not have a UserOffice row
         const repo = AppDataSourcePostgres.getRepository(Users);
-        // left join userOffice and filter where userOffice is null
         const qb = repo.createQueryBuilder('user')
             .leftJoinAndSelect('user.userOffice', 'userOffice')
             .where("UPPER(user.userType) = :staff", { staff: 'STAFF' })
@@ -271,7 +269,7 @@ class UserRepository {
             throw new BadRequestError('Verification code expired');
         }
 
-        // Link username (uniqueness enforced by column + earlier check)
+        // Link username (unique constraint) 
         user.telegramId = username;
         user.telegramVerificationCode = null;
         user.telegramVerificationExpires = null;

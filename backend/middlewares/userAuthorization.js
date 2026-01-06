@@ -10,7 +10,7 @@ export function authorizeUserType(allowedTypes) {
             const err = new UnauthorizedError('UNAUTHORIZED');
             return next(err);
         }
-        // perform a case-insensitive check between allowedTypes and the caller's userType
+        
         const normalizedAllowed = (allowedTypes || []).map(a => String(a).toUpperCase());
         const callerType = String(req.user?.userType || '').toUpperCase();
         if (!normalizedAllowed.includes(callerType)) {

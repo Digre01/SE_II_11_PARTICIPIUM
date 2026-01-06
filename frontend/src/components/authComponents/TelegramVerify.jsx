@@ -8,14 +8,12 @@ export default function TelegramVerify({ user, loggedIn }) {
   const [telegram, setTelegram] = useState(user?.telegramId || '');
   const [saving, setSaving] = useState(false);
   const [loadingCode, setLoadingCode] = useState(false);
-  
-  // State for the generated code specifically
+
   const [generatedData, setGeneratedData] = useState(null); 
   
   const [error, setError] = useState('');
   const [errorOpen, setErrorOpen] = useState(true);
 
-  // Optional: prefill from ?tg=username
   useEffect(() => {
     const tg = searchParams.get('tg');
     if (!user?.telegramId && tg) setTelegram(tg);

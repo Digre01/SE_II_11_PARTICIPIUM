@@ -1,6 +1,3 @@
-// Data Transfer Object for Report entities
-// Normalizes field naming (snake_case -> camelCase) and flattens relations.
-// photos can arrive either as array of photo entities ({ link }) or raw string URLs.
 class ReportDTO {
     constructor({
         id,

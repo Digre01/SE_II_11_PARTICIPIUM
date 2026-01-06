@@ -37,7 +37,7 @@ function App() {
   const isAdmin = String(user?.userType || '').toLowerCase() === 'admin';
   const isCitizen = String(user?.userType || '').toLowerCase() === 'citizen';
   const isStaff = String(user?.userType || '').toLowerCase() === 'staff';
-  const isVerified = Boolean(user?.isVerified); // <-- controllo verifica
+  const isVerified = Boolean(user?.isVerified); 
 
   // Aggiorna il conteggio notifiche
   const updateNotificationCount = async () => {

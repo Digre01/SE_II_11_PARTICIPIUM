@@ -1,9 +1,9 @@
 const React = require('react');
-// Provide a way for tests to trigger map events. Handlers are stored on globalThis.
+
 globalThis.__reactLeafletHandlers = globalThis.__reactLeafletHandlers || {};
 
 function registerHandlers(handlers) {
-  // store handlers for later triggering by tests
+
   globalThis.__reactLeafletHandlers = { ...(globalThis.__reactLeafletHandlers || {}), ...handlers };
 }
 
@@ -18,7 +18,7 @@ module.exports = {
   Marker: ({ children, ...props }) => React.createElement('div', { 'data-testid': 'marker', ...props }, children),
   Popup: ({ children }) => React.createElement('div', { 'data-testid': 'popup' }, children),
   useMapEvents: (handlers) => {
-    // register handlers but do not call them here
+
     registerHandlers(handlers || {});
     return {
       setView: () => {},
@@ -27,6 +27,5 @@ module.exports = {
       locate: () => {}
     };
   },
-  // helper for tests to call: globalThis.__triggerMapEvent(name, event)
   __triggerMapEvent: triggerMapEvent
 };

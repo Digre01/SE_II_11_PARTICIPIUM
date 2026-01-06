@@ -1,9 +1,9 @@
 FROM postgres:16-alpine
 
 # sensible defaults (override at runtime)
-ENV POSTGRES_USER=postgres
-ENV POSTGRES_PASSWORD=postgres
-ENV POSTGRES_DB=se_ii_db
+ENV POSTGRES_USER=POSTGRES_USER
+ENV POSTGRES_PASSWORD=POSTGRES_PASSWORD
+ENV POSTGRES_DB=POSTGRES_DB
 
 # persist DB files
 VOLUME ["/var/lib/postgresql/data"]

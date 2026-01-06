@@ -48,8 +48,6 @@ export const sendVerificationEmail = async (email, code) => {
   };
 
   try {
-    // Optional: verify transporter config quickly
-    // await transporter.verify();
     await transporter.sendMail(mailOptions);
     console.log("Email sent");
     return { sent: true };

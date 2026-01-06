@@ -13,17 +13,16 @@ export async function sendStaffMessage(conversationId, userId, content) {
   const isParticipant = conversation.participants.some(p => String(p.id) === String(userId));
   if (!isParticipant) throw new UnauthorizedError('Forbidden: user not in conversation');
 
-  // Controlla se il report è resolved oppure rejected
+
   if (conversation.report && conversation.report.status && (conversation.report.status.toLowerCase() === 'resolved' || conversation.report.status.toLowerCase() === 'rejected')) {
     throw new BadRequestError('Cannot send messages: report is closed');
   }
 
-  // Salva il messaggio
   const repo = AppDataSourcePostgres.getRepository(Message);
   const message = repo.create({ conversation: { id: conversationId }, sender: { id: userId }, content });
   await repo.save(message);
 
-  // Trasmetti il messaggio in tempo reale
+
   try {
     const { broadcastToConversation } = await import('../wsHandler.js');
     await broadcastToConversation(conversationId, message);

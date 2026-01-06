@@ -29,10 +29,10 @@ export const Categories = new EntitySchema({
             inverseSide: 'category'
         },
         office: {
-            type: 'many-to-one',  // Cambiato da one-to-one a many-to-one
+            type: 'many-to-one', 
             target: 'Offices',
             joinColumn: { name: 'officeId' },
-            inverseSide: 'categories'  // Cambiato da 'category' a 'categories'
+            inverseSide: 'categories'  
         },
         externalOffice: {
             type: 'many-to-one',

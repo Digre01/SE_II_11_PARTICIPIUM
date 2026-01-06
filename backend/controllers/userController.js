@@ -134,11 +134,10 @@ async function getPfpUrl(userId) {
     const photoUrl = await userRepository.getPfpUrl(userId);
     return photoUrl;
 }
-// Telegram linking: request a verification code for the current user
+// Telegram linking
 async function requestTelegramCode(userId) {
     return await userRepository.requestTelegramVerificationCode(userId);
 }
-// Telegram linking: verify code coming from bot
 async function verifyTelegramCode(senderUsername, code) {
     return await userRepository.verifyTelegramCode(senderUsername, code);
 }
