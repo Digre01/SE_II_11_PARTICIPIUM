@@ -105,111 +105,115 @@ const ReportForm = ({ user, loggedIn }) => {
   };
 
   return (
-    <div style={{ maxWidth: 600, margin: "2rem auto" }}>
-      <div className="card shadow-sm p-4">
-        <h3 className="mb-4 text-primary text-center">Create a new report</h3>
-        <Form onSubmit={handleSubmit}>
-          <FormGroup className="mb-3">
-            <Input
-              name="title"
-              id="title"
-              value={form.title}
-              onChange={handleChange}
-              label="Title"
-            />
-          </FormGroup>
-          <FormGroup className="mb-3">
-            <TextArea
-                label="Description"
-                rows={3}
-                name="description"
-                id="description"
-                value={form.description}
-                onChange={handleChange}
-            />
-          </FormGroup>
-          <FormGroup className="mb-5">
-            <Select
-              name="categoryId"
-              id="categoryId"
-              value={form.categoryId}
-              onChange={handleCategoryChange}
-              required
-              label="Category"
-            >
-              <option value="" style={{ fontWeight: "normal" }}>Select an option</option>
-              {categories.map(cat => (
-                <option key={cat.id} value={cat.id} style={{ fontWeight: "normal" }}>{cat.name}</option>
-              ))}
-            </Select>
-          </FormGroup>
-          <FormGroup className="mb-4">
-            <div className="text-center mb-2">
-              <Upload
-                id="upload_foto"
-                label="Upload 1 to 3 images"
-                multiple
-                accept="image/*"
-                onChange={handleFileChange}
-                required
-                style={{ margin: "0 auto", display: "inline-block" }}
-              />
-            </div>
-            <div className="d-flex justify-content-center">
-              <UploadList previewImage tipologia="file">
-                {form.photos.map((file, idx) => (
-                  <UploadListItem
-                    key={idx}
-                    fileName={file.name}
-                    fileWeight={file.size ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : ""}
-                    previewImage
-                    previewImageAlt={file.name}
-                    previewImageSrc={URL.createObjectURL(file)}
-                    uploadStatus="success"
-                  />
-                ))}
-              </UploadList>
-            </div>
-          </FormGroup>
-          <FormGroup className="mb-3">
-            <Input
-              id="address"
-              label="Address"
-              value={passedAddress ?? "Address not available"}
-              readOnly
-            />
-          </FormGroup>
-          
-          <div className="row">
-            <div className="col-6">
-              <Input
-                id="latitude"
-                label="Latitude"
-                value={form.latitude.toFixed(3)}
-                readOnly
-              />
-            </div>
-            <div className="col-6">
-              <Input
-                id="longitude"
-                label="Longitude"
-                value={form.longitude.toFixed(3)}
-                readOnly
-              />
-            </div>
-          </div>
+    <div className="container my-4">
+      <div className="row justify-content-center">
+        <div className="col-12 col-lg-8">
+          <div className="card shadow-sm p-4">
+            <h3 className="mb-4 text-primary text-center">Create a new report</h3>
+            <Form onSubmit={handleSubmit} className="floating-label-form">
+              <FormGroup>
+                <Input
+                  name="title"
+                  id="title"
+                  value={form.title}
+                  onChange={handleChange}
+                  label="Title"
+                />
+              </FormGroup>
+              <FormGroup>
+                <TextArea
+                  label="Description"
+                  rows={3}
+                  name="description"
+                  id="description"
+                  value={form.description}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+              <FormGroup>
+                <Select
+                  name="categoryId"
+                  id="categoryId"
+                  value={form.categoryId}
+                  onChange={handleCategoryChange}
+                  required
+                  label="Category"
+                >
+                  <option value="" style={{ fontWeight: "normal" }}>Select an option</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id} style={{ fontWeight: "normal" }}>{cat.name}</option>
+                  ))}
+                </Select>
+              </FormGroup>
 
-          <FormGroup className="mb-3" check>
-            <Input
-              type="checkbox"
-              id="isAnonymous"
-              checked={form.isAnonymous}
-              onChange={(e) => setForm(prev => ({ ...prev, isAnonymous: e.target.checked }))}
-            />
-            <label htmlFor="isAnonymous" className="form-check-label">
-              Submit report anonymously
-            </label>
-          </FormGroup>
+              <FormGroup>
+                <div className="text-center mb-2">
+                  <Upload
+                    id="upload_foto"
+                    label="Upload 1 to 3 images"
+                    multiple
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    required
+                    style={{ margin: "0 auto", display: "inline-block" }}
+                  />
+                </div>
+                <div className="d-flex justify-content-center">
+                  <UploadList previewImage tipologia="file">
+                    {form.photos.map((file, idx) => (
+                      <UploadListItem
+                        key={idx}
+                        fileName={file.name}
+                        fileWeight={file.size ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : ""}
+                        previewImage
+                        previewImageAlt={file.name}
+                        previewImageSrc={URL.createObjectURL(file)}
+                        uploadStatus="success"
+                      />
+                    ))}
+                  </UploadList>
+                </div>
+              </FormGroup>
+
+              <FormGroup>
+                <Input
+                  id="address"
+                  label="Address"
+                  value={passedAddress ?? "Address not available"}
+                  readOnly
+                />
+              </FormGroup>
+
+              <div className="row gy-4">
+                <div className="col-12 col-md-6">
+                  <Input
+                    id="latitude"
+                    label="Latitude"
+                    value={form.latitude.toFixed(3)}
+                    readOnly
+                  />
+                </div>
+                <div className="col-12 col-md-6">
+                  <Input
+                    id="longitude"
+                    label="Longitude"
+                    value={form.longitude.toFixed(3)}
+                    readOnly
+                  />
+                </div>
+              </div>
+
+              <FormGroup check>
+                <Input
+                  type="checkbox"
+                  id="isAnonymous"
+                  checked={form.isAnonymous}
+                  onChange={(e) => setForm(prev => ({ ...prev, isAnonymous: e.target.checked }))}
+                />
+                <label htmlFor="isAnonymous" className="form-check-label">
+                  Submit report anonymously
+                </label>
+              </FormGroup>
 
           {error && (
             <div className="mb-4">
@@ -226,22 +230,24 @@ const ReportForm = ({ user, loggedIn }) => {
             </div>
           )}
 
-          <Button
-            color="primary"
-            type="submit"
-            block
-            disabled={
-              !form.title ||
-              !form.description ||
-              !form.categoryId ||
-              form.categoryId === "" ||
-              form.photos.length < 1 ||
-              form.photos.length > 3
-            }
-          >
-            Submit
-          </Button>
-        </Form>
+              <Button
+                color="primary"
+                type="submit"
+                block
+                disabled={
+                  !form.title ||
+                  !form.description ||
+                  !form.categoryId ||
+                  form.categoryId === "" ||
+                  form.photos.length < 1 ||
+                  form.photos.length > 3
+                }
+              >
+                Submit
+              </Button>
+            </Form>
+          </div>
+        </div>
       </div>
     </div>
   );
