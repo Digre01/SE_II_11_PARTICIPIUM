@@ -1,5 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-italia/dist/css/bootstrap-italia.min.css';
+import './styles/forms.css';
 
 import { Route, Routes, Navigate } from 'react-router'; 
 import DefaultLayout from './components/DefaultLayout';
