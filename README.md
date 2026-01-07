@@ -29,6 +29,7 @@ npm install
 npm run dev
 ```
 
+
 ## Docker
 
 ### Prod mode
@@ -51,6 +52,20 @@ docker compose up
    | **username** | postgres |
    | **password** | postgres |
    |**db** | se_ii_db |
+
+
+## Telegram bot
+Inside the project root:
+
+- create a `.env` file with `TELEGRAM_TOKEN=<bot_token>` 
+
+### Bot commands
+- /start: show the quick menu with available actions.
+- /verify: start the verification wizard to link your account.
+- /newreport: start the reporting wizard (requires a verified username).
+- /cancel: cancel the current wizard step and remove the custom keyboard.
+- /me: display the currently authenticated user if a session is active.
+
 
 # User Credentials
 
