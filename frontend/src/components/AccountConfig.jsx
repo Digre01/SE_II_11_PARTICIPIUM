@@ -182,7 +182,7 @@ export default function AccountConfig({ user, loggedIn }) {
     return (
         <div className="container mt-5">
             {/* --- AVATAR SECTION --- */}
-            <div className='d-flex justify-content-center mb-4'>
+            <div className='d-flex justify-content-center mb-5'>
                 <div className="position-relative">
                     {activePhoto ? (
                         <AvatarIcon size="xxl">
@@ -196,7 +196,7 @@ export default function AccountConfig({ user, loggedIn }) {
                 </div>
             </div>
 
-            <Form onSubmit={handleSave} className="mb-5">
+            <Form onSubmit={handleSave} className="mt-3 mb-5">
                 <Row className="gy-2">
                     <Input id="info_username" label="Username" value={user?.username ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
                     <Input id="info_email" label="Email" value={user?.email ?? ''} readOnly wrapperClassName="col-12 col-md-6" />
