@@ -1,0 +1,119 @@
+/* Global form enhancements to make inputs stand out */
+:root {
+  /* Edit these to tweak rounding and border color (light) */
+  --input-border-radius: 5px;
+  --input-border-color: #495057; /* gray-700 */
+}
+
+html[data-bs-theme="dark"] {
+  /* Dark theme border color override */
+  --input-border-color: #2b3035; /* near gray-800 */
+}
+
+/* Labels */
+.form-label,
+label {
+  font-weight: 600;
+}
+
+/* Bootstrap Italia uses floating labels inside `.form-group`.
+   In design-react-kit the generated label often has no `for`, so clicks can land on the label
+   instead of focusing the input. Also, the default active transform can move the label too far up
+   causing collisions in tighter layouts. */
+.form-group > label:not([for]) {
+  pointer-events: none;
+}
+
+/* Extra vertical space (scoped) to avoid label collisions without changing the animation */
+.auth-form .form-group {
+  margin-bottom: 3.25rem;
+}
+
+.auth-form .form-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Inputs and selects: full outline (override underline styles) */
+.form-control,
+.form-select,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+textarea,
+select {
+  border: 2px solid var(--input-border-color) !important;
+  border-radius: var(--input-border-radius) !important;
+  background-clip: padding-box;
+  box-shadow: 0 1px 0 rgba(0,0,0,.02), 0 1px 3px rgba(0,0,0,.06);
+  transition: box-shadow .2s ease, border-color .2s ease, background-color .2s ease;
+}
+
+/* Placeholder */
+.form-control::placeholder,
+textarea::placeholder,
+input::placeholder {
+  color: #9aa1a9;
+  opacity: 1;
+}
+
+/* Focus ring */
+.form-control:focus,
+.form-select:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--bs-primary) !important;
+  box-shadow: 0 0 0 .25rem rgba(var(--bs-primary-rgb), .18) !important;
+}
+
+/* Disabled state */
+.form-control:disabled,
+.form-select:disabled,
+input:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: .75;
+  background-color: var(--bs-secondary-bg);
+}
+
+/* Light vs Dark fine-tuning */
+html[data-bs-theme="light"] .form-control,
+html[data-bs-theme="light"] .form-select,
+html[data-bs-theme="light"] input,
+html[data-bs-theme="light"] textarea,
+html[data-bs-theme="light"] select {
+  background-color: #fff;
+}
+
+html[data-bs-theme="dark"] .form-control,
+html[data-bs-theme="dark"] .form-select,
+html[data-bs-theme="dark"] input,
+html[data-bs-theme="dark"] textarea,
+html[data-bs-theme="dark"] select {
+  background-color: #1e1f22;
+  border-color: #343a40 !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,.2), 0 1px 3px rgba(0,0,0,.35);
+}
+
+/* Group spacing helpers
+   NOTE: Bootstrap Italia uses floating labels and expects a fairly large bottom margin for `.form-group`.
+   Keep enough space to avoid label collisions across the app. */
+.form-group {
+  margin-bottom: 2.75rem;
+}
+
+.form-floating,
+.form-check {
+  margin-bottom: 1rem;
+}
+
+/* Buttons subtle lift */
+.btn {
+  border-width: 2px;
+}
+.btn:hover {
+  transform: translateY(-1px);
+}
