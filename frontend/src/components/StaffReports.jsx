@@ -37,20 +37,28 @@ export default function StaffReports({ wsMessage }) {
   const pending = (reports || []).filter(r => String(r.status || '').toLowerCase() === 'pending');
 
   return (
-    <div className="container mt-4">
-      <h3>Pending Reports</h3>
-      <div className="list-group">
-        {pending.length === 0 && <div className="list-group-item">No pending reports.</div>}
-        {pending.map(r => (
-          <Link key={r.id} to={`/review/${r.id}`} className="list-group-item list-group-item-action">
-            <div className="d-flex w-100 justify-content-between">
-              <h5 className="mb-1">{r.title}</h5>
-              <small>{r.status}</small>
-            </div>
-            <p className="mb-1">{r.description}</p>
-            <small>Category: {r.category?.name || r.categoryId} — by user {r.userId}</small>
-          </Link>
-        ))}
+    <div className="container my-4">
+      <div className="card shadow-sm">
+        <div className="card-body">
+          <div className="d-flex align-items-center justify-content-between mb-3">
+            <h3 className="mb-0">Pending Reports</h3>
+            <span className="badge bg-secondary">{pending.length}</span>
+          </div>
+
+          <div className="list-group list-group-flush">
+            {pending.length === 0 && <div className="list-group-item">No pending reports.</div>}
+            {pending.map(r => (
+              <Link key={r.id} to={`/review/${r.id}`} className="list-group-item list-group-item-action">
+                <div className="d-flex w-100 justify-content-between align-items-start gap-3">
+                  <h5 className="mb-1 text-truncate">{r.title}</h5>
+                  <small className="text-muted text-nowrap">{r.status}</small>
+                </div>
+                <p className="mb-1 text-muted">{r.description}</p>
+                <small className="text-muted">Category: {r.category?.name || r.categoryId} — by user {r.userId}</small>
+              </Link>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
