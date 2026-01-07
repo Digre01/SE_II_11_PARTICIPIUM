@@ -59,102 +59,121 @@ function SignUpForm(props){
     return(
         <>
             <div className="container mt-5">
-                <Form action={formAction} className="mb-4">
-                    <Row className="gy-3">
-                        <Input
-                            label="Name"
-                            name="name"
-                            placeholder="Insert first name"
-                            type="text"
-                            wrapperClassName="col-12 col-md-6"
-                            defaultValue={form.name}
-                            onChange={handleInputChange}
-                        />
-                        <Input
-                            label="Surname"
-                            name="surname"
-                            placeholder="Insert last name"
-                            type="text"
-                            wrapperClassName="col-12 col-md-6"
-                            defaultValue={form.surname}
-                            onChange={handleInputChange}
-                        />
-                    </Row>
-                    <Row className="gy-3">
-                        <Input
-                            label="Username"
-                            name="username"
-                            placeholder="Insert username"
-                            type="text"
-                            wrapperClassName="col-12 col-md-6"
-                            defaultValue={form.username}
-                            onChange={handleInputChange}
-                        />
-                        <Input
-                            label="Email"
-                            name="email"
-                            placeholder="Insert an email"
-                            type="email"
-                            wrapperClassName="col-12 col-md-6"
-                            defaultValue={form.email}
-                            onChange={handleInputChange}
-                        />
-                    </Row>
-                    <Row className="gy-3">
-                        <Input
-                            label="Password"
-                            name="password"
-                            placeholder="Insert a password"
-                            type="password"
-                            wrapperClassName="col-12 col-md-6"
-                            defaultValue={form.password}
-                            onChange={handleInputChange}
-                        />
-                        <Input
-                            label="Rewrite Password"
-                            name="confirmPassword"
-                            placeholder="Rewrite the password"
-                            type="password"
-                            wrapperClassName="col-12 col-md-6"
-                            value={form.confirmPassword}
-                            onChange={handleInputChange}
-                        />
-                        {form.confirmPassword !== '' && !passwordsMatch && (
-                            <div className="col-12 text-danger small mt-1">Passwords do not match</div>
-                        )}
-                    </Row>
+                <div className="row justify-content-center">
+                    <div className="col-12 col-md-8 col-lg-6">
+                        <div className="card shadow-sm">
+                            <div className="card-body">
+                                <h3 className="card-title mb-5">Sign Up</h3>
+                                <Form action={formAction} className="mb-0 auth-form mt-4">
+                                    <Row className="g-4">
+                                        <Col xs={12} md={6}>
+                                            <Input
+                                                id="signup-name"
+                                                label="Name"
+                                                name="name"
+                                                type="text"
+                                                wrapperClassName="mb-0"
+                                                defaultValue={form.name}
+                                                onChange={handleInputChange}
+                                            />
+                                        </Col>
+                                        <Col xs={12} md={6}>
+                                            <Input
+                                                id="signup-surname"
+                                                label="Surname"
+                                                name="surname"
+                                                type="text"
+                                                wrapperClassName="mb-0"
+                                                defaultValue={form.surname}
+                                                onChange={handleInputChange}
+                                            />
+                                        </Col>
 
-                    {/* Alert for success or rejection */}
-                    {state.error && (
-                        <Alert color={"danger"}>
-                            {state.error}
-                        </Alert>
-                    )}
+                                        <Col xs={12} md={6}>
+                                            <Input
+                                                id="signup-username"
+                                                label="Username"
+                                                name="username"
+                                                type="text"
+                                                wrapperClassName="mb-0"
+                                                defaultValue={form.username}
+                                                onChange={handleInputChange}
+                                            />
+                                        </Col>
+                                        <Col xs={12} md={6}>
+                                            <Input
+                                                id="signup-email"
+                                                label="Email"
+                                                name="email"
+                                                type="email"
+                                                wrapperClassName="mb-0"
+                                                defaultValue={form.email}
+                                                onChange={handleInputChange}
+                                            />
+                                        </Col>
 
-                    <Row className="gy-2">
-                        <Col sm="auto">
-                            <Button
-                                color="primary"
-                                outline
-                                type="reset"
-                                className="w-100 w-sm-auto"
-                                disabled={isPending}
-                            >
-                                Cancel
-                            </Button>
-                        </Col>
-                        <Col sm="auto">
-                            <Button
-                                color="primary"
-                                type="submit"
-                                className="w-100 w-sm-auto"
-                                disabled={isPending || !passwordsMatch}
-                            >
-                                Confirm
-                            </Button>
-                        </Col>
-                    </Row>
-                </Form>
+                                        <Col xs={12} md={6}>
+                                            <Input
+                                                id="signup-password"
+                                                label="Password"
+                                                name="password"
+                                                type="password"
+                                                wrapperClassName="mb-0"
+                                                defaultValue={form.password}
+                                                onChange={handleInputChange}
+                                            />
+                                        </Col>
+                                        <Col xs={12} md={6}>
+                                            <Input
+                                                id="signup-confirmPassword"
+                                                label="Rewrite Password"
+                                                name="confirmPassword"
+                                                type="password"
+                                                wrapperClassName="mb-0"
+                                                value={form.confirmPassword}
+                                                onChange={handleInputChange}
+                                            />
+                                            {form.confirmPassword !== '' && !passwordsMatch && (
+                                                <div className="text-danger small mt-2">Passwords do not match</div>
+                                            )}
+                                        </Col>
+                                    </Row>
+
+                                    {/* Alert for success or rejection */}
+                                    {state.error && (
+                                        <Alert color={"danger"}>
+                                            {state.error}
+                                        </Alert>
+                                    )}
+
+                                    <Row className="gy-2">
+                                        <Col sm="auto">
+                                            <Button
+                                                color="primary"
+                                                outline
+                                                type="reset"
+                                                className="w-100 w-sm-auto"
+                                                disabled={isPending}
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </Col>
+                                        <Col sm="auto">
+                                            <Button
+                                                color="primary"
+                                                type="submit"
+                                                className="w-100 w-sm-auto"
+                                                disabled={isPending || !passwordsMatch}
+                                            >
+                                                Confirm
+                                            </Button>
+                                        </Col>
+                                    </Row>
+                                </Form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
 
