@@ -337,7 +337,7 @@ function ClusteredReports({ reports, reportsPinIcon }) {
       const imgHtml = (r.photos && r.photos[0] && r.photos[0].link)
         ? `<img src='${esc(SERVER_URL + r.photos[0].link)}' alt='${esc(r.title)}' style='max-width:120px;margin-top:6px'/>`
         : '';
-      const author =`<span style='font-size:0.75rem'>by ${r.authorName ? esc(r.authorName) : esc('Anonymous')}</span><br/>`;
+      const author = `<span style='font-size:0.75rem'>${r.authorName ? 'by ' + esc(r.authorName) : 'Anonymous'}</span><br/>`;
       marker.bindPopup(`<strong>${esc(r.title)}</strong><br/>${author}${imgHtml}`);
       clusterGroup.addLayer(marker);
     });
