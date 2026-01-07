@@ -117,3 +117,28 @@ html[data-bs-theme="dark"] select {
 .btn:hover {
   transform: translateY(-1px);
 }
+
+/* Password toggle icon: shift left to avoid overflow */
+.password-icon-visible {
+  right: 30px !important;
+ 
+  transform: translateX(-20%);
+}
+
+/* Ensure input has room for the icon */
+.input-password .form-control {
+  padding-right: 2.5rem !important;
+}
+
+/* Position the password icon container itself, not just the icon */
+.input-password {
+  position: relative;
+}
+.password-icon {
+  position: absolute;
+  right: 15px; /* move container left from the input border */
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+}
