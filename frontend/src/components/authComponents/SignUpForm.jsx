@@ -146,7 +146,7 @@ function SignUpForm(props){
                                         </Alert>
                                     )}
 
-                                    <Row className="gy-2">
+                                    <Row className="gy-3 mt-4">
                                         <Col sm="auto">
                                             <Button
                                                 color="primary"

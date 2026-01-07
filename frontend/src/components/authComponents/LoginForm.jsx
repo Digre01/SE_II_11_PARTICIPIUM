@@ -45,7 +45,7 @@ function LoginForm(props) {
                             <div className="card-body">
                                 <h3 className="card-title mb-5">Login</h3>
                                 <Form action={formAction} className="mb-0 auth-form mt-4">
-                                    <Row className="gy-4">
+                                    <Row className="gy-3">
                                         <Input
                                             id="login-username"
                                             label="Username or Email"
@@ -73,7 +73,7 @@ function LoginForm(props) {
                                         </Alert>
                                     )}
 
-                                    <Row className="gy-3">
+                                    <Row className="gy-3 mt-4">
                                         <Col className="col-12 col-sm-auto">
                                             <Button
                                                 color="primary"
