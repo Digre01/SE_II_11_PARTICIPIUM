@@ -75,101 +75,116 @@ function StaffRegistration(){
     };
     return(
         <>
-        <div className="container mt-5">
-            <Form onSubmit={onSubmit} className="mb-4">
-                <Row className="gy-3">
-                    <Input
-                        label="Name"
-                        placeholder="Insert first name"
-                        type="text"
-                        wrapperClassName="col-12 col-md-5"
-                        value={form.name}
-                        onChange={onChange("name")}
-                    />
-                    <Input
-                        label="Surname"
-                        placeholder="Insert last name"
-                        type="text"
-                        wrapperClassName="col-12 col-md-5"
-                        value={form.surname}
-                        onChange={onChange("surname")}
-                    />
-                </Row>
-                <Row className="gy-3">
-                   <Input
-                        label="Username"
-                        placeholder="Insert username"
-                        type="text"
-                        wrapperClassName="col-12 col-md-4"
-                        value={form.username}
-                        onChange={onChange("username")}
-                    />
-                    <Input
-                        label="Email"
-                        placeholder="Insert a mail"
-                        type="email"
-                        wrapperClassName="col-12 col-md-4"
-                        value={form.email}
-                        onChange={onChange("email")}
-                    />
-                </Row>
-                <Row className="gy-3">
-                    <Input
-                        label="Password"
-                        placeholder="Insert a password"
-                        type="text"
-                        wrapperClassName="col-12 col-md-4"
-                        value={form.password}
-                        onChange={onChange("password")}
-                    />
-                    <Col className="col-12 col-sm-auto">
-                        <Button
-                            color="secondary"
-                            type="button"
-                            onClick={generatePassword}
-                            className="w-100 w-sm-auto"
-                        >
-                        Random Password
-                        </Button>
-                    </Col>
-                    
-                </Row>
+            <div className="container mt-5">
+                <div className="row justify-content-center">
+                    <div className="col-12 col-md-8 col-lg-6">
+                        <div className="card shadow-sm">
+                            <div className="card-body">
+                                <h3 className="card-title mb-5">Staff Registration</h3>
+                                <Form onSubmit={onSubmit} className="mb-0 auth-form mt-4">
+                                    <Row className="g-4">
+                                        <Col xs={12} md={6}>
+                                            <Input
+                                                id="staff-name"
+                                                label="Name"
+                                                type="text"
+                                                wrapperClassName="mb-0"
+                                                value={form.name}
+                                                onChange={onChange("name")}
+                                            />
+                                        </Col>
+                                        <Col xs={12} md={6}>
+                                            <Input
+                                                id="staff-surname"
+                                                label="Surname"
+                                                type="text"
+                                                wrapperClassName="mb-0"
+                                                value={form.surname}
+                                                onChange={onChange("surname")}
+                                            />
+                                        </Col>
 
-                {/* Alert for success or rejection */}
-                {message && (
-                <Alert color={message.type} role="alert">
-                    {message.text}
-                </Alert>
-                )}
+                                        <Col xs={12} md={6}>
+                                            <Input
+                                                id="staff-username"
+                                                label="Username"
+                                                type="text"
+                                                wrapperClassName="mb-0"
+                                                value={form.username}
+                                                onChange={onChange("username")}
+                                            />
+                                        </Col>
+                                        <Col xs={12} md={6}>
+                                            <Input
+                                                id="staff-email"
+                                                label="Email"
+                                                type="email"
+                                                wrapperClassName="mb-0"
+                                                value={form.email}
+                                                onChange={onChange("email")}
+                                            />
+                                        </Col>
 
-                <Row className="gy-2">
-                    <Col className="col-12 col-sm-auto">
-                        <Button
-                            color="primary"
-                            outline
-                            type="button"
-                            onClick={reset}
-                            disabled={submitting}
-                            className="w-100 w-sm-auto"
-                        >
-                            Cancel
-                        </Button>
-                    </Col>
-                    <Col className="col-12 col-sm-auto">
-                        <Button
-                            color="primary"
-                            type="submit"
-                            disabled={submitting}
-                            className="w-100 w-sm-auto"
-                        >
-                            Confirm
-                        </Button>
-                    </Col>
-                </Row>
-            </Form>
-        </div>
+                                        <Col xs={12} md={6}>
+                                            <Input
+                                                id="staff-password"
+                                                label="Password"
+                                                type="password"
+                                                wrapperClassName="mb-0"
+                                                value={form.password}
+                                                onChange={onChange("password")}
+                                            />
+                                        </Col>
+                                        <Col xs={12} md={6}>
+                                            <div className="d-flex align-items-end h-100">
+                                                <Button
+                                                    color="secondary"
+                                                    type="button"
+                                                    onClick={generatePassword}
+                                                    className="w-100 w-sm-auto"
+                                                >
+                                                    Random Password
+                                                </Button>
+                                            </div>
+                                        </Col>
+                                    </Row>
 
-            
+                                    {message && (
+                                        <Alert color={message.type} role="alert" className="mt-4">
+                                            {message.text}
+                                        </Alert>
+                                    )}
+
+                                    <Row className="gy-2 mt-3">
+                                        <Col className="col-12 col-sm-auto">
+                                            <Button
+                                                color="primary"
+                                                outline
+                                                type="button"
+                                                onClick={reset}
+                                                disabled={submitting}
+                                                className="w-100 w-sm-auto"
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </Col>
+                                        <Col className="col-12 col-sm-auto">
+                                            <Button
+                                                color="primary"
+                                                type="submit"
+                                                disabled={submitting}
+                                                className="w-100 w-sm-auto"
+                                            >
+                                                Confirm
+                                            </Button>
+                                        </Col>
+                                    </Row>
+                                </Form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </>
     )
 

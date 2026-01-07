@@ -39,60 +39,68 @@ function LoginForm(props) {
         <>
             { isPending && <Alert variant="warning">Please, wait for the server's response...</Alert> }
             <div className="container mt-5">
-                <Form action={formAction} className="mb-4">
-                    <Row className="gy-2">
-                        <Input
-                            label="Username or Email"
-                            name="username"
-                            placeholder="Insert username or email"
-                            type="text"
-                            wrapperClassName="col col-md-4"
-                            defaultValue={form.username}
-                            required
-                        />
-                        <Input
-                            label="Password"
-                            name="password"
-                            placeholder="Insert a password"
-                            type="password"
-                            wrapperClassName="col col-md-4"
-                            defaultValue={form.password}
-                            required
-                        />
-                    </Row>
+                <div className="row justify-content-center">
+                    <div className="col-12 col-md-6">
+                        <div className="card shadow-sm">
+                            <div className="card-body">
+                                <h3 className="card-title mb-5">Login</h3>
+                                <Form action={formAction} className="mb-0 auth-form mt-4">
+                                    <Row className="gy-3">
+                                        <Input
+                                            id="login-username"
+                                            label="Username or Email"
+                                            name="username"
+                                            type="text"
+                                            wrapperClassName="col-12"
+                                            defaultValue={form.username}
+                                            required
+                                        />
+                                        <Input
+                                            id="login-password"
+                                            label="Password"
+                                            name="password"
+                                            type="password"
+                                            wrapperClassName="col-12"
+                                            defaultValue={form.password}
+                                            required
+                                        />
+                                    </Row>
 
-                    {/* Alert for success or rejection */}
-                    {state.error && (
-                        <Alert color={"danger"}>
-                            {state.error}
-                        </Alert>
-                    )}
+                                    {/* Alert for success or rejection */}
+                                    {state.error && (
+                                        <Alert color={"danger"}>
+                                            {state.error}
+                                        </Alert>
+                                    )}
 
-                    <Row className="gy-3">
-                        <Col className="col-12 col-sm-auto">
-                            <Button
-                                color="primary"
-                                outline
-                                type="reset"
-                                className="w-100 w-sm-auto"
-                                disabled={isPending}
-                            >
-                                Cancel
-                            </Button>
-                        </Col>
-                        <Col className="col-12 col-sm-auto">
-                            <Button
-                                color="primary"
-                                type="submit"
-                                className="w-100 w-sm-auto"
-                                disabled={isPending}
-                                
-                            >
-                                Confirm
-                            </Button>
-                        </Col>
-                    </Row>
-                </Form>
+                                    <Row className="gy-3 mt-4">
+                                        <Col className="col-12 col-sm-auto">
+                                            <Button
+                                                color="primary"
+                                                outline
+                                                type="reset"
+                                                className="w-100 w-sm-auto"
+                                                disabled={isPending}
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </Col>
+                                        <Col className="col-12 col-sm-auto">
+                                            <Button
+                                                color="primary"
+                                                type="submit"
+                                                className="w-100 w-sm-auto"
+                                                disabled={isPending}
+                                            >
+                                                Confirm
+                                            </Button>
+                                        </Col>
+                                    </Row>
+                                </Form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
 
