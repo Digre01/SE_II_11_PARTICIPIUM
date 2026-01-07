@@ -260,7 +260,7 @@ class UserRepository {
         if (!username || !codeStr) throw new BadRequestError('username and code are required');
 
         const user = await userRepo.findOne({ where: { telegramVerificationCode: codeStr, telegramId: username } });
-        if (!user) throw new NotFoundError('Verification not found');
+        if (!user) throw new NotFoundError('Verification does not match');
 
         if (user.telegramVerificationExpires && new Date(user.telegramVerificationExpires).getTime() < Date.now()) {
             user.telegramVerificationCode = null;

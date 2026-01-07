@@ -39,7 +39,7 @@ export const verifyWizard = new Scenes.WizardScene(
             await ctx.reply('✅ Verification successful! You can now use /newreport.', Markup.removeKeyboard());
             return ctx.scene.leave();
         } catch (err) {
-            await ctx.reply(`❌ Verification failed: ${err.message || err}. \nPlease try /verify again.`);
+            await ctx.reply(`❌ Verification failed: ${err.message}. \nPlease try /verify again.`);
             return ctx.scene.leave();
         }
     }

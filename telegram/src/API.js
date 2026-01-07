@@ -112,8 +112,8 @@ export async function verifyTelegram(username, code) {
     credentials: 'include'
   });
   if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(errText || 'Verification failed');
+    let err = await res.json();
+    throw new Error(err.message || 'Verification failed');
   }
   setSessionCookiesFromResponse(res);
   const data = await res.json();
