@@ -86,14 +86,14 @@ sections:
 ## ASSESSMENT
 
 - What caused your errors in estimation (if any)?
-  - There was a understimation of the refactor of the tests because we thought that it would not require too much time to uniform already passing tests; also, we missed some scrum meetings because it was difficult to find the right time for every team member, especially during the holiday break, and we did some task together making the scrum meeting not so necessary
+  - There was a understimation of the refactor of the tests because we thought that it would not require too much time to uniform already passing tests; also, we missed some scrum meetings because it was difficult to find the right time for every team member, especially during the holiday break, and we did some task together making the scrum meeting not so necessary.
 - What lessons did you learn (both positive and negative) in this sprint?
   - The refactoring may need more time that we thought, so it may be better to plan more spefic tasks for it instead of planning only one task for everything.
 - Which improvement goals set in the previous retrospective were you able to achieve?
-  - We managed to spread evenly the workload during the sprint days, considering that we did not work during the holiday weeks
+  - We managed to spread evenly the workload during the sprint days, considering that we did not work during the holiday weeks.
 - Which ones you were not able to achieve? Why?
   - None.
 - Improvement goals for the next sprint and how to achieve them (technical tasks, team coordination, etc.)
-  - There will not be a next sprint, but an hypotetical goal would be to manage in a better way the refactoring of the code and the tests, so that it's easier to make the project more clean and structured
+  - There will not be a next sprint, but an hypotetical goal would be to manage in a better way the refactoring of the code and the tests, so that it's easier to make the project more clean and structured.
 - One thing you are proud of as a Team!!
-  - Each team member has always been available and work seriously on the project, there were no arguments or any type of conflicts during the semester because we managed to discuss in a diplomatic way; also, when someone had troubles completing a task, everyone was ready to help him
+  - Each team member has always been available and work seriously on the project, there were no arguments or any type of conflicts during the semester because we managed to discuss in a diplomatic way; also, when someone had troubles completing a task, everyone was ready to help him.
