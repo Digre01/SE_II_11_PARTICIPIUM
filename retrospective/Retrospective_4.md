@@ -47,12 +47,12 @@ sections:
 - Total task estimation error ratio: sum of total hours estimation / sum of total hours spent -1
 
   $$
-  rac{\sum_i estimation_{task_i}}{\sum_i spent_{task_i}} - 1 = 0,045263158
+  \frac{\sum_i estimation_{task_i}}{\sum_i spent_{task_i}} - 1 = 0,045263158
   $$
 - Absolute relative task estimation error: sum( abs( spent-task-i / estimation-task-i - 1))/n
 
   $$
-  rac{1}{n}\sum_i^n \left| \frac{spent_{task_i}}{estimation_task_i}-1 \right| = 0,14957672
+  \frac{1}{n} \sum_i^n \left| \frac{spent_{task_i}}{estimation_task_i}-1 \right| = 0,14957672
   $$
 
 ## QUALITY MEASURES
