@@ -25,7 +25,7 @@ export async function seedDatabase() {
       { name: 'IREN', isExternal: true },
       { name: 'Soris', isExternal: true },
       { name: '5T Srl', isExternal: true },
-      { name: 'F.G. Srl', isExternal: true },
+      { name: 'FixRoads Srl', isExternal: true },
       { name: 'Turin Garden', isExternal: true },
       { name: 'taskrabbit', isExternal: true }
     ]);
@@ -48,7 +48,7 @@ export async function seedDatabase() {
       { name: 'Public Lighting', officeId: officeMap['Public Lighting Office'], externalOfficeId: officeMap['IREN'] },
       { name: 'Waste', officeId: officeMap['Waste Management Office'], externalOfficeId: officeMap['Soris'] },
       { name: 'Road Signs and Traffic Lights', officeId: officeMap['Road Signs and Traffic Lights Office'], externalOfficeId: officeMap['5T Srl'] },
-      { name: 'Roads and Urban Furnishings', officeId: officeMap['Roads and Urban Furnishings Office'], externalOfficeId: officeMap['F.G. Srl'] },
+      { name: 'Roads and Urban Furnishings', officeId: officeMap['Roads and Urban Furnishings Office'], externalOfficeId: officeMap['FixRoads Srl'] },
       { name: 'Public Green Areas and Playgrounds', officeId: officeMap['Public Green Areas and Playgrounds Office'], externalOfficeId: officeMap['Turin Garden'] },
       { name: 'Other', officeId: officeMap['Generic Office'], externalOfficeId: officeMap['SMAT'] }
     ]);
@@ -61,6 +61,22 @@ export async function seedDatabase() {
   const usersExisting = await userRepo.find();
   if (usersExisting.length === 0) {
     await userRepo.save([
+
+      /* USERS FOR THE VIDEO TEASER */
+      //password: citizen
+      { username: 'rosa_b', email: 'rosa.bianca@email.it', name: 'Rosa', surname: 'Bianca', telegramId: null, photoId: null, emailNotifications: false, password: '8eb331671576a8691107e2f0aa9be4badc9c3eb4125bde6c19513a66b86c3e4b', salt: '79e7eefbafbdd24a94407e802bbb10d4', userType: 'citizen', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
+     
+      //password: staff1
+       { username: 'mimmo_s', email: 'mimmo.schillaci@participium.it', name: 'Mimmo', surname: 'Schillaci', telegramId: null, photoId: null, emailNotifications: false, password: '545ce5de6a56c66b35a1e407a40c7c678eae373beea3883f2c4527664125166b', salt: '5bad9287ac7de649a5bc62ab91150931', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
+
+      //password: staff3 
+      { username: 'ada_l', email: 'ada.lovelace@participium.it', name: 'Ada', surname: 'Lovelace', telegramId: null, photoId: null, emailNotifications: false, password: '688a3ce4dcec36ca0bb3349217fae599fb9d6b060c0a6df3585a2ab8f2fe8dae', salt: 'e8ab52af1d00bb0b830e0c4c3b85b9b7', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
+
+      //password: external1
+       { username: 'fix_roads', email: 'fxr@fixroads.it', name: 'Bruno', surname: 'Tuono', telegramId: null, photoId: null, emailNotifications: false, password: '906c0ea039d50f55beeafe0cbb46a98cdf4604f9f43d104cb3cdc697f1b4ff91', salt: 'ed24991e0bfc8cec4347eb9fc9b11467', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
+
+      /* USERS IN THE README */
+
       { username: 'admin', email: 'admin@participium.it', name: 'Admin', surname: 'User', telegramId: null, photoId: null, emailNotifications: false, password: 'e902e3818acc6c6f842f95698f2d0fb99eb273a1fd4ce5c1f9f9a8cac04ba0cf', salt: '2f834c309f5faa13ec6d9a3b2a5b5ba7', userType: 'admin', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
       { username: 'citizen', email: 'anna.gialli@email.it', name: 'Anna', surname: 'Gialli', telegramId: null, photoId: null, emailNotifications: false, password: '8eb331671576a8691107e2f0aa9be4badc9c3eb4125bde6c19513a66b86c3e4b', salt: '79e7eefbafbdd24a94407e802bbb10d4', userType: 'citizen', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
       { username: 'staff1', email: 'mario.rossi@participium.it', name: 'Mario', surname: 'Rossi', telegramId: null, photoId: null, emailNotifications: false, password: '545ce5de6a56c66b35a1e407a40c7c678eae373beea3883f2c4527664125166b', salt: '5bad9287ac7de649a5bc62ab91150931', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
@@ -70,6 +86,9 @@ export async function seedDatabase() {
     ]);
     console.log("Added default Users");
   }
+  const mimmo_s = await userRepo.findOne({ where: { username: 'mimmo_s' } });
+  const ada_l = await userRepo.findOne({ where: { username: 'ada_l' } });
+  const fix_roads = await userRepo.findOne({ where: { username: 'fix_roads' } });
 
   const staff1 = await userRepo.findOne({ where: { username: 'staff1' } });
   const staff2 = await userRepo.findOne({ where: { username: 'staff2' } });
@@ -89,7 +108,7 @@ export async function seedDatabase() {
       { name: 'Wastewater Engineer', officeId: officeMap['Sewer System Office'], officeIdExternal: officeMap['Bosco Spurghi'] },
       { name: 'Lighting Technician', officeId: officeMap['Public Lighting Office'], officeIdExternal: officeMap['IREN'] },
       { name: 'Waste Management Officer', officeId: officeMap['Waste Management Office'], officeIdExternal: officeMap['Soris'] },
-      { name: 'Traffic Systems Technician', officeId: officeMap['Road Signs and Traffic Lights Office'], officeIdExternal: officeMap['5T Srl'] },
+      { name: 'Traffic Systems Technician', officeId: officeMap['Road Signs and Traffic Lights Office'], officeIdExternal: officeMap['FixRoads Srl'] },
       { name: 'Public Works Supervisor', officeId: officeMap['Roads and Urban Furnishings Office'], officeIdExternal: officeMap['F.G. Srl'] },
       { name: 'Parks and Recreation Officer', officeId: officeMap['Public Green Areas and Playgrounds Office'], officeIdExternal: officeMap['Turin Garden'] },
       { name: 'General Maintenance Worker', officeId: officeMap['Generic Office'], officeIdExternal: officeMap['taskrabbit'] },
@@ -103,6 +122,10 @@ export async function seedDatabase() {
   const userOfficeExisting = await userOfficeRepo.find();
   if (userOfficeExisting.length === 0) {
     await userOfficeRepo.save([
+      { userId: mimmo_s.id, officeId: officeMap['Organization Office'], roleId: 1 },
+      { userId: ada_l.id, officeId: officeMap['Roads and Urban Furnishings Office'], roleId: 9 },
+      { userId: fix_roads.id, officeId: officeMap['FixRoads Srl'], roleId: 9 },
+      
       { userId: staff1.id, officeId: officeMap['Organization Office'], roleId: 1 },
       { userId: staff2.id, officeId: officeMap['Public Lighting Office'], roleId: 6 },
       { userId: staff3.id, officeId: officeMap['Roads and Urban Furnishings Office'], roleId: 9 },
@@ -407,6 +430,9 @@ export async function seedDatabase() {
     console.log("Added default Conversations");
   }
 
+  /* FOR VIDEO TEASER, REMOVE ALL THE NOTIFICATIONS AND MESSAGES 
+
+
   // Message
   const { Message } = await import("../entities/Message.js");
   const messageRepo = AppDataSourcePostgres.getRepository(Message);
@@ -526,6 +552,8 @@ export async function seedDatabase() {
     console.log("Added default Notifications");
   }
 
+  */
+
   // Add notifications for newly added conversations (20, 21): create for all system messages in those conversations
   const conv20 = await conversationRepo.findOne({ where: { id: 20 } });
   const conv21 = await conversationRepo.findOne({ where: { id: 21 } });
@@ -543,6 +571,7 @@ export async function seedDatabase() {
       console.log("Added notifications for conversations 20 and 21");
     }
   }
+
 
   // Photos
   const { Photos } = await import("../entities/Photos.js");
