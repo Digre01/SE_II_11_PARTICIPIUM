@@ -174,8 +174,8 @@ const ConversationPage = ({ user, handleNotificationsUpdate, wsMessage }) => {
     return rendered.length ? rendered : <div className="text-center text-muted">No messages yet</div>;
   };
 
-  // Solo staff member può inviare messaggi e solo se il report non è resolved
-  const canSend = String(user?.userType || "").toLowerCase() === "staff" && reportStatus.toLowerCase() !== "resolved" && reportStatus.toLowerCase() !== "rejected";
+  // Solo staff member può inviare messaggi
+  const canSend = String(user?.userType || "").toLowerCase() === "staff" && reportStatus.toLowerCase() !== "rejected";
 
   const handleSend = async (e) => {
     e.preventDefault();

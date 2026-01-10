@@ -16,7 +16,7 @@ export async function sendStaffMessage(conversationId, userId, content) {
 
   const status = conversation.report?.status?.toLowerCase();
 
-  if (status === 'resolved' || status === 'rejected') {
+  if (status === 'rejected') {
     throw new BadRequestError('Cannot send messages: report is closed');
   }
 

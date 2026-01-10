@@ -47,8 +47,8 @@ function AuthHeader({ user, loggedIn, isAdmin, isReportsAllowed, handleLogout, n
         <HeaderRightZone>
           {loggedIn && user && (isCitizen || isStaff) && (
             <TabNavLink tag={Link} to="/conversations" className="me-2" title="Conversazioni" style={{ position: 'relative' }}>
-              <Icon icon="it-mail" size="sm" className="me-1" />
-              <span className="align-middle">Notifications</span>
+              <Icon icon="it-list" size="sm" className="me-1" />
+              <span className="align-middle">My Reports</span>
               {notificationCount > 0 && (
                 <span style={{
                   position: 'absolute',
