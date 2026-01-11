@@ -12,3 +12,8 @@
 .dropdown-offset-y {
   margin-top: 50px !important; /* push the menu 50px down on Y axis */
 }
+
+/* Prevent username from being uppercased */
+.dropdown-toggle {
+  text-transform: none !important;
+}

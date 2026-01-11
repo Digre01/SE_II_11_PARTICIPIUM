@@ -61,20 +61,6 @@ export async function seedDatabase() {
   const usersExisting = await userRepo.find();
   if (usersExisting.length === 0) {
     await userRepo.save([
-
-      /* USERS FOR THE VIDEO TEASER */
-      //password: citizen
-      { username: 'rosa_b', email: 'rosa.bianca@email.it', name: 'Rosa', surname: 'Bianca', telegramId: null, photoId: null, emailNotifications: false, password: '8eb331671576a8691107e2f0aa9be4badc9c3eb4125bde6c19513a66b86c3e4b', salt: '79e7eefbafbdd24a94407e802bbb10d4', userType: 'citizen', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
-     
-      //password: staff1
-       { username: 'mimmo_s', email: 'mimmo.schillaci@participium.it', name: 'Mimmo', surname: 'Schillaci', telegramId: null, photoId: null, emailNotifications: false, password: '545ce5de6a56c66b35a1e407a40c7c678eae373beea3883f2c4527664125166b', salt: '5bad9287ac7de649a5bc62ab91150931', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
-
-      //password: staff3 
-      { username: 'ada_l', email: 'ada.lovelace@participium.it', name: 'Ada', surname: 'Lovelace', telegramId: null, photoId: null, emailNotifications: false, password: '688a3ce4dcec36ca0bb3349217fae599fb9d6b060c0a6df3585a2ab8f2fe8dae', salt: 'e8ab52af1d00bb0b830e0c4c3b85b9b7', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
-
-      //password: external1
-       { username: 'fix_roads', email: 'fxr@fixroads.it', name: 'Bruno', surname: 'Tuono', telegramId: null, photoId: null, emailNotifications: false, password: '906c0ea039d50f55beeafe0cbb46a98cdf4604f9f43d104cb3cdc697f1b4ff91', salt: 'ed24991e0bfc8cec4347eb9fc9b11467', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
-
       /* USERS IN THE README */
 
       { username: 'admin', email: 'admin@participium.it', name: 'Admin', surname: 'User', telegramId: null, photoId: null, emailNotifications: false, password: 'e902e3818acc6c6f842f95698f2d0fb99eb273a1fd4ce5c1f9f9a8cac04ba0cf', salt: '2f834c309f5faa13ec6d9a3b2a5b5ba7', userType: 'admin', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
@@ -82,18 +68,24 @@ export async function seedDatabase() {
       { username: 'staff1', email: 'mario.rossi@participium.it', name: 'Mario', surname: 'Rossi', telegramId: null, photoId: null, emailNotifications: false, password: '545ce5de6a56c66b35a1e407a40c7c678eae373beea3883f2c4527664125166b', salt: '5bad9287ac7de649a5bc62ab91150931', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
       { username: 'staff2', email: 'luigi.verdi@participium.it', name: 'Luigi', surname: 'Verdi', telegramId: null, photoId: null, emailNotifications: false, password: '3b20f4a45c87791030262371d32bff00f4ffc7846ffed500aeb7436f341c515b', salt: 'abadcde601267d1aa3a579002f0eb4f7', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
       { username: 'staff3', email: 'giovanni.bianchi@participium.it', name: 'Giovanni', surname: 'Bianchi', telegramId: null, photoId: null, emailNotifications: false, password: '688a3ce4dcec36ca0bb3349217fae599fb9d6b060c0a6df3585a2ab8f2fe8dae', salt: 'e8ab52af1d00bb0b830e0c4c3b85b9b7', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
-      { username: 'external1', email: 'external1@iren.it', name: 'Bruno', surname: 'Tuono', telegramId: null, photoId: null, emailNotifications: false, password: '906c0ea039d50f55beeafe0cbb46a98cdf4604f9f43d104cb3cdc697f1b4ff91', salt: 'ed24991e0bfc8cec4347eb9fc9b11467', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null }
+      { username: 'external1', email: 'external1@iren.it', name: 'Bruno', surname: 'Tuono', telegramId: null, photoId: null, emailNotifications: false, password: '906c0ea039d50f55beeafe0cbb46a98cdf4604f9f43d104cb3cdc697f1b4ff91', salt: 'ed24991e0bfc8cec4347eb9fc9b11467', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
+
+      /* USERS FOR THE VIDEO TEASER */
+      { username: 'RosaBianca', email: 'rosa.bianca@email.it', name: 'Rosa', surname: 'Bianca', telegramId: null, photoId: null, emailNotifications: false, password: '8eb331671576a8691107e2f0aa9be4badc9c3eb4125bde6c19513a66b86c3e4b', salt: '79e7eefbafbdd24a94407e802bbb10d4', userType: 'citizen', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
+      { username: 'MimmoSchillaci', email: 'mimmo.schillaci@participium.it', name: 'Mimmo', surname: 'Schillaci', telegramId: null, photoId: null, emailNotifications: false, password: '545ce5de6a56c66b35a1e407a40c7c678eae373beea3883f2c4527664125166b', salt: '5bad9287ac7de649a5bc62ab91150931', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
+      { username: 'AdaLovelace', email: 'ada.lovelace@participium.it', name: 'Ada', surname: 'Lovelace', telegramId: null, photoId: null, emailNotifications: false, password: '688a3ce4dcec36ca0bb3349217fae599fb9d6b060c0a6df3585a2ab8f2fe8dae', salt: 'e8ab52af1d00bb0b830e0c4c3b85b9b7', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
+      { username: 'FixRoads', email: 'fxr@fixroads.it', name: 'Bruno', surname: 'Tuono', telegramId: null, photoId: null, emailNotifications: false, password: '906c0ea039d50f55beeafe0cbb46a98cdf4604f9f43d104cb3cdc697f1b4ff91', salt: 'ed24991e0bfc8cec4347eb9fc9b11467', userType: 'staff', isVerified: true, verificationCode: null, verificationCodeExpires: null, telegramVerificationCode: null, telegramVerificationExpires: null },
     ]);
     console.log("Added default Users");
   }
-  const mimmo_s = await userRepo.findOne({ where: { username: 'mimmo_s' } });
-  const ada_l = await userRepo.findOne({ where: { username: 'ada_l' } });
-  const fix_roads = await userRepo.findOne({ where: { username: 'fix_roads' } });
 
   const staff1 = await userRepo.findOne({ where: { username: 'staff1' } });
   const staff2 = await userRepo.findOne({ where: { username: 'staff2' } });
   const staff3 = await userRepo.findOne({ where: { username: 'staff3' } });
   const external1 = await userRepo.findOne({ where: { username: 'external1' } });
+  const mimmoSchillaci = await userRepo.findOne({ where: { username: 'MimmoSchillaci' } });
+  const adaLovelace = await userRepo.findOne({ where: { username: 'AdaLovelace' } });
+  const fixRoads = await userRepo.findOne({ where: { username: 'FixRoads' } });
 
   // Roles
   const { Roles } = await import("../entities/Roles.js");
@@ -122,14 +114,13 @@ export async function seedDatabase() {
   const userOfficeExisting = await userOfficeRepo.find();
   if (userOfficeExisting.length === 0) {
     await userOfficeRepo.save([
-      { userId: mimmo_s.id, officeId: officeMap['Organization Office'], roleId: 1 },
-      { userId: ada_l.id, officeId: officeMap['Roads and Urban Furnishings Office'], roleId: 9 },
-      { userId: fix_roads.id, officeId: officeMap['FixRoads Srl'], roleId: 9 },
-      
       { userId: staff1.id, officeId: officeMap['Organization Office'], roleId: 1 },
       { userId: staff2.id, officeId: officeMap['Public Lighting Office'], roleId: 6 },
       { userId: staff3.id, officeId: officeMap['Roads and Urban Furnishings Office'], roleId: 9 },
-      { userId: external1.id, officeId: officeMap['IREN'], roleId: 6 }
+      { userId: external1.id, officeId: officeMap['IREN'], roleId: 6 },
+      { userId: mimmoSchillaci.id, officeId: officeMap['Organization Office'], roleId: 1 },
+      { userId: adaLovelace.id, officeId: officeMap['Roads and Urban Furnishings Office'], roleId: 9 },
+      { userId: fixRoads.id, officeId: officeMap['FixRoads Srl'], roleId: 9 },
     ]);
     console.log("Added default UserOffice");
   }
@@ -160,7 +151,7 @@ export async function seedDatabase() {
         status: "assigned",
         description: "Broken tile in Piazza Vittorio.",
         reject_explanation: "",
-        userId: 2,
+        userId: 7,
         categoryId: 7,
         technicianId: null,
         assignedExternal: null
@@ -172,7 +163,7 @@ export async function seedDatabase() {
         status: "assigned",
         description: "Uneven pavement in Piazza Vittorio.",
         reject_explanation: "",
-        userId: 2,
+        userId: 7,
         categoryId: 7,
         technicianId: null,
         assignedExternal: null
@@ -208,7 +199,7 @@ export async function seedDatabase() {
         status: "assigned",
         description: "There is a broken stake on the side of the road that hinders pedestrian passage.",
         reject_explanation: "",
-        userId: 2,
+        userId: 7,
         categoryId: 4,
         technicianId: null,
         assignedExternal: null
@@ -232,7 +223,7 @@ export async function seedDatabase() {
         status: "assigned",
         description: "There is smoke coming from this manhole.",
         reject_explanation: "",
-        userId: 2,
+        userId: 7,
         categoryId: 4,
         technicianId: null,
         assignedExternal: null
@@ -268,7 +259,7 @@ export async function seedDatabase() {
         status: "suspended",
         description: "Traffic sign has been smeared, it could be misleading",
         reject_explanation: "",
-        userId: 2,
+        userId: 7,
         categoryId: 6,
         technicianId: null,
         assignedExternal: null
@@ -430,9 +421,6 @@ export async function seedDatabase() {
     console.log("Added default Conversations");
   }
 
-  /* FOR VIDEO TEASER, REMOVE ALL THE NOTIFICATIONS AND MESSAGES 
-
-
   // Message
   const { Message } = await import("../entities/Message.js");
   const messageRepo = AppDataSourcePostgres.getRepository(Message);
@@ -459,34 +447,38 @@ export async function seedDatabase() {
       { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:51:26.789012Z", isSystem: true, conversation: { id: 17 } },
       { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:52:27.890123Z", isSystem: true, conversation: { id: 18 } },
       { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:53:28.901234Z", isSystem: true, conversation: { id: 19 } },
-      // Assigned
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:05.194941Z", isSystem: true, conversation: { id: 1 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:08.044277Z", isSystem: true, conversation: { id: 2 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:11.080816Z", isSystem: true, conversation: { id: 3 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:14.298519Z", isSystem: true, conversation: { id: 4 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:17.075239Z", isSystem: true, conversation: { id: 5 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:20.123456Z", isSystem: true, conversation: { id: 6 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:23.234567Z", isSystem: true, conversation: { id: 7 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:26.345678Z", isSystem: true, conversation: { id: 8 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:29.456789Z", isSystem: true, conversation: { id: 9 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:41:32.567890Z", isSystem: true, conversation: { id: 10 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:45:20.123456Z", isSystem: true, conversation: { id: 11 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:46:21.234567Z", isSystem: true, conversation: { id: 12 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:47:22.345678Z", isSystem: true, conversation: { id: 13 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:48:23.456789Z", isSystem: true, conversation: { id: 14 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:49:24.567890Z", isSystem: true, conversation: { id: 15 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:50:25.678901Z", isSystem: true, conversation: { id: 16 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:51:26.789012Z", isSystem: true, conversation: { id: 17 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:52:27.890123Z", isSystem: true, conversation: { id: 18 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T17:53:28.901234Z", isSystem: true, conversation: { id: 19 } },
-      // New conversations messages
       { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T18:00:00.010000Z", isSystem: true, conversation: { id: 20 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T18:00:00.020000Z", isSystem: true, conversation: { id: 20 } },
-      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T18:05:00.010000Z", isSystem: true, conversation: { id: 21 } },
-      { content: "Report status change to: Assigned", createdAt: "2025-11-24T18:05:00.020000Z", isSystem: true, conversation: { id: 21 } }
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T18:00:00.010000Z", isSystem: true, conversation: { id: 21 } },
+      // Assigned
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:41:05.194941Z", isSystem: true, conversation: { id: 1 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:41:08.044277Z", isSystem: true, conversation: { id: 2 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:41:11.080816Z", isSystem: true, conversation: { id: 3 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:41:14.298519Z", isSystem: true, conversation: { id: 4 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:41:17.075239Z", isSystem: true, conversation: { id: 5 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:41:20.123456Z", isSystem: true, conversation: { id: 6 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:41:23.234567Z", isSystem: true, conversation: { id: 7 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:41:26.345678Z", isSystem: true, conversation: { id: 8 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:41:29.456789Z", isSystem: true, conversation: { id: 9 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:41:32.567890Z", isSystem: true, conversation: { id: 10 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:45:20.123456Z", isSystem: true, conversation: { id: 11 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:46:21.234567Z", isSystem: true, conversation: { id: 12 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:47:22.345678Z", isSystem: true, conversation: { id: 13 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:48:23.456789Z", isSystem: true, conversation: { id: 14 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:49:24.567890Z", isSystem: true, conversation: { id: 15 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:50:25.678901Z", isSystem: true, conversation: { id: 16 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:51:26.789012Z", isSystem: true, conversation: { id: 17 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:52:27.890123Z", isSystem: true, conversation: { id: 18 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:53:28.901234Z", isSystem: true, conversation: { id: 19 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T18:00:00.020000Z", isSystem: true, conversation: { id: 20 } },
+      { content: "Report status change to: Assigned", createdAt: "2025-11-25T18:05:00.020000Z", isSystem: true, conversation: { id: 21 } },
+      // Suspended
+      { content: "Report status change to: Suspended", createdAt: "2025-11-26T17:41:05.202123Z", isSystem: true, conversation: { id: 7 } },
+      { content: "Report status change to: Suspended", createdAt: "2025-11-26T17:41:08.054321Z", isSystem: true, conversation: { id: 11 } },
     ]);
     console.log("Added default Messages");
   }
+
+  /* FOR VIDEO TEASER, REMOVE ALL THE NOTIFICATIONS 
 
   // Notification
   const { Notification } = await import("../entities/Notification.js");
@@ -552,9 +544,6 @@ export async function seedDatabase() {
     console.log("Added default Notifications");
   }
 
-  */
-
-  // Add notifications for newly added conversations (20, 21): create for all system messages in those conversations
   const conv20 = await conversationRepo.findOne({ where: { id: 20 } });
   const conv21 = await conversationRepo.findOne({ where: { id: 21 } });
   if (conv20 || conv21) {
@@ -571,7 +560,7 @@ export async function seedDatabase() {
       console.log("Added notifications for conversations 20 and 21");
     }
   }
-
+  */
 
   // Photos
   const { Photos } = await import("../entities/Photos.js");
@@ -625,16 +614,31 @@ export async function seedDatabase() {
     // Recupera repo e oggetti
     const conversations = await conversationRepo.find();
     const users = await userRepo.find();
+    const reports = await reportRepo.find();
     // Mappa id -> oggetto
     const convMap = {};
     conversations.forEach(c => { convMap[c.id] = c; });
     const userMap = {};
     users.forEach(u => { userMap[u.id] = u; });
-    // Per ogni conversazione, aggiungi i partecipanti (userId 2 e 3)
+    const reportMap = {};
+    reports.forEach(r => { reportMap[r.id] = r; });
+    
+    // Report creati da userId 2: 1, 4, 5, 7, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
+    const reportsCreatedByUser2 = [1, 4, 5, 7, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+    // Report creati da userId 7: 2, 3, 6, 8, 11
+    const reportsCreatedByUser7 = [2, 3, 6, 8, 11];
+    
+    // Per ogni conversazione, aggiungi i partecipanti in base al creatore del report
     for (let i = 1; i <= 21; i++) {
       const conv = convMap[i];
       if (conv) {
-        conv.participants = [userMap[2], userMap[3]];
+        if (reportsCreatedByUser2.includes(i)) {
+          // Report creato da userMap[2]
+          conv.participants = [userMap[2], userMap[3], userMap[8]];
+        } else if (reportsCreatedByUser7.includes(i)) {
+          // Report creato da userMap[7]
+          conv.participants = [userMap[7], userMap[3], userMap[8]];
+        }
         await conversationRepo.save(conv);
       }
     }
