@@ -7,6 +7,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet.markercluster';
 import API, { SERVER_URL } from '../API/API.mjs';
+import ReportDetailModal from './Reports/ReportsDetailModal.jsx';
 
 import turinData from '../data/turin_boundaries.json';
 
@@ -326,7 +327,7 @@ function SingleClickMarker({ onPointChange, user, loggedIn }) {
   );
 }
 
-function ClusteredReports({ reports, reportsPinIcon }) {
+function ClusteredReports({ reports, reportsPinIcon, onOpenModal }) {
   const map = useMap();
   const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
   useEffect(() => {
@@ -338,20 +339,34 @@ function ClusteredReports({ reports, reportsPinIcon }) {
         ? `<img src='${esc(SERVER_URL + r.photos[0].link)}' alt='${esc(r.title)}' style='max-width:120px;margin-top:6px'/>`
         : '';
       const author = `<span style='font-size:0.75rem'>${r.authorName ? 'by ' + esc(r.authorName) : 'Anonymous'}</span><br/>`;
-      marker.bindPopup(`<strong>${esc(r.title)}</strong><br/>${author}${imgHtml}`);
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = `
+        <strong class="report-popup-title" style="cursor:pointer;display:inline-block;">${esc(r.title)}</strong><br/>
+        ${author}
+        ${imgHtml}
+      `;
+      const titleEl = wrapper.querySelector('.report-popup-title');
+      if (titleEl) {
+        titleEl.addEventListener('click', (e) => {
+          e.preventDefault();
+          onOpenModal?.(r);
+        });
+      }
+      marker.bindPopup(wrapper);
       clusterGroup.addLayer(marker);
     });
     map.addLayer(clusterGroup);
     return () => { map.removeLayer(clusterGroup); };
-  }, [map, reports, reportsPinIcon]);
+  }, [map, reports, reportsPinIcon, onOpenModal]);
   return null;
 }
 
 export default function ReportsMap({ user, loggedIn, onPointChange }) {
   const center = [45.0703, 7.6869];
-  const initialZoom = 12; // start wider
+  const initialZoom = 14; // start wider
   const targetZoom = 15;  // animate to this
   const [reports, setReports] = useState([]);
+  const [selectedReport, setSelectedReport] = useState(null);
   const reportsPinIcon = useMemo(() => new L.Icon.Default({ className: 'reports-pin-orange' }), []);
 
   const cityBoundary = useMemo(() => {
@@ -404,6 +419,29 @@ export default function ReportsMap({ user, loggedIn, onPointChange }) {
     return () => { mounted = false; };
   }, []);
 
+  // Fetch category for selected report 
+  useEffect(() => {
+    if (!selectedReport || selectedReport.category || !selectedReport.categoryId) return;
+
+    let cancelled = false;
+    const reportId = selectedReport.id;
+
+    (async () => {
+      try {
+        const category = await API.fetchOfficeCategory(selectedReport.categoryId, selectedReport.assignedExternal ?? false);
+        if (!cancelled) {
+          setSelectedReport((prev) => (prev && prev.id === reportId ? { ...prev, category } : prev));
+        }
+      } catch {
+        if (!cancelled) {
+          setSelectedReport((prev) => (prev && prev.id === reportId ? { ...prev, category: null } : prev));
+        }
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [selectedReport]);
+
   // Component to handle intro zoom animation
   function IntroZoom() {
     const map = useMap();
@@ -425,6 +463,7 @@ export default function ReportsMap({ user, loggedIn, onPointChange }) {
   };
 
   return (
+    <>
     <MapContainer
       data-testid="map-container"
       center={center}
@@ -434,7 +473,6 @@ export default function ReportsMap({ user, loggedIn, onPointChange }) {
       maxBoundsViscosity={1.0}
       style={{ height: '90vh', width: '100%' }}
     >
-      <IntroZoom />
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -462,8 +500,20 @@ export default function ReportsMap({ user, loggedIn, onPointChange }) {
         />
       )}
 
-      <ClusteredReports reports={reports} reportsPinIcon={reportsPinIcon} />
+      <ClusteredReports
+        reports={reports}
+        reportsPinIcon={reportsPinIcon}
+        onOpenModal={(r) => setSelectedReport(r)}
+      />
       <SingleClickMarker user={user} loggedIn={loggedIn} onPointChange={onPointChange} />
+      
     </MapContainer>
+
+    <ReportDetailModal
+        isOpen={!!selectedReport}
+        toggle={() => setSelectedReport(null)}
+        report={selectedReport}
+      />
+      </>
   );
 }
