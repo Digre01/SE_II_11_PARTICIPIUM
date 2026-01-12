@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Form,
   FormGroup,
@@ -15,6 +15,7 @@ import {
 import API from "../API/API.mjs";
 
 const ReportForm = ({ user, loggedIn }) => {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   useEffect(() => {
     async function loadCategories() {
@@ -98,6 +99,8 @@ const ReportForm = ({ user, loggedIn }) => {
         longitude: passedLon ?? defaultLon,
         isAnonymous: false
       });
+      // Redirect alla home page dopo il successo
+      setTimeout(() => navigate('/'), 2000);
     } catch (err) {
       setError(typeof err === "string" ? err : "Network error. Please try again later.");
       setErrorOpen(true);

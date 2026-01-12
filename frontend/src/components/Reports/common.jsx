@@ -81,9 +81,30 @@ export const fetchAndFilterReports = async ({ userId, categoryId, isExternal }) 
         data = await API.fetchReports(categoryId, isExternal);
     }
 
-    return data.filter(r =>
-        ["assigned", "in_progress", "suspended"].includes(
+    return data.filter(r => {
+        const validStatus = ["assigned", "in_progress", "suspended"].includes(
             String(r.status || "").trim().toLowerCase()
-        )
-    );
+        );
+        
+        if (!validStatus) return false;
+        
+        // Se stiamo filtrando per userId (report assegnati a un tecnico specifico),
+        // non filtrare per assignedExternal - mostra tutti i report del tecnico
+        if (userId) {
+            return true;
+        }
+        
+        // Se stiamo filtrando per categoryId (report di un ufficio),
+        // applica il filtro assignedExternal
+        if (categoryId !== undefined) {
+            // Se sei utente interno, mostra solo report NON assegnati all'esterno
+            if (!isExternal) {
+                return r.assignedExternal === null || r.assignedExternal === undefined;
+            }
+            // Se sei utente esterno, mostra tutti (il backend già filtra)
+            return true;
+        }
+        
+        return true;
+    });
 };

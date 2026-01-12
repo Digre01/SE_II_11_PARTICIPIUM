@@ -14,6 +14,18 @@ import API from "../../API/API.mjs";
 
 const SERVER_URL = "http://localhost:3000";
 
+const CATEGORY_MAP = {
+    1: 'Water Supply – Drinking Water',
+    2: 'Architectural Barriers',
+    3: 'Sewer System',
+    4: 'Public Lighting',
+    5: 'Waste',
+    6: 'Road Signs and Traffic Lights',
+    7: 'Roads and Urban Furnishings',
+    8: 'Public Green Areas and Playgrounds',
+    9: 'Other'
+};
+
 function ReportDetailModal({ isOpen, toggle, report }) {
     const [photos, setPhotos] = useState([]);
 
@@ -40,7 +52,7 @@ function ReportDetailModal({ isOpen, toggle, report }) {
                 <Row className="mb-3">
                     <Col md={6}>
                         <p><strong>ID:</strong> {report.id}</p>
-                        <p><strong>Category:</strong> {report.category?.name || 'N/A'}</p>
+                        <p><strong>Category:</strong> {CATEGORY_MAP[report.categoryId] || 'N/A'}</p>
                         <p>
                             <strong>Status:</strong>{' '}
                             <Badge color={getStatusVariant(report.status)} pill>

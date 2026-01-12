@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Container, FormSelect } from "react-bootstrap";
 import { ReportsTable } from "./ReportsTable.jsx";
 import ReportDetailModal from "./ReportsDetailModal.jsx";
@@ -20,6 +20,13 @@ function ReportsPage({ user }) {
     const { userOffices, isExternal } = useUserOffices(user);
     const { reports, setReports, loadingOffice } = useOfficeReports(selectedOfficeId, isExternal);
     const { userReports, setUserReports, loadingUser } = useUserReports(user?.id)
+
+    // Se l'utente fa parte di un solo ufficio, selezionalo automaticamente
+    useEffect(() => {
+        if (userOffices.length === 1 && !selectedOfficeId) {
+            setSelectedOfficeId(userOffices[0].id.toString());
+        }
+    }, [userOffices, selectedOfficeId]);
 
     const { handleAction } = useReportActions({
         selectedOfficeId,

@@ -160,12 +160,12 @@ export async function seedDatabase() {
         title: "Uneven pavement",
         latitude: 45.0641804082172,
         longitude: 7.69560420512335,
-        status: "assigned",
+        status: "in_progress",
         description: "Uneven pavement in Piazza Vittorio.",
         reject_explanation: "",
         userId: 7,
         categoryId: 7,
-        technicianId: null,
+        technicianId: 5,
         assignedExternal: null
       },
       {
@@ -196,12 +196,12 @@ export async function seedDatabase() {
         title: "Broken stake",
         latitude: 45.074630103084814,
         longitude: 7.680433630935115,
-        status: "assigned",
+        status: "resolved",
         description: "There is a broken stake on the side of the road that hinders pedestrian passage.",
         reject_explanation: "",
         userId: 7,
         categoryId: 4,
-        technicianId: null,
+        technicianId: 4,
         assignedExternal: null
       },
       {
@@ -384,6 +384,18 @@ export async function seedDatabase() {
         categoryId: 7,
         technicianId: null,
         assignedExternal: null
+      },
+      {
+        title: "Broken street lamp",
+        latitude: 45.07434551282292,
+        longitude: 7.680862635012659,
+        status: "rejected",
+        description: "There is a broken street lamp that is off during the day",
+        reject_explanation: "All the streetlights are off during the day, they are on only at night.",
+        userId: 7,
+        categoryId: 4,
+        technicianId: null,
+        assignedExternal: null
       }
       ]);
       console.log("Added default Reports");
@@ -415,7 +427,8 @@ export async function seedDatabase() {
       { report: { id: 18 }, createdAt: '2025-11-24T17:52:27.890123Z', isInternal: false },
       { report: { id: 19 }, createdAt: '2025-11-24T17:53:28.901234Z', isInternal: false },
       { report: { id: 20 }, createdAt: '2025-11-24T18:00:00.000000Z', isInternal: false },
-      { report: { id: 21 }, createdAt: '2025-11-24T18:05:00.000000Z', isInternal: false }
+      { report: { id: 21 }, createdAt: '2025-11-24T18:05:00.000000Z', isInternal: false },
+      { report: { id: 22 }, createdAt: '2025-11-24T18:10:00.000000Z', isInternal: false },
 
     ]);
     console.log("Added default Conversations");
@@ -449,6 +462,7 @@ export async function seedDatabase() {
       { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T17:53:28.901234Z", isSystem: true, conversation: { id: 19 } },
       { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T18:00:00.010000Z", isSystem: true, conversation: { id: 20 } },
       { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T18:00:00.010000Z", isSystem: true, conversation: { id: 21 } },
+      { content: "Report status change to: Pending Approval", createdAt: "2025-11-24T18:00:00.010000Z", isSystem: true, conversation: { id: 22 } },
       // Assigned
       { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:41:05.194941Z", isSystem: true, conversation: { id: 1 } },
       { content: "Report status change to: Assigned", createdAt: "2025-11-25T17:41:08.044277Z", isSystem: true, conversation: { id: 2 } },
@@ -474,6 +488,13 @@ export async function seedDatabase() {
       // Suspended
       { content: "Report status change to: Suspended", createdAt: "2025-11-26T17:41:05.202123Z", isSystem: true, conversation: { id: 7 } },
       { content: "Report status change to: Suspended", createdAt: "2025-11-26T17:41:08.054321Z", isSystem: true, conversation: { id: 11 } },
+      // In Progress
+      { content: "Report status change to: In Progress", createdAt: "2025-11-27T17:41:05.210456Z", isSystem: true, conversation: { id: 3 } },
+      { content: "Report status change to: In Progress", createdAt: "2025-11-27T17:41:11.090123Z", isSystem: true, conversation: { id: 6 } },
+      // Resolved
+      { content: "Report status change to: Resolved", createdAt: "2025-11-28T17:41:05.218789Z", isSystem: true, conversation: { id: 6 } },
+      // Rejected
+      { content: "Report status change to: Rejected. Explanation: All the streetlights are off during the day, they are on only at night.", createdAt: "2025-11-29T17:41:05.225678Z", isSystem: true, conversation: { id: 22 } },
     ]);
     console.log("Added default Messages");
   }
@@ -625,11 +646,11 @@ export async function seedDatabase() {
     
     // Report creati da userId 2: 1, 4, 5, 7, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
     const reportsCreatedByUser2 = [1, 4, 5, 7, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
-    // Report creati da userId 7: 2, 3, 6, 8, 11
-    const reportsCreatedByUser7 = [2, 3, 6, 8, 11];
+    // Report creati da userId 7: 2, 3, 6, 8, 11, 22
+    const reportsCreatedByUser7 = [2, 3, 6, 8, 11, 22];
     
     // Per ogni conversazione, aggiungi i partecipanti in base al creatore del report
-    for (let i = 1; i <= 21; i++) {
+    for (let i = 1; i <= 22; i++) {
       const conv = convMap[i];
       if (conv) {
         if (reportsCreatedByUser2.includes(i)) {

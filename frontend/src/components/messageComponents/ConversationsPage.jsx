@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Badge } from "react-bootstrap";
 import API from "../../API/API.mjs";
+import { getStatusVariant } from "../Reports/common.jsx";
 
 
 const ConversationsPage = ({ wsMessage }) => {
@@ -17,13 +19,22 @@ const ConversationsPage = ({ wsMessage }) => {
     async function fetchData() {
       try {
         const data = await API.fetchConversations();
+        const counts = await API.fetchNotificationCounts();
+        setNotificationCounts(counts || {});
+        
         const externalConvs = data.filter(c => c.isInternal === false);
         const internalConvs = data.filter(c => c.isInternal === true);
+        
+        // Ordina le conversazioni esterne: prima quelle con notifiche
+        externalConvs.sort((a, b) => {
+          const countA = counts[a.id] || 0;
+          const countB = counts[b.id] || 0;
+          return countB - countA;
+        });
+        
         setExternalConvs(externalConvs);
         setInternalConvs(internalConvs);
         setConversations(data);
-        const counts = await API.fetchNotificationCounts();
-        setNotificationCounts(counts || {});
       } catch (err) {
         setError("Unable to load conversations.");
       } finally {
@@ -39,13 +50,22 @@ const ConversationsPage = ({ wsMessage }) => {
     async function refresh() {
       try {
         const data = await API.fetchConversations();
+        const counts = await API.fetchNotificationCounts();
+        setNotificationCounts(counts || {});
+        
         const externalConvs = data.filter(c => c.isInternal === false);
         const internalConvs = data.filter(c => c.isInternal === true);
+        
+        // Ordina le conversazioni esterne: prima quelle con notifiche
+        externalConvs.sort((a, b) => {
+          const countA = counts[a.id] || 0;
+          const countB = counts[b.id] || 0;
+          return countB - countA;
+        });
+        
         setExternalConvs(externalConvs);
         setInternalConvs(internalConvs);
         setConversations(data);
-        const counts = await API.fetchNotificationCounts();
-        setNotificationCounts(counts || {});
       } catch {}
     }
     refresh();
@@ -77,7 +97,14 @@ const ConversationsPage = ({ wsMessage }) => {
                     onClick={() => handleClick(conv.id)}
                   >
                     <div><strong>Report:</strong> {conv.report?.title || "-"}</div>
-                    <div><strong>Status:</strong> {conv.report?.status || "-"}</div>
+                    <div>
+                      <strong>Status:</strong>{" "}
+                      {conv.report?.status ? (
+                        <Badge bg={getStatusVariant(conv.report.status)} pill>
+                          {conv.report.status.replace("_", " ").toUpperCase()}
+                        </Badge>
+                      ) : "-"}
+                    </div>
                     {notificationCounts[conv.id] > 0 && (
                       <span style={{
                         position: 'absolute',
